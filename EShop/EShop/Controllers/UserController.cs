@@ -12,5 +12,10 @@ namespace EShop.Views.User
         {
             return View();
         }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
     }
 }
