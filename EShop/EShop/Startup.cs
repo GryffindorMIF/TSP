@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EShop.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,16 +17,21 @@ namespace EShop
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            using (var client = new DatabaseContext())
+            {
+                client.Database.EnsureCreated();
+            }
         }
 
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContext<SchoolContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
+        {     
+            services.AddEntityFrameworkSqlite().AddDbContext<DatabaseContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<DatabaseContext>();
             services.AddMvc();
         }
 
@@ -43,6 +49,8 @@ namespace EShop
             }
 
             app.UseStaticFiles();
+            app.UseIdentity();
+            //app.UseAuthentication(); // app.UseIdentity();
 
             app.UseMvc(routes =>
             {

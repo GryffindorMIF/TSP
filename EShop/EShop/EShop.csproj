@@ -21,4 +21,10 @@
     <None Include="wwwroot\Templates\loginform\w3layouts-License.txt" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Views\User\Register.cshtml">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
