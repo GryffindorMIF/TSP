@@ -68,7 +68,7 @@ namespace EShop.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Suspend(string id)
+        public async Task<IActionResult> ManageAccountSuspension(string id, bool suspendAccount)
         {
             if (id == null)
             {
@@ -82,65 +82,36 @@ namespace EShop.Controllers
                 return NotFound();
             }
 
-            return View(applicationUser);
+            if(suspendAccount) return View("Suspend", applicationUser);
+            else return View("Restore", applicationUser);
         }
 
-        [HttpPost, ActionName("Suspend")]
+        [HttpPost, ActionName("ManageAccountSuspension")]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SuspendConfirmed(string id)
-        {     
-            var user = await _userManager.FindByIdAsync(id);
-            var isLocked = await _userManager.IsLockedOutAsync(user);
-
-            if (!isLocked)
-            {
-                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
-                await _userManager.SetLockoutEnabledAsync(user, true);
-                await _userManager.SetLockoutEndDateAsync(user, DateTime.Today.AddYears(200));// suspend forever
-
-                // Lockout status check without using _userManager (in Razor view pages)
-                user.IsSuspended = true;
-                await _userManager.UpdateAsync(user);
-            }
-            
-            return RedirectToAction(nameof(Index));
-        }
-
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Restore(string id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var applicationUser = await _context.Users
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-
-            return View(applicationUser);
-        }
-
-        [HttpPost, ActionName("Restore")]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RestoreConfirmed(string id)
+        public async Task<IActionResult> ManageAccountSuspensionConfirmed(string id, bool suspendAccount)
         {
             var user = await _userManager.FindByIdAsync(id);
             var isLocked = await _userManager.IsLockedOutAsync(user);
 
-            if (isLocked)
+            if (isLocked && !suspendAccount)
             {
                 // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
                 await _userManager.SetLockoutEnabledAsync(user, false);
                 await _userManager.SetLockoutEndDateAsync(user, null);
 
-                // Lockout status check without using _userManager (in Razor view pages)
+                // To check lockout status without using _userManager (in Razor view pages)
                 user.IsSuspended = false;
+                await _userManager.UpdateAsync(user);
+            }
+            else if(!isLocked && suspendAccount)
+            {
+                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTime.Today.AddYears(200)); // forever
+
+                // To check lockout status without using _userManager (in Razor view pages)
+                user.IsSuspended = true;
                 await _userManager.UpdateAsync(user);
             }
 
@@ -148,7 +119,7 @@ namespace EShop.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GiveAdminPrivileges(string id)
+        public async Task<IActionResult> ManageAdminPrivileges(string id, bool grantPrivileges)
         {
             if (id == null)
             {
@@ -161,67 +132,39 @@ namespace EShop.Controllers
             {
                 return NotFound();
             }
-
-            return View(applicationUser);
+            if(grantPrivileges) return View("GiveAdminPrivileges", applicationUser);
+            else return View("RemoveAdminPrivileges", applicationUser);
         }
 
-        [HttpPost, ActionName("GiveAdminPrivileges")]
+
+        [HttpPost, ActionName("ManageAdminPrivileges")]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GiveAdminPrivilegesConfirmed(string id)
+        public async Task<IActionResult> ManageAdminPrivilegesConfirmed(string id, bool grantPrivileges)
         {
             var user = await _userManager.FindByIdAsync(id);
 
             // Will always return single value list (one role per user)
             var roles = await _userManager.GetRolesAsync(user);
-
             await _userManager.RemoveFromRoleAsync(user, roles[0]);
-            await _userManager.AddToRoleAsync(user, "Admin");
 
-            // Admin status check without using _userManager (in Razor view pages)
-            user.IsAdmin = true;
-            await _userManager.UpdateAsync(user);
+            if(grantPrivileges)
+            {
+                await _userManager.AddToRoleAsync(user, "Admin");
+                user.IsAdmin = true;
+                await _userManager.UpdateAsync(user);
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(user, "Customer");
+                // To check admin status without using _userManager (in Razor view pages)
+                user.IsAdmin = false;
+                await _userManager.UpdateAsync(user);
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemoveAdminPrivileges(string id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var applicationUser = await _context.Users
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-
-            return View(applicationUser);
-        }
-
-        [HttpPost, ActionName("RemoveAdminPrivileges")]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveAdminPrivilegesConfirmed(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-
-            // Will always return single value list (one role per user)
-            var roles = await _userManager.GetRolesAsync(user);
-
-            await _userManager.RemoveFromRoleAsync(user, roles[0]);
-            await _userManager.AddToRoleAsync(user, "Customer");
-
-            // Admin status check without using _userManager (in Razor view pages)
-            user.IsAdmin = false;
-            await _userManager.UpdateAsync(user);
-
-            return RedirectToAction(nameof(Index));
-        }
         private bool ApplicationUserExists(string id)
         {
             return _context.Users.Any(e => e.Id == id);

@@ -45,19 +45,19 @@
 
                     @if(!item.User.IsAdmin)
                     {
-                        <a asp-action="GiveAdminPrivileges" asp-route-id="@item.User.Id">Make admin</a>
+                        <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
                     }
                     else
                     {
-                        <a asp-action="RemoveAdminPrivileges" asp-route-id="@item.User.Id">Remove admin</a>
+                        <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
                     }                      
                     @if (!item.User.IsSuspended)
                     {
-                        <a asp-action="Suspend" asp-route-id="@item.User.Id">Suspend</a>
+                        <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
                     }
                     else
                     {
-                        <a asp-action="Restore" asp-route-id="@item.User.Id">Restore</a>
+                        <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
                     }
                 </td>
             </tr>
