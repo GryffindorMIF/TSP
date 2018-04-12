@@ -56,6 +56,14 @@ namespace EShop
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
             services.AddMvc();
+
+            // Set SecurityStampValidator options to immediately update after a change in account's status
+            services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                // enables immediate logout, after updating the user's stat.
+                //TODO: Test whether it impacts performance that we have to increase this
+                options.ValidationInterval = TimeSpan.Zero;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

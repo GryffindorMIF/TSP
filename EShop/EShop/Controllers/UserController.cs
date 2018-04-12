@@ -113,6 +113,7 @@ namespace EShop.Controllers
                 // To check lockout status without using _userManager (in Razor view pages)
                 user.IsSuspended = true;
                 await _userManager.UpdateAsync(user);
+                await _userManager.UpdateSecurityStampAsync(user);
             }
 
             return RedirectToAction(nameof(Index));
@@ -153,6 +154,7 @@ namespace EShop.Controllers
                 await _userManager.AddToRoleAsync(user, "Admin");
                 user.IsAdmin = true;
                 await _userManager.UpdateAsync(user);
+                await _userManager.UpdateSecurityStampAsync(user);
             }
             else
             {
@@ -160,6 +162,7 @@ namespace EShop.Controllers
                 // To check admin status without using _userManager (in Razor view pages)
                 user.IsAdmin = false;
                 await _userManager.UpdateAsync(user);
+                await _userManager.UpdateSecurityStampAsync(user);
             }
 
             return RedirectToAction(nameof(Index));
