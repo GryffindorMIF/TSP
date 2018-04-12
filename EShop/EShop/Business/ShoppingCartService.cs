@@ -112,7 +112,7 @@ namespace EShop.Business
             return returnCode;
         }
 
-        public async Task<int> ChangeShoppingCartProductCountAsync(ShoppingCartProduct product, ApplicationUser user, string operation)
+        public async Task<int> ChangeShoppingCartProductCountAsync(Product product, ApplicationUser user, string operation)
         {
             int returnCode = 1;
 
@@ -129,13 +129,17 @@ namespace EShop.Business
                         });
                     t1.Wait();
 
-                    //Change
-                    if (operation == "reduce" && product.Quantity > 1)  
-                        product.Quantity--;
-                    else if (operation == "increase")
-                        product.Quantity++;
+                    ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
+                        .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
+                        .FirstOrDefault();
 
-                    _context.Update(product);
+                    //Change
+                    if (operation == "reduce" && shoppingCartProduct.Quantity > 1)
+                        shoppingCartProduct.Quantity--;
+                    else if (operation == "increase")
+                        shoppingCartProduct.Quantity++;
+
+                    _context.Update(shoppingCartProduct);
                     _context.Update(user);
 
                     var t2 = Task.Run(
@@ -144,18 +148,17 @@ namespace EShop.Business
                             await _context.SaveChangesAsync();
                         });
                     t2.Wait();
-                    returnCode = 0; // success
+                    returnCode = 0;
                 }
                 catch (Exception e)
                 {
-                    returnCode = 1; // exception
-                    //throw new Exception(e.ToString());
+                    returnCode = 1;
                 }
             });
             return returnCode;
         }
 
-        public async Task<int> RemoveShoppingCartProductAsync(ShoppingCartProduct product, ApplicationUser user)
+        public async Task<int> RemoveShoppingCartProductAsync(Product product, ApplicationUser user)
         {
             int returnCode = 1;
 
@@ -172,7 +175,11 @@ namespace EShop.Business
                         });
                     t1.Wait();
 
-                    _context.Remove(product);
+                    ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
+                        .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
+                        .FirstOrDefault();
+
+                    _context.Remove(shoppingCartProduct);
                     _context.Update(user);
 
                     var t2 = Task.Run(
@@ -181,12 +188,11 @@ namespace EShop.Business
                             await _context.SaveChangesAsync();
                         });
                     t2.Wait();
-                    returnCode = 0; // success
+                    returnCode = 0;
                 }
                 catch (Exception e)
                 {
-                    returnCode = 1; // exception
-                    //throw new Exception(e.ToString());
+                    returnCode = 1;
                 }
             });
             return returnCode;

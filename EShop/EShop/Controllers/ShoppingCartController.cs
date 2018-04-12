@@ -55,7 +55,7 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            ShoppingCartProduct product = await _context.ShoppingCartProduct.Where(scp => scp.Product.Name == productName).FirstOrDefaultAsync();
+            Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
             int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, user, operation);
 
             return RedirectToAction("Index", "ShoppingCart");
@@ -64,7 +64,7 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            ShoppingCartProduct product = await _context.ShoppingCartProduct.Where(scp => scp.Product.Name == productName).FirstOrDefaultAsync();
+            Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
             int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, user);
 
             return RedirectToAction("Index", "ShoppingCart");
