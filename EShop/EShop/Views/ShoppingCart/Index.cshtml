@@ -40,7 +40,7 @@
                     <td>
                         <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount" 
                               asp-route-productName="@item.Name" asp-route-operation="reduce">
-                            <button type="submit" class="btn btn-info">
+                            <button type="submit" class="btn btn-info" onclick="this.setAttribute('disabled', true)">
                                 <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                             </button>
                         </form>
@@ -51,7 +51,7 @@
                     <td>
                         <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount" 
                               asp-route-productName="@item.Name" asp-route-operation="increase">
-                            <button type="submit" class="btn btn-info">
+                            <button type="submit" class="btn btn-info" onclick="this.setAttribute('disabled', true)">
                                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                             </button>
                         </form>
