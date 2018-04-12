@@ -41,7 +41,7 @@
                         <!--//ProductInCartViewModel does not hold an id field, went with using name instead. Fix this if applicable-->
                         <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount" 
                               asp-route-productName="@item.Name" asp-route-operation="reduce">
-                            <button type="submit" class="btn btn-info">
+                            <button type="submit" class="btn btn-info" onclick='this.disabled = "disabled"'>
                                 <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                             </button>
                         </form>
@@ -52,7 +52,7 @@
                     <td>
                         <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount" 
                               asp-route-productName="@item.Name" asp-route-operation="increase">
-                            <button type="submit" class="btn btn-info">
+                            <button type="submit" class="btn btn-info" onclick='this.disabled = "disabled"'>
                                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                             </button>
                         </form>
