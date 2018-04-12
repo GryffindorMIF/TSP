@@ -51,11 +51,21 @@ namespace EShop.Controllers
             }
             else return RedirectToAction("Register", "Account");
         }
-        public async Task<IActionResult> ChangeProductCount(string productName, string operation)
+        public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            int resultCode = await _shoppingCartService.ChangeProductCountAsync(productName, user, operation);
+            ShoppingCartProduct product = await _context.ShoppingCartProduct.Where(scp => scp.Product.Name == productName).FirstOrDefaultAsync();
+            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, user, operation);
+
+            return RedirectToAction("Index", "ShoppingCart");
+        }
+        public async Task<IActionResult> RemoveShoppingCartProduct(string productName)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            ShoppingCartProduct product = await _context.ShoppingCartProduct.Where(scp => scp.Product.Name == productName).FirstOrDefaultAsync();
+            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, user);
 
             return RedirectToAction("Index", "ShoppingCart");
         }

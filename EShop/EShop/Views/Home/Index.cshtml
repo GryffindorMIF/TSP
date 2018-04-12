@@ -37,7 +37,7 @@
                 {
                     <div>
                         <form asp-controller="ShoppingCart" asp-action="AddProductToShoppingCart" asp-route-productId="@item.Id">
-                            Quantity &nbsp<input type="number" id="Quantity" name="Quantity" size="2" min="1" />
+                            Quantity &nbsp<input type="number" id="Quantity" name="Quantity" size="2" min="1" value="1" required="required" />
                             <button type="submit" class="btn btn-info">
                                 <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
                             </button>
