@@ -22,17 +22,30 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @if (this.User.IsInRole("Customer"))
+                {
+                    <div>
+                        <form asp-controller="ShoppingCart" asp-action="AddProductToShoppingCart" asp-route-productId="@item.Id">
+                            Quantity &nbsp<input type="number" id="Quantity" name="Quantity" size="2" min="1" />
+                            <button type="submit" class="btn btn-info">
+                                <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
+                            </button>
+                        </form>
+                    </div>
+                }
+            </td>
+        </tr>
         }
     </tbody>
 </table>
@@ -47,8 +60,16 @@
     <li>pass: admin</li>
 </ul>
 
-<h4>Test customer (alternative - register new one)</h4>
+<h4>Test shopping-carts</h4>
 <ul>
     <li>email: customer@customer.com</li>
     <li>pass: customer</li>
+</ul>
+<ul>
+    <li>email: customer2@customer2.com</li>
+    <li>pass: customer2</li>
+</ul>
+<ul>
+    <li>email: customer3@customer3.com</li>
+    <li>pass: customer3</li>
 </ul>

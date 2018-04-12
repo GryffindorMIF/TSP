@@ -18,6 +18,9 @@ namespace EShop.Data
 
         public DbSet<Product> Product { get; set; }
         public DbSet<ProductImage> ProductImage { get; set; }
+        public DbSet<Order> Order { get; set; }
+        public DbSet<ShoppingCart> ShoppingCart { get; set; }
+        public DbSet<ShoppingCartProduct> ShoppingCartProduct { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

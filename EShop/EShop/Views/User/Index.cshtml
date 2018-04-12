@@ -10,9 +10,6 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.User.UserName)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.User.Email)
             </th>
             <th>
@@ -29,9 +26,6 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.User.UserName)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.User.Email)
                 </td>
                 <td>
@@ -41,7 +35,10 @@
                     @Html.DisplayFor(modelItem => item.User.IsSuspended)
                 </td>
                 <td>
-                    <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+                    <!-- Reik sutvarkyti on_delete set null, cascade ir t.t, nes neissitrina shoppingCart stuffas, trinant useri. Kolkas disablinu.
+                        <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+                    -->
+                    'Delete(Disabled) reason: Views/User/Index.cshtml'
 
                     @if(!item.User.IsAdmin)
                     {

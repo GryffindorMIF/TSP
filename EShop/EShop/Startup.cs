@@ -12,6 +12,7 @@ using EShop.Data;
 using EShop.Models;
 using EShop.Services;
 using System.Diagnostics;
+using EShop.Business;
 
 namespace EShop
 {
@@ -51,9 +52,9 @@ namespace EShop
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Add application services.
+            // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
-
+            services.AddTransient<IShoppingCartService, ShoppingCartService>();
             services.AddMvc();
         }
 
