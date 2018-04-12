@@ -10,6 +10,7 @@ namespace EShop.Business
     {
         Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ApplicationUser user);
         Task<int> AddProductToShoppingCartAsync(Product product, ApplicationUser user, int quantity);
+        Task<int> ChangeProductCountAsync(string productName, ApplicationUser user, string operation);
         // 0 - success
         // 1 - error
     }

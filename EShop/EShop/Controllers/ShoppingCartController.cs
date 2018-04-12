@@ -51,5 +51,13 @@ namespace EShop.Controllers
             }
             else return RedirectToAction("Register", "Account");
         }
+        public async Task<IActionResult> ChangeProductCount(string productName, string operation)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            int resultCode = await _shoppingCartService.ChangeProductCountAsync(productName, user, operation);
+
+            return RedirectToAction("Index", "ShoppingCart");
+        }
     }
 }

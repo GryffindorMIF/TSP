@@ -110,6 +110,54 @@ namespace EShop.Business
                 }
             });
             return returnCode;
-        }    
+        }
+
+        public async Task<int> ChangeProductCountAsync(string productName, ApplicationUser user, string operation)
+        {
+            int returnCode = 1;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    ShoppingCart shoppingCart = null;
+
+                    var t1 = Task.Run(
+                        async () =>
+                        {
+                            shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                        });
+                    t1.Wait();
+
+                    //Selecting product by name, maybe fix this? ProductInCartViewModel can only be distinguished by Name
+                    ShoppingCartProduct product = _context.ShoppingCartProduct
+                        .Where(sc => sc.Product.Name == productName && sc.ShoppingCart == shoppingCart)
+                        .FirstOrDefault();
+
+                    //Change
+                    if (operation == "reduce" && product.Quantity > 1)  
+                        product.Quantity--;
+                    else if (operation == "increase")
+                        product.Quantity++;
+
+                    _context.Update(product);
+                    _context.Update(user);
+
+                    var t2 = Task.Run(
+                        async () =>
+                        {
+                            await _context.SaveChangesAsync();
+                        });
+                    t2.Wait();
+                    returnCode = 0; // success
+                }
+                catch (Exception e)
+                {
+                    returnCode = 1; // exception
+                    //throw new Exception(e.ToString());
+                }
+            });
+            return returnCode;
+        }
     }
 }

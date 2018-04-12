@@ -38,8 +38,9 @@
                         @Html.DisplayFor(modelItem => item.Price)
                     </td>
                     <td>
-                        <form asp-action="">
-                            <button type="submit" class="btn btn-info" disabled>
+                        <!--//ProductInCartViewModel does not hold an id field, went with using name instead. Fix this if applicable-->
+                        <form asp-controller="ShoppingCart" asp-action="ChangeProductCount" asp-route-productName="@item.Name" asp-route-operation="reduce">
+                            <button type="submit" class="btn btn-info">
                                 <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                             </button>
                         </form>
@@ -48,8 +49,8 @@
                         @Html.DisplayFor(modelItem => item.Quantity)
                     </td>
                     <td>
-                        <form asp-action="">
-                            <button type="submit" class="btn btn-info" disabled>
+                        <form asp-controller="ShoppingCart" asp-action="ChangeProductCount" asp-route-productName="@item.Name" asp-route-operation="increase">
+                            <button type="submit" class="btn btn-info">
                                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                             </button>
                         </form>
