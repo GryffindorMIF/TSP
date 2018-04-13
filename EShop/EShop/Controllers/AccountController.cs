@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.AccountViewModels;
 using EShop.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace EShop.Controllers
 {
@@ -220,16 +221,9 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                byte[] carid_bytes;
-                int? cartid = null;
-                if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
-                    cartid = BitConverter.ToInt32(carid_bytes, 0);
-
-                Console.WriteLine("session cartid: " + (cartid.HasValue ? cartid.Value.ToString() : "null"));
+                int? cartid = HttpContext.Session.GetInt32("cartid");
 
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
-
-                Console.WriteLine("user cartid: " + user.ShoppingCartId);
 
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace EShop.Controllers
 {
@@ -61,23 +62,17 @@ namespace EShop.Controllers
             {
                 if (!HttpContext.Session.IsAvailable)
                     await HttpContext.Session.LoadAsync();
-                byte[] carid_bytes;
-                if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
-                {
-                    int cartid = BitConverter.ToInt32(carid_bytes, 0);
-                    Console.WriteLine("cartid: " + cartid);
+                int? cartid = HttpContext.Session.GetInt32("cartid");
+                if (cartid.HasValue)
                     shoppingCart = await _context.ShoppingCart.FindAsync(cartid);
-                }
                 else
                 {
                     shoppingCart = new ShoppingCart();
                     _context.ShoppingCart.Add(shoppingCart);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("new cartid: " + shoppingCart.Id);
-                    HttpContext.Session.Set("cartid", BitConverter.GetBytes(shoppingCart.Id));
+                    HttpContext.Session.SetInt32("cartid", shoppingCart.Id);
                 }
             }
-            Console.WriteLine("gotten cart id: " + shoppingCart.Id);
             return shoppingCart;
         }
 
@@ -88,10 +83,9 @@ namespace EShop.Controllers
 
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            Console.WriteLine("Adding product");
             int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, quantity);
             // TODO: Implement pop-up message based on resultCode
-            Console.WriteLine("Redirectint to index"); //-2147482647
+
             return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
         }
 

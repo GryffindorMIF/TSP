@@ -47,9 +47,6 @@ namespace EShop.Business
             // 0 - success
             // 1 - error
 
-            Console.WriteLine("product is " + (product == null ? "null" : "set"));
-            Console.WriteLine("cart is " + (cart == null ? "null" : "set"));
-
             await Task.Run(() =>
             {
                 try
