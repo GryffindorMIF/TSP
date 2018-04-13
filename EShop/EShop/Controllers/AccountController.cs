@@ -225,7 +225,12 @@ namespace EShop.Controllers
                 if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
                     cartid = BitConverter.ToInt32(carid_bytes, 0);
 
+                Console.WriteLine("session cartid: " + (cartid.HasValue ? cartid.Value.ToString() : "null"));
+
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
+
+                Console.WriteLine("user cartid: " + user.ShoppingCartId);
+
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {

@@ -46,11 +46,11 @@ namespace EShop.Controllers
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                    shoppingCart = user.ShoppingCart;
                     if (shoppingCart == null)
                     {
                         shoppingCart = new ShoppingCart();
-                        user.ShoppingCartId = shoppingCart.Id;
+                        user.ShoppingCart = shoppingCart;
                         _context.ShoppingCart.Add(shoppingCart);
                         await _context.SaveChangesAsync();
                     }
@@ -65,6 +65,7 @@ namespace EShop.Controllers
                 if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
                 {
                     int cartid = BitConverter.ToInt32(carid_bytes, 0);
+                    Console.WriteLine("cartid: " + cartid);
                     shoppingCart = await _context.ShoppingCart.FindAsync(cartid);
                 }
                 else
@@ -72,9 +73,11 @@ namespace EShop.Controllers
                     shoppingCart = new ShoppingCart();
                     _context.ShoppingCart.Add(shoppingCart);
                     await _context.SaveChangesAsync();
+                    Console.WriteLine("new cartid: " + shoppingCart.Id);
                     HttpContext.Session.Set("cartid", BitConverter.GetBytes(shoppingCart.Id));
                 }
             }
+            Console.WriteLine("gotten cart id: " + shoppingCart.Id);
             return shoppingCart;
         }
 
@@ -85,9 +88,10 @@ namespace EShop.Controllers
 
             ShoppingCart shoppingCart = await GetCartAsync();
 
+            Console.WriteLine("Adding product");
             int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, quantity);
             // TODO: Implement pop-up message based on resultCode
-
+            Console.WriteLine("Redirectint to index"); //-2147482647
             return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
         }
 
