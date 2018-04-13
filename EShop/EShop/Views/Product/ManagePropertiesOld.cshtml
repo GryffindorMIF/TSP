@@ -1,0 +1,38 @@
+﻿@model EShop.Models.Product
+
+@{
+    ViewData["Title"] = "ManageProperties";
+}
+
+<h2>Product properties</h2>
+<p>
+    <a asp-action="AddProperty" asp-route-id="@Model.Id">Add new property</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Property
+            </th>
+            <th>
+                Description
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.DetailsList.Where(d => d.ProductId == Model.Id))
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Property)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    <a asp-action="DeleteProperty" asp-route-id="@Model.Id">Delete Property</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

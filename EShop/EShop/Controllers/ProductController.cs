@@ -145,5 +145,36 @@ namespace EShop.Controllers
         {
             return _context.Product.Any(e => e.Id == id);
         }
+
+
+
+
+        //Denis product description changes
+        [AllowAnonymous]
+        public async Task<IActionResult> ManageProperties(int productId)
+        {
+            ViewData["product_id"] = productId; //To retrieve it in view
+            return View(await _context.ProductDetails.Where(p => p.ProductId == productId).ToListAsync());
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult AddProperty()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddProperty(int id, [Bind("ProductId,property,description")] ProductDetails productDetails)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(productDetails);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(productDetails);
+        }
     }
 }

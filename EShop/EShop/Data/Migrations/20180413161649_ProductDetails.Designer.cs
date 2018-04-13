@@ -11,9 +11,10 @@ using System;
 namespace EShop.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180413161649_ProductDetails")]
+    partial class ProductDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,6 +126,8 @@ namespace EShop.Data.Migrations
                         .HasMaxLength(200);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductDetails");
                 });
@@ -288,6 +291,14 @@ namespace EShop.Data.Migrations
                     b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
                         .WithMany()
                         .HasForeignKey("ShoppingCartId");
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductDetails", b =>
+                {
+                    b.HasOne("EShop.Models.Product", "product")
+                        .WithMany("DetailsList")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("EShop.Models.ProductImage", b =>

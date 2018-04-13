@@ -12,9 +12,13 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        [Required(ErrorMessage = "The property is required.")]
+        [MaxLength(200)]
         public string Property { get; set; }
+        [Required(ErrorMessage = "The description is required.")]
+        [MaxLength(200)]
         public string Description { get; set; }
-        [ForeignKey("ProductId")]
+        [ForeignKey("Product")]
         public int ProductId { get; set; }
     }
 }
