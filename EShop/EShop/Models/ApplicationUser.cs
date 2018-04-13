@@ -14,8 +14,7 @@ namespace EShop.Models
         public bool IsSuspended { get; set; }
         public bool IsAdmin { get; set; }
 
-        public int? ShoppingCartId { get; set; }
         [ForeignKey("ShoppingCartId")]
-        public virtual ShoppingCart ShoppingCart { get; set; }
+        public int? ShoppingCartId { get; set; }
     }
 }
