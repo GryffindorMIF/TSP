@@ -23,7 +23,7 @@ namespace EShop.Data.Migrations
             migrationBuilder.AlterColumn<int>(
                 name: "ShoppingCartId",
                 table: "Users",
-                nullable: false,
+                nullable: true, //Before: false
                 oldClrType: typeof(int),
                 oldNullable: true);
 

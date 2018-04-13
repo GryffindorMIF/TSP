@@ -57,7 +57,7 @@ namespace EShop.Business
                     if (user.ShoppingCartId == null)
                     {
                         shoppingCart = new ShoppingCart();
-                        user.ShoppingCart = shoppingCart;
+                        user.ShoppingCartId = shoppingCart.Id;
                         _context.Add(shoppingCart);
                     }
                     else
