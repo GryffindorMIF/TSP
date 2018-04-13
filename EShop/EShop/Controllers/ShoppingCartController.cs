@@ -45,7 +45,16 @@ namespace EShop.Controllers
             if (user != null)
             {
                 if (User.Identity.IsAuthenticated)
+                {
                     shoppingCart = user.ShoppingCart;
+                    if (shoppingCart == null)
+                    {
+                        shoppingCart = new ShoppingCart();
+                        user.ShoppingCart = shoppingCart;
+                        _context.ShoppingCart.Add(shoppingCart);
+                        await _context.SaveChangesAsync();
+                    }
+                }
                 else return null;
             }
             else
@@ -68,7 +77,7 @@ namespace EShop.Controllers
                     HttpContext.Session.Set("cartid", BitConverter.GetBytes(shoppingCart.Id));
                 }
             }
-
+            Console.WriteLine("gotten cart id: " + shoppingCart.Id);
             return shoppingCart;
         }
 
