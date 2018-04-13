@@ -26,46 +26,82 @@ namespace EShop.Controllers
             _shoppingCartService = shoppingCartService;
         }
 
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
-            // Get current user
-            var user = await _userManager.GetUserAsync(HttpContext.User);
-            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(user);
+            ShoppingCart shoppingCart = await GetCartAsync();
+
+            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart);
 
             return View(productsInCart);
         }
-        public async Task<IActionResult> AddProductToShoppingCart(int productId, int quantity)
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                // Get current user
-                var user = await _userManager.GetUserAsync(HttpContext.User);
-                // Product to add
-                Product product = await _context.Product.FindAsync(productId);
 
-                int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, user, quantity);
-                // Implement pop-up message based on resultCode
-
-                return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
-            }
-            else return RedirectToAction("Register", "Account");
-        }
-        public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)
+        private async Task<ShoppingCart> GetCartAsync()
         {
+            // Get current user
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
+            ShoppingCart shoppingCart;
+
+            if (user != null)
+            {
+                if (User.Identity.IsAuthenticated)
+                    shoppingCart = user.ShoppingCart;
+                else return null;
+            }
+            else
+            {
+                if (!HttpContext.Session.IsAvailable)
+                    await HttpContext.Session.LoadAsync();
+                byte[] carid_bytes;
+                if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
+                {
+                    int cartid = BitConverter.ToInt32(carid_bytes, 0);
+                    Console.WriteLine("cartid: " + cartid);
+                    shoppingCart = await _context.ShoppingCart.FindAsync(cartid);
+                }
+                else
+                {
+                    shoppingCart = new ShoppingCart();
+                    _context.ShoppingCart.Add(shoppingCart);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("new cartid: " + shoppingCart.Id);
+                    HttpContext.Session.Set("cartid", BitConverter.GetBytes(shoppingCart.Id));
+                }
+            }
+
+            return shoppingCart;
+        }
+
+        public async Task<IActionResult> AddProductToShoppingCart(int productId, int quantity)
+        {
+            // Product to add
+            Product product = await _context.Product.FindAsync(productId);
+
+            ShoppingCart shoppingCart = await GetCartAsync();
+
+            Console.WriteLine("Adding product");
+            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, quantity);
+            // TODO: Implement pop-up message based on resultCode
+            Console.WriteLine("Redirectint to index"); //-2147482647
+            return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
+        }
+
+        public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)
+        {
+            ShoppingCart shoppingCart = await GetCartAsync();
+
             Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
-            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, user, operation);
+            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation);
 
             return RedirectToAction("Index", "ShoppingCart");
         }
+
         public async Task<IActionResult> RemoveShoppingCartProduct(string productName)
         {
-            var user = await _userManager.GetUserAsync(HttpContext.User);
+            ShoppingCart shoppingCart = await GetCartAsync();
 
             Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
-            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, user);
+            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart);
 
             return RedirectToAction("Index", "ShoppingCart");
         }

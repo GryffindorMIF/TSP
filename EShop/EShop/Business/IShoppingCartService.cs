@@ -8,10 +8,10 @@ namespace EShop.Business
 {
     public interface IShoppingCartService
     {
-        Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ApplicationUser user);
-        Task<int> AddProductToShoppingCartAsync(Product product, ApplicationUser user, int quantity);
-        Task<int> ChangeShoppingCartProductCountAsync(Product product, ApplicationUser user, string operation);
-        Task<int> RemoveShoppingCartProductAsync(Product product, ApplicationUser user);
+        Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart);
+        Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart shoppingCart, int quantity);
+        Task<int> ChangeShoppingCartProductCountAsync(Product product, ShoppingCart shoppingCart, string operation);
+        Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart);
         // 0 - success
         // 1 - error
     }

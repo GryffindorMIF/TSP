@@ -52,6 +52,10 @@ namespace EShop
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromSeconds(300);
+            });
+
             // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
@@ -83,6 +87,7 @@ namespace EShop
             app.UseStaticFiles();
 
             app.UseAuthentication();
+            app.UseSession();
 
             app.UseMvc(routes =>
             {

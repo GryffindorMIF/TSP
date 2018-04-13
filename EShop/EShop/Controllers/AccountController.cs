@@ -220,7 +220,12 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = null };
+                byte[] carid_bytes;
+                int? cartid = null;
+                if (HttpContext.Session.TryGetValue("cartid", out carid_bytes))
+                    cartid = BitConverter.ToInt32(carid_bytes, 0);
+
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
