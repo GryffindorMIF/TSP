@@ -47,11 +47,11 @@ namespace EShop.Controllers
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    shoppingCart = user.ShoppingCart;
+                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
                     if (shoppingCart == null)
                     {
                         shoppingCart = new ShoppingCart();
-                        user.ShoppingCart = shoppingCart;
+                        user.ShoppingCartId = shoppingCart.Id;
                         _context.ShoppingCart.Add(shoppingCart);
                         await _context.SaveChangesAsync();
                     }
