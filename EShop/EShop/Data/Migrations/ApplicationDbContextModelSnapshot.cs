@@ -74,8 +74,6 @@ namespace EShop.Data.Migrations
                         .HasName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("ShoppingCartId");
-
                     b.ToTable("Users");
                 });
 
@@ -281,13 +279,6 @@ namespace EShop.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens");
-                });
-
-            modelBuilder.Entity("EShop.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
-                        .WithMany()
-                        .HasForeignKey("ShoppingCartId");
                 });
 
             modelBuilder.Entity("EShop.Models.ProductImage", b =>

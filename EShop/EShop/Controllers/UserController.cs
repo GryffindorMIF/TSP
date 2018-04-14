@@ -62,6 +62,25 @@ namespace EShop.Controllers
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
+
+            if(user.ShoppingCartId != null)// ADMIN neturi shopping-cart
+            { 
+                var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+
+                var ShoppingCartProducts = from scp in _context.ShoppingCartProduct
+                                           where scp.ShoppingCart.Id == shoppingCart.Id
+                                           select scp;
+
+                foreach (ShoppingCartProduct scp in ShoppingCartProducts)
+                {
+                    _context.ShoppingCartProduct.Remove(scp);
+                }
+
+                _context.ShoppingCart.Remove(shoppingCart);
+
+                await _context.SaveChangesAsync();
+            }
+
             await _userManager.DeleteAsync(user);
 
             return RedirectToAction(nameof(Index));

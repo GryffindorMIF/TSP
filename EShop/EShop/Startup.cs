@@ -10,9 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EShop.Data;
 using EShop.Models;
-using EShop.Services;
-using System.Diagnostics;
 using EShop.Business;
+using System.Diagnostics;
 
 namespace EShop
 {
