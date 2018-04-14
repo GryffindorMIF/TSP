@@ -227,16 +227,6 @@ namespace EShop.Controllers
             {
                 int? cartid = HttpContext.Session.GetInt32("cartid");
 
-                // tas atvejis, jei anonymous net nepridejes jokios prekes i shopping-cart'a, iskart eina registruotis 
-                // nes shopping-cart'as kuriamas tik pridejus bent viena preke
-                if (cartid == null)
-                {
-                    ShoppingCart shoppingCart = new ShoppingCart();
-                    _context.ShoppingCart.Add(shoppingCart);
-                    await _context.SaveChangesAsync();
-                    cartid = shoppingCart.Id;
-                }
-
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

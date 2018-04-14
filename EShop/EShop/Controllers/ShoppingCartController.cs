@@ -31,12 +31,10 @@ namespace EShop.Controllers
         {
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            if(shoppingCart != null)// kad nebutu 'object ref not set to an instance' (ADMIN atveju, kuris neturi shopping cart)
-            {
-                var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart);
-                return View(productsInCart);
-            }
-            else return RedirectToAction("Index", "Home");
+            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart);
+
+            return View(productsInCart);
+
         }
 
         private async Task<ShoppingCart> GetCartAsync()
@@ -48,7 +46,7 @@ namespace EShop.Controllers
 
             if (user != null)
             {
-                if (User.Identity.IsAuthenticated && !User.IsInRole("Admin"))// adminai neturi shopping-cartu (be sito check'o, gausim NULL VAL Exception)
+                if (User.Identity.IsAuthenticated)
                 {
                     if (user.ShoppingCartId != null)
                         shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
