@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.ManageViewModels;
-using EShop.Services;
+using EShop.Business;
 
 namespace EShop.Controllers
 {

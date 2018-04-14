@@ -150,29 +150,31 @@ namespace EShop.Controllers
 
 
         //Denis product description changes
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageProperties(int productId)
         {
-            ViewData["product_id"] = productId; //To retrieve it in view
+            ViewData["product_Id"] = productId; //To retrieve it in view
             return View(await _context.ProductDetails.Where(p => p.ProductId == productId).ToListAsync());
         }
 
         [Authorize(Roles = "Admin")]
-        public IActionResult AddProperty()
+        public IActionResult AddProperty(int productId)
         {
+            ViewData["product_Id"] = productId;
             return View();
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddProperty(int id, [Bind("ProductId,property,description")] ProductDetails productDetails)
+        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Property,Description,ProductId")] ProductDetails productDetails)
         {
             if (ModelState.IsValid)
             {
+                //productDetails.ProductId = productId;
                 _context.Add(productDetails);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(ManageProperties), 3);
             }
             return View(productDetails);
         }

@@ -29,7 +29,7 @@ namespace EShop.Controllers
         {
             return View(await _context.Product.ToListAsync());
         }
-
+    
         [AllowAnonymous]
         public IActionResult Error()
         {

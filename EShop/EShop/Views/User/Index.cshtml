@@ -35,10 +35,7 @@
                     @Html.DisplayFor(modelItem => item.User.IsSuspended)
                 </td>
                 <td>
-                    <!-- Reik sutvarkyti on_delete set null, cascade ir t.t, nes neissitrina shoppingCart stuffas, trinant useri. Kolkas disablinu.
-                        <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
-                    -->
-                    'Delete(Disabled) reason: Views/User/Index.cshtml'
+                    <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
 
                     @if(!item.User.IsAdmin)
                     {

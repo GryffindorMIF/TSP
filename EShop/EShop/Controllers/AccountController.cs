@@ -12,8 +12,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.AccountViewModels;
-using EShop.Services;
+using EShop.Business;
 using Microsoft.AspNetCore.Http;
+using EShop.Data;
 
 namespace EShop.Controllers
 {
@@ -25,17 +26,20 @@ namespace EShop.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
+            _context = context;
         }
 
         [TempData]
@@ -222,6 +226,16 @@ namespace EShop.Controllers
             if (ModelState.IsValid)
             {
                 int? cartid = HttpContext.Session.GetInt32("cartid");
+
+                // tas atvejis, jei anonymous net nepridejes jokios prekes i shopping-cart'a, iskart eina registruotis 
+                // nes shopping-cart'as kuriamas tik pridejus bent viena preke
+                if (cartid == null)
+                {
+                    ShoppingCart shoppingCart = new ShoppingCart();
+                    _context.ShoppingCart.Add(shoppingCart);
+                    await _context.SaveChangesAsync();
+                    cartid = shoppingCart.Id;
+                }
 
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
 
