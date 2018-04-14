@@ -41,18 +41,20 @@ namespace EShop.Controllers
             // Get current user
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            ShoppingCart shoppingCart;
+            ShoppingCart shoppingCart = null;
 
             if (user != null)
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                    if (user.ShoppingCartId != null)
+                        shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
                     if (shoppingCart == null)
                     {
                         shoppingCart = new ShoppingCart();
-                        user.ShoppingCartId = shoppingCart.Id;
                         _context.ShoppingCart.Add(shoppingCart);
+                        await _context.SaveChangesAsync();
+                        user.ShoppingCartId = shoppingCart.Id;
                         await _context.SaveChangesAsync();
                     }
                 }

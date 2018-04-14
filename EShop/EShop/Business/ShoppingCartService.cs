@@ -24,20 +24,21 @@ namespace EShop.Business
         public async Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart)
         {
             IQueryable<ProductInCartViewModel> productsInCart = null;
-            await Task.Run(() =>
-            {
-                productsInCart = from p in _context.Product
-                                     join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
-                                     join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
-                                     where sc.Id == shoppingCart.Id
-                                 select new ProductInCartViewModel
-                                     {
-                                         Name = p.Name,
-                                         Price = p.Price,
-                                         Quantity = scp.Quantity,
-                                         TotalPrice = scp.Quantity * p.Price
-                                     };
-            });
+            if (shoppingCart != null)
+                await Task.Run(() =>
+                {
+                    productsInCart = from p in _context.Product
+                                         join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
+                                         join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
+                                         where sc.Id == shoppingCart.Id
+                                     select new ProductInCartViewModel
+                                         {
+                                             Name = p.Name,
+                                             Price = p.Price,
+                                             Quantity = scp.Quantity,
+                                             TotalPrice = scp.Quantity * p.Price
+                                         };
+                });
             return productsInCart;
         }
 
