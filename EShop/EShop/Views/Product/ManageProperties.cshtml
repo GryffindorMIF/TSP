@@ -6,7 +6,7 @@
 
 <h2>Product properties: product id is @ViewData["product_Id"]</h2>
 <p>
-    <a asp-action="AddProperty" asp-route-id=@ViewData["product_Id"]>Add new property</a>
+    <a asp-action="AddProperty" asp-route-productId=@ViewData["product_Id"]>Add new property</a>
 </p>
 <table class="table">
     <thead>
@@ -20,7 +20,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_Id"])))
         {
             <tr>
                 <td>
@@ -30,7 +30,7 @@
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
-                    <!--<a asp-action="DeleteProperty" asp-route-id="Model.Id">Delete Property</a> -->
+                    <a asp-action="DeleteProperty" asp-route-id="@item.Id">Delete Property</a>
                 </td>
             </tr>
         }
