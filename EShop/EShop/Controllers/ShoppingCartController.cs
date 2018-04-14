@@ -78,9 +78,6 @@ namespace EShop.Controllers
             }
             return shoppingCart;
         }
-
-        [AllowAnonymous]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> AddProductToShoppingCart(int productId, int quantity)
         {
             // Product to add
@@ -94,8 +91,6 @@ namespace EShop.Controllers
             return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
         }
 
-        [AllowAnonymous]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)
         {
             ShoppingCart shoppingCart = await GetCartAsync();
@@ -106,8 +101,6 @@ namespace EShop.Controllers
             return RedirectToAction("Index", "ShoppingCart");
         }
 
-        [AllowAnonymous]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> RemoveShoppingCartProduct(string productName)
         {
             ShoppingCart shoppingCart = await GetCartAsync();
