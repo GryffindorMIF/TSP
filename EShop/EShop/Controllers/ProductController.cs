@@ -150,7 +150,7 @@ namespace EShop.Controllers
 
 
         //Denis product description changes
-        [AllowAnonymous]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> ManageProperties(int productId)
         {
             ViewData["product_id"] = productId; //To retrieve it in view
