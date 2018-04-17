@@ -3,73 +3,181 @@
 @{
     ViewData["Title"] = "Products";
 }
-<h2>Products</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+
+<!-- Pop-up modal on "Add" button click  -->
+<div id="add-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/success.png" width="30" height="30" /> &nbsp; Success!
+
+                <button id="modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>A new item has been added to your Shopping Cart.</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="ShoppingCart" asp-action="Index">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> View Shopping Cart
+                    </button>
+                </form>
+                <br />
+                <button id="modal-continue-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Side-navigation panel-->
+<div class="sidenav">
+    @if (@ViewBag.CurrentCategoryName == null)
+    {
+        <h3>All</h3>
+    }
+    else
+    {
+        <h3>@ViewBag.CurrentCategoryName</h3>
+    }
+    <form asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
+        <button type="submit" class="btn btn-primary">
+            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
+        </button>
+    </form>
+    <ul>
+        <li>&nbsp;</li>
+        @foreach (CategoryViewModel categoryViewModel in ViewBag.TopLevelCategories)
         {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @if (!this.User.IsInRole("Admin"))
-                {
-                    <div>
-                        <form asp-controller="ShoppingCart" asp-action="AddProductToShoppingCart" asp-route-productId="@item.Id">
-                            Quantity &nbsp<input type="number" id="Quantity" name="Quantity" size="2" min="1" value="1" required="required" />
-                            <button type="submit" class="btn btn-info">
-                                <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
-                            </button>
-                        </form>
-                    </div>
+            <li>
+                <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@categoryViewModel.Category.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">@categoryViewModel.Category.Name</a>
+
+                @{
+                    /*
+                    // TreeView menu (not sure if needed)
+                    // NOT IMPLEMENTED
+
+                    @if (categoryViewModel.SubCategories.Any())
+                    {
+                        @Html.Partial("_IndexPartial", categoryViewModel)
+                    }
+                    */
                 }
-            </td>
-        </tr>
+            </li>
         }
-    </tbody>
-</table>
+    </ul>
+</div>
 
-<hr />
-<h2>Login credentials</h2>
-<hr />
+<!-- Content-->
+<div class="main">
+    <br />
+    @if (@ViewBag.CurrentCategoryName == null)
+    {
+        <h4>All</h4>
+    }
+    else
+    {
+        <h4><text>All</text>@ViewBag.AbsoluteNavigationPath</h4>
+    }
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Image <!-- Placeholder -->
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Price)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+            {
+                <tr>
+                    <td>
+                        <!-- Placeholder -->
+                        <img src="~/images/products/product-image-placeholder.jpg"
+                             alt="Mountain View" height="150" width="110">
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.Price)
+                    </td>
+                    <td>
+                        @if (!this.User.IsInRole("Admin"))
+                        {
+                            <div>
+                                <form id="add-btn-form-@item.Index">
+                                    Quantity &nbsp<input id="quantity-id-@item.Index" type="number" size="2" min="1" value="1" required="required" />
+                                    <input id="hidden-id-@item.Index" type="hidden" size="2" value="@item.Value.Id" required="required" />
+                                    <button id="add-btn-@item.Index" type="submit" class="btn btn-info">
+                                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
-<h4>Test admin</h4>
-<ul>
-    <li>email: admin@admin.com</li>
-    <li>pass: admin</li>
-</ul>
+<!-- Scripts -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
 
-<h4>Test shopping-carts</h4>
-<ul>
-    <li>email: customer@customer.com</li>
-    <li>pass: customer</li>
-</ul>
-<ul>
-    <li>email: customer2@customer2.com</li>
-    <li>pass: customer2</li>
-</ul>
-<ul>
-    <li>email: customer3@customer3.com</li>
-    <li>pass: customer3</li>
-</ul>
+        $('#modal-exit-btn, #modal-continue-btn').click(function () {
+            $('#add-modal-id').fadeOut();
+        });
+
+        @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+        {
+            <text>
+                $("#add-btn-@item.Index").click(function (e) {
+
+                    e.preventDefault();// prevents page refreshing
+
+                    // Arguments we pass to controller's action method
+                    var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
+                        ProductId: $('#hidden-id-@item.Index').val(),
+                        Quantity: $('#quantity-id-@item.Index').val()
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
+                        data: JSON.stringify(ProductToCartPostModel),
+                        dataType: 'json',
+                        contentType: "application/json",
+                        success: function (response) {
+                            if (response == 0) { 
+                                $('#add-modal-id').fadeIn();
+                            }
+                            else if (response == 1) {
+                                //TODO: handle failure sent from controller (modify modal box)
+                            }
+                        },
+                        failure: function (response) {
+                            //TODO: handle AJAX request failure
+                        }
+                    });
+                });
+            </text>
+        }
+    });
+</script>

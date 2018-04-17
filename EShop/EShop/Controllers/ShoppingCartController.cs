@@ -34,7 +34,6 @@ namespace EShop.Controllers
             var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart);
 
             return View(productsInCart);
-
         }
 
         private async Task<ShoppingCart> GetCartAsync()
@@ -78,17 +77,16 @@ namespace EShop.Controllers
             }
             return shoppingCart;
         }
-        public async Task<IActionResult> AddProductToShoppingCart(int productId, int quantity)
+        // AJAX action
+        [HttpPost]
+        public async Task<IActionResult> AddProductToShoppingCart([FromBody]ProductToCartPostModel productToCartPostModel)// Encapsulated post model for AJAX request
         {
-            // Product to add
-            Product product = await _context.Product.FindAsync(productId);
+            Product product = await _context.Product.FindAsync(productToCartPostModel.ProductId);
 
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, quantity);
-            // TODO: Implement pop-up message based on resultCode
-
-            return RedirectToAction("Index", "Home", await _context.Product.ToListAsync());
+            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity);
+            return Json(resultCode);// AJAX handles pop-up modal based on this return
         }
 
         public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)

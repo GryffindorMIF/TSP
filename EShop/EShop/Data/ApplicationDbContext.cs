@@ -22,6 +22,9 @@ namespace EShop.Data
         public DbSet<ShoppingCart> ShoppingCart { get; set; }
         public DbSet<ShoppingCartProduct> ShoppingCartProduct { get; set; }
         public DbSet<ProductDetails> ProductDetails { get; set; }
+        public DbSet<Category> Category { get; set; }
+        public DbSet<ProductCategory> ProductCategory { get; set; }
+        public DbSet<CategoryCategory> CategoryCategory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,6 +42,23 @@ namespace EShop.Data
             builder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable("UserLogins"); });
             builder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
             builder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
+
+            // unique name for category
+            builder.Entity<Category>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+            
+            // many-to-many mapping
+            builder.Entity<ProductCategory>()
+                .HasOne(pc => pc.Category)
+                .WithMany(c => c.ProductCategories)
+                .HasForeignKey(pc => pc.CategoryId);
+
+            // many-to-many mapping
+            builder.Entity<ProductCategory>()
+                .HasOne(pc => pc.Product)
+                .WithMany(p => p.ProductCategories)
+                .HasForeignKey(pc => pc.ProductId);
         }
     }
 }

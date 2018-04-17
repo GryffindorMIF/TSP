@@ -58,6 +58,7 @@ namespace EShop
             // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
+            services.AddTransient<INavigationService, NavigationService>();
             services.AddMvc();
 
             // Set SecurityStampValidator options to immediately update after a change in account's status

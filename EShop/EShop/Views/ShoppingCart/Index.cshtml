@@ -46,7 +46,7 @@
                         </form>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.Quantity, new { id = "quantity-id" })
+                        @Html.DisplayFor(modelItem => item.Value.Quantity)
                     </td>
                     <td>
                         <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount"

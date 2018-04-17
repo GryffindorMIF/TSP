@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
 using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Controllers
@@ -46,26 +48,52 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            return View();
+            var model = new ProductCategoryViewModel();
+            var categories = (from c in _context.Category
+                              select c).ToList();
+
+            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name");
+            return View(model);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Create(ProductCategoryViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
+                await Task.Run(() =>
+                {
+                    Product product = new Product
+                    {
+                        Name = model.Product.Name,
+                        Description = model.Product.Description,
+                        Price = model.Product.Price
+                    };
+                    _context.Add(product);
+
+                    foreach (int categoryId in model.SelectedCategoryIds)
+                    {
+                        ProductCategory productCategory = new ProductCategory
+                        {
+                            ProductId = product.Id,
+                            CategoryId = categoryId
+                        };
+                        _context.Add(productCategory);
+                    }
+                });
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return RedirectToAction(nameof(Index));
         }
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            var model = new ProductCategoryViewModel();
+
             if (id == null)
             {
                 return NotFound();
@@ -76,15 +104,33 @@ namespace EShop.Controllers
             {
                 return NotFound();
             }
-            return View(product);
+
+            IEnumerable<Category> categories = null;
+            IEnumerable<int> selectedCategoryIds = null;
+
+            var task = Task.Run( () =>
+            {
+                categories = (from c in _context.Category
+                                  select c).ToList();
+
+                selectedCategoryIds = (from pc in _context.ProductCategory
+                                           where pc.ProductId == product.Id
+                                           select pc.CategoryId).ToList();
+            });
+            task.Wait();
+
+            model.Product = product;
+            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", selectedCategoryIds);
+
+            return View(model);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Edit(int id, ProductCategoryViewModel model)
         {
-            if (id != product.Id)
+            if (id != model.Product.Id)
             {
                 return NotFound();
             }
@@ -93,12 +139,36 @@ namespace EShop.Controllers
             {
                 try
                 {
-                    _context.Update(product);
+                    IEnumerable<ProductCategory> relatedProductCategories = null;
+                    var task = Task.Run( () =>
+                    {
+                        relatedProductCategories = (from pc in _context.ProductCategory
+                                                    where pc.ProductId == model.Product.Id
+                                                    select pc).ToList();
+                    });
+                    task.Wait();
+
+                    foreach(var pc in relatedProductCategories)
+                    {
+                        _context.Remove(pc);
+                    };
+
+                    foreach (int categoryId in model.SelectedCategoryIds)
+                    {
+                        ProductCategory productCategory = new ProductCategory
+                        {
+                            ProductId = model.Product.Id,
+                            CategoryId = categoryId
+                        };
+                        _context.Update(productCategory);
+                    }
+
+                    _context.Update(model.Product);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!ProductExists(model.Product.Id))
                     {
                         return NotFound();
                     }
@@ -109,7 +179,7 @@ namespace EShop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model.Product);
         }
 
         [Authorize(Roles = "Admin")]
@@ -145,9 +215,6 @@ namespace EShop.Controllers
         {
             return _context.Product.Any(e => e.Id == id);
         }
-
-
-
 
         //Denis product description changes
         [Authorize(Roles = "Admin")]

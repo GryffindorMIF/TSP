@@ -1,0 +1,19 @@
+﻿@model CategoryViewModel
+
+@{
+    ViewData["Title"] = "_IndexPartial";
+}
+
+<!-- TreeView menu (not sure if needed)-->
+<!-- NOT IMPLEMENTED -->
+<ul>
+    @foreach (CategoryViewModel subCategory in Model.SubCategories)
+    {
+        <text>
+            <li><a asp-action="Index" asp-route-categoryId="@subCategory.Category.Id">@subCategory.Category.Name</a></li>
+        </text>
+        @Html.Partial("IndexPartial", subCategory);// recursion
+    }
+</ul>
+
+
