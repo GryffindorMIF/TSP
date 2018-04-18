@@ -33,13 +33,26 @@
 
 <!-- Side-navigation panel-->
 <div class="sidenav">
+    <h3>Navigation</h3>
+
     @if (@ViewBag.CurrentCategoryName == null)
     {
-        <h3>All</h3>
+        <h5><a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">All</a></h5>
     }
     else
     {
-        <h3>@ViewBag.CurrentCategoryName</h3>
+        // paskui paoptimizuosiu
+        string[] pathSegments = ViewBag.AbsoluteNavigationPath.Split("/");
+        pathSegments = pathSegments.Skip(1).ToArray(); // skippinam pirma tarpa
+        pathSegments = pathSegments.Take(pathSegments.Count() - 1).ToArray(); // skippinam paskutini '/'
+        <h5>         
+            <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">All</a>
+            @foreach (var pathSegment in pathSegments)
+            {
+                <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" asp-route-navigateToCategoryNamed="@pathSegment">/ @pathSegment</a>
+            }
+            <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" asp-route-navigateToCategoryNamed="@ViewBag.CurrentCategoryName">/ @ViewBag.CurrentCategoryName</a>          
+        </h5>
     }
     <form asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
         <button type="submit" class="btn btn-primary">
@@ -47,7 +60,15 @@
         </button>
     </form>
     <ul>
-        <li>&nbsp;</li>
+        @if (@ViewBag.CurrentCategoryName == null)
+        {
+            <h3>All</h3>
+        }
+        else
+        {
+            <h3>@ViewBag.CurrentCategoryName</h3>
+
+        }
         @foreach (CategoryViewModel categoryViewModel in ViewBag.TopLevelCategories)
         {
             <li>
@@ -78,7 +99,7 @@
     }
     else
     {
-        <h4><text>All</text>@ViewBag.AbsoluteNavigationPath</h4>
+        <h4>@ViewBag.CurrentCategoryName</h4>
     }
     <table class="table">
         <thead>

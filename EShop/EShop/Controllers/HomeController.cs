@@ -29,18 +29,60 @@ namespace EShop.Controllers
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? categoryId, bool backToParentCategory, string absoluteNavigationPath)
+        public async Task<IActionResult> Index(int? categoryId, bool backToParentCategory, string absoluteNavigationPath, string navigateToCategoryNamed)
         {
-            if (categoryId == null)// (GET)
+            if (categoryId == null)
             {
-                ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveMenuAsync();
-                ViewBag.TopLevelCategories = categoryViewModels;
-                ViewBag.ParentCategoryId = null;
-                ViewBag.AbsoluteNavigationPath = null;
+                if (navigateToCategoryNamed == null)// (GET)
+                {
+                    ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveMenuAsync();
+                    ViewBag.TopLevelCategories = categoryViewModels;
+                    ViewBag.ParentCategoryId = null;
+                    ViewBag.AbsoluteNavigationPath = null;
 
-                return View(await _context.Product.ToListAsync());
-            }           
-            else// (POST)
+                    return View(await _context.Product.ToListAsync());
+                }
+                else// (POST) specific path segment selected ([segment]/.../...)
+                {
+                    // get that category by name
+                    Category category = await (from c in _context.Category
+                                                        where c.Name == navigateToCategoryNamed
+                                                        select c).FirstAsync();
+
+                    // build sub-categories
+                    ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveSubMenuAsync(category);
+                    // get category products
+                    ICollection<Product> products = await _navigationService.GetProductsInCategoryAsync(category);
+
+                    ViewBag.TopLevelCategories = categoryViewModels;
+
+                    string[] pathSegments = absoluteNavigationPath.Split("/");
+                    pathSegments = pathSegments.Skip(1).ToArray();// remove empty segment ([empty segment]/[some segment]/...)
+
+                    int parentCategoryIndexInPath = Array.IndexOf(pathSegments, navigateToCategoryNamed);
+                    string newAbsoluteNavigationPath = null;
+                    string parentCategoryName = null;
+
+                    await Task.Run(() =>
+                    {
+                        for (int i = 0; i < pathSegments.Count(); i++)
+                        {
+                            if (i == parentCategoryIndexInPath) parentCategoryName = pathSegments[i];
+                            if (i <= parentCategoryIndexInPath) newAbsoluteNavigationPath += ("/" + pathSegments[i]);
+                        }
+                    });
+                    Category parentCategory = await (from c in _context.Category
+                                                        where c.Name == parentCategoryName
+                                                        select c).FirstAsync();
+
+                    ViewBag.ParentCategoryId = parentCategory.Id;
+                    ViewBag.AbsoluteNavigationPath = newAbsoluteNavigationPath;
+                    ViewBag.CurrentCategoryName = parentCategory.Name;
+
+                    return View(products);
+                }
+            }
+            else// (POST) backward and forward navigation
             {
                 Category currentCategory = await _context.Category.FindAsync(categoryId);
 
@@ -61,7 +103,7 @@ namespace EShop.Controllers
                         ViewBag.ParentCategoryId = null;
                         ViewBag.TopLevelCategories = categoryViewModels;
 
-                        return View(await _context.Product.ToListAsync());                        
+                        return View(await _context.Product.ToListAsync());
                     }
                     else// not a top-level category
                     {
