@@ -22,8 +22,9 @@ namespace EShop.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool showAlert = false) //By default don't show alert about delete success
         {
+            ViewData["show_alert"] = showAlert;
             return View(await _context.Product.ToListAsync());
         }
 
@@ -108,15 +109,15 @@ namespace EShop.Controllers
             IEnumerable<Category> categories = null;
             IEnumerable<int> selectedCategoryIds = null;
 
-            var task = Task.Run( () =>
-            {
-                categories = (from c in _context.Category
-                                  select c).ToList();
+            var task = Task.Run(() =>
+           {
+               categories = (from c in _context.Category
+                             select c).ToList();
 
-                selectedCategoryIds = (from pc in _context.ProductCategory
-                                           where pc.ProductId == product.Id
-                                           select pc.CategoryId).ToList();
-            });
+               selectedCategoryIds = (from pc in _context.ProductCategory
+                                      where pc.ProductId == product.Id
+                                      select pc.CategoryId).ToList();
+           });
             task.Wait();
 
             model.Product = product;
@@ -140,15 +141,15 @@ namespace EShop.Controllers
                 try
                 {
                     IEnumerable<ProductCategory> relatedProductCategories = null;
-                    var task = Task.Run( () =>
-                    {
-                        relatedProductCategories = (from pc in _context.ProductCategory
-                                                    where pc.ProductId == model.Product.Id
-                                                    select pc).ToList();
-                    });
+                    var task = Task.Run(() =>
+                   {
+                       relatedProductCategories = (from pc in _context.ProductCategory
+                                                   where pc.ProductId == model.Product.Id
+                                                   select pc).ToList();
+                   });
                     task.Wait();
 
-                    foreach(var pc in relatedProductCategories)
+                    foreach (var pc in relatedProductCategories)
                     {
                         _context.Remove(pc);
                     };
@@ -208,7 +209,7 @@ namespace EShop.Controllers
             var product = await _context.Product.SingleOrDefaultAsync(m => m.Id == id);
             _context.Product.Remove(product);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { showAlert = true });
         }
 
         private bool ProductExists(int id)
@@ -216,21 +217,25 @@ namespace EShop.Controllers
             return _context.Product.Any(e => e.Id == id);
         }
 
-        //Denis product description changes
+
+
+        //Denis product description changes BELOW
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ManageProperties(int productId)
+        public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
-            ViewData["product_Id"] = productId; //To retrieve it in view
-            return View(await _context.ProductDetails.Where(p => p.ProductId == productId).ToListAsync());
+            ViewData["product_Id"] = id; //To retrieve it in view
+            ViewData["show_alert"] = showAlert;
+            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
 
         [Authorize(Roles = "Admin")]
-        public IActionResult AddProperty(int productId)
+        public IActionResult AddProperty(int productId) //Add Property view
         {
             ViewData["product_Id"] = productId;
             return View();
         }
 
+        //Add property action
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -241,9 +246,49 @@ namespace EShop.Controllers
                 //productDetails.ProductId = productId;
                 _context.Add(productDetails);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(ManageProperties), 3);
+                return RedirectToAction(nameof(ManageProperties), new { id = productId });
             }
             return View(productDetails);
         }
+
+        /* //Delete product property page
+         [Authorize(Roles = "Admin")]
+         public async Task<IActionResult> DeleteProperty(int? propertyId)
+         {
+
+             if (propertyId == null)
+             {
+                 return NotFound();
+             }
+
+             var property = await _context.ProductDetails.SingleOrDefaultAsync(p => p.Id == propertyId);
+
+             if (property == null)
+             {
+                 return NotFound();
+             }
+
+             return View(property);
+         }
+
+         //Method to delete property
+         [HttpPost, ActionName("Delete")]
+         [Authorize(Roles = "Admin")]
+         [ValidateAntiForgeryToken]
+         public async Task<IActionResult> DeletePropertyConfirmed(int propertyId)
+         {
+             ProductDetails property = await _context.ProductDetails.SingleOrDefaultAsync(p => p.Id == propertyId);
+
+             if (property == null)
+             {
+                 return NotFound();
+             }
+
+             int productId = property.ProductId;
+             //var productDetail = await _context.ProductDetails.SingleOrDefaultAsync(pd => pd.Id == productId);
+             _context.ProductDetails.Remove(property);
+             await _context.SaveChangesAsync();
+             return RedirectToAction(nameof(ManageProperties), new { id = productId }); //showAlert = true });
+         }*/
     }
 }

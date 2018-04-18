@@ -30,9 +30,34 @@
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
-                    <a asp-action="DeleteProperty" asp-route-id="@item.Id">Delete Property</a>
+                   <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->                   
+                    <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
+                    <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<div class="alert alert-success" role="alert">
+    This is a success alert with <a href="#" class="alert-link">an example link</a>. Give it a click if you like.
+</div>
+
+<p>does it shows?</p>
+
+@if (Convert.ToBoolean(ViewData["show_alert"]) == true)
+{
+<div class="alert alert-success" role="alert">
+    <a href="#" class="close" data-dismiss="alert">&times;</a>
+    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+</div>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+    });
+</script>
+
+<!-- <div class="alert alert-success" id="alert" role="alert">
+    This is a success alert—check it out!
+</div> -->
