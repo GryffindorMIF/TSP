@@ -73,15 +73,18 @@ namespace EShop.Controllers
                         Price = model.Product.Price
                     };
                     _context.Add(product);
-
-                    foreach (int categoryId in model.SelectedCategoryIds)
+                    // TODO: Cia pakeiciau kad veiktu ir kuriant produkta be kategoriju. Ar taip turi but ar atstatyt atgal?
+                    if (model.SelectedCategoryIds != null)
                     {
-                        ProductCategory productCategory = new ProductCategory
+                        foreach (int categoryId in model.SelectedCategoryIds)
                         {
-                            ProductId = product.Id,
-                            CategoryId = categoryId
-                        };
-                        _context.Add(productCategory);
+                            ProductCategory productCategory = new ProductCategory
+                            {
+                                ProductId = product.Id,
+                                CategoryId = categoryId
+                            };
+                            _context.Add(productCategory);
+                        }
                     }
                 });
                 await _context.SaveChangesAsync();
