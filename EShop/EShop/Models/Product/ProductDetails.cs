@@ -18,6 +18,7 @@ namespace EShop.Models
         [Required(ErrorMessage = "The description is required.")]
         [MaxLength(200)]
         public string Description { get; set; }
+        [Required]
         [ForeignKey("Product")]
         public int ProductId { get; set; }
     }

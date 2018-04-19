@@ -227,6 +227,14 @@ namespace EShop.Controllers
             {
                 int? cartid = HttpContext.Session.GetInt32("cartid");
 
+                if (!cartid.HasValue)
+                {
+                    ShoppingCart shoppingCart = new ShoppingCart();
+                    _context.ShoppingCart.Add(shoppingCart);
+                    await _context.SaveChangesAsync();
+                    cartid = shoppingCart.Id;
+                }
+
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

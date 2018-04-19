@@ -13,9 +13,11 @@ namespace EShop.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
 
+        [Required]
         [ForeignKey("ShoppingCartId")]
         public virtual ShoppingCart ShoppingCart { get; set; }
         public int Quantity { get; set; }

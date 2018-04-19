@@ -14,6 +14,7 @@ namespace EShop.Models
         public int Id { get; set; }
         public string ImageUrl { get; set; }
 
+        [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
     }

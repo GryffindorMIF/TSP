@@ -57,7 +57,8 @@ namespace EShop.Data.Migrations
 
                     b.Property<string>("SecurityStamp");
 
-                    b.Property<int?>("ShoppingCartId");
+                    b.Property<int?>("ShoppingCartId")
+                        .IsRequired();
 
                     b.Property<bool>("TwoFactorEnabled");
 
@@ -184,7 +185,8 @@ namespace EShop.Data.Migrations
 
                     b.Property<string>("ImageUrl");
 
-                    b.Property<int?>("ProductId");
+                    b.Property<int?>("ProductId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -208,11 +210,13 @@ namespace EShop.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("ProductId");
+                    b.Property<int?>("ProductId")
+                        .IsRequired();
 
                     b.Property<int>("Quantity");
 
-                    b.Property<int?>("ShoppingCartId");
+                    b.Property<int?>("ShoppingCartId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -348,18 +352,21 @@ namespace EShop.Data.Migrations
                 {
                     b.HasOne("EShop.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("EShop.Models.ShoppingCartProduct", b =>
                 {
                     b.HasOne("EShop.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
                         .WithMany()
-                        .HasForeignKey("ShoppingCartId");
+                        .HasForeignKey("ShoppingCartId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
