@@ -67,14 +67,16 @@ namespace EShop.Controllers
             { 
                 var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
 
-                var ShoppingCartProducts = from scp in _context.ShoppingCartProduct
+
+                //Removed since with ondelete cascade, this is no longer needed
+                /*var ShoppingCartProducts = from scp in _context.ShoppingCartProduct
                                            where scp.ShoppingCart.Id == shoppingCart.Id
                                            select scp;
 
                 foreach (ShoppingCartProduct scp in ShoppingCartProducts)
                 {
                     _context.ShoppingCartProduct.Remove(scp);
-                }
+                }*/
 
                 _context.ShoppingCart.Remove(shoppingCart);
 
