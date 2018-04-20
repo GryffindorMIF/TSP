@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using EShop.Util;
 
 namespace EShop.Controllers
 {
@@ -31,22 +32,22 @@ namespace EShop.Controllers
         {
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart);
+            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
 
             return View(productsInCart);
         }
 
         private async Task<ShoppingCart> GetCartAsync()
         {
+            ShoppingCart shoppingCart = null;
+
             // Get current user
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            ShoppingCart shoppingCart = null;
-
             if (user != null)
             {
-                if (User.Identity.IsAuthenticated)
-                {
+                //if (User.Identity.IsAuthenticated)
+                //{
                     if (user.ShoppingCartId != null)
                         shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
                     if (shoppingCart == null)
@@ -57,23 +58,8 @@ namespace EShop.Controllers
                         user.ShoppingCartId = shoppingCart.Id;
                         await _context.SaveChangesAsync();
                     }
-                }
-                else return null;
-            }
-            else
-            {
-                if (!HttpContext.Session.IsAvailable)
-                    await HttpContext.Session.LoadAsync();
-                int? cartid = HttpContext.Session.GetInt32("cartid");
-                if (cartid.HasValue)
-                    shoppingCart = await _context.ShoppingCart.FindAsync(cartid);
-                else
-                {
-                    shoppingCart = new ShoppingCart();
-                    _context.ShoppingCart.Add(shoppingCart);
-                    await _context.SaveChangesAsync();
-                    HttpContext.Session.SetInt32("cartid", shoppingCart.Id);
-                }
+                //}
+                //else return null;
             }
             return shoppingCart;
         }
@@ -85,7 +71,7 @@ namespace EShop.Controllers
 
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity);
+            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
             return Json(resultCode);// AJAX handles pop-up modal based on this return
         }
 
@@ -94,7 +80,7 @@ namespace EShop.Controllers
             ShoppingCart shoppingCart = await GetCartAsync();
 
             Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
-            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation);
+            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation, HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
         }
@@ -104,7 +90,7 @@ namespace EShop.Controllers
             ShoppingCart shoppingCart = await GetCartAsync();
 
             Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
-            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart);
+            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart, HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
         }

@@ -1,5 +1,6 @@
 ﻿using EShop.Data;
 using EShop.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -7,158 +8,197 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Util;
 
 namespace EShop.Business
 {
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ShoppingCartService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ShoppingCartService(ApplicationDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
-        public async Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart)
+        public async Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart, ISession session)
         {
             IQueryable<ProductInCartViewModel> productsInCart = null;
             if (shoppingCart != null)
+            {
                 await Task.Run(() =>
                 {
                     productsInCart = from p in _context.Product
-                                         join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
-                                         join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
-                                         where sc.Id == shoppingCart.Id
+                                     join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
+                                     join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
+                                     where sc.Id == shoppingCart.Id
                                      select new ProductInCartViewModel
-                                         {
-                                             Name = p.Name,
-                                             Price = p.Price,
-                                             Quantity = scp.Quantity,
-                                             TotalPrice = scp.Quantity * p.Price
-                                         };
+                                     {
+                                         Name = p.Name,
+                                         Price = p.Price,
+                                         Quantity = scp.Quantity,
+                                         TotalPrice = scp.Quantity * p.Price
+                                     };
                 });
+            }
+            else
+            {
+                var sessionProducts = await session.GetSessionProductsAsync();
+                productsInCart = (from sp in sessionProducts
+                                  join p in _context.Product on sp.ID equals p.Id
+                                  select new ProductInCartViewModel
+                                  {
+                                      Name = p.Name,
+                                      Price = p.Price,
+                                      Quantity = sp.Count,
+                                      TotalPrice = sp.Count * p.Price
+                                  }).AsQueryable();
+            }
             return productsInCart;
         }
 
-        public async Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart cart, int quantity)
+        public async Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart cart, int quantity, ISession session)
         {
-            int returnCode = 1;
-            // 0 - success
-            // 1 - error
-
-            await Task.Run(() =>
+            if (cart != null)
             {
-                try
+                int returnCode = 1;
+                // 0 - success
+                // 1 - error
+                await Task.Run(() =>
                 {
-                    // Check if such product has already been added
-                    ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
-                        .Where(scp => scp.Product == product && scp.ShoppingCart == cart)
-                        .FirstOrDefault();
-
-                    // No such product found
-                    if (shoppingCartProduct == null)
+                    try
                     {
-                        shoppingCartProduct = new ShoppingCartProduct
+                        // Check if such product has already been added
+                        ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
+                            .Where(scp => scp.Product == product && scp.ShoppingCart == cart)
+                            .FirstOrDefault();
+
+                        // No such product found
+                        if (shoppingCartProduct == null)
                         {
-                            Product = product,
-                            ShoppingCart = cart,
-                            Quantity = quantity
-                        };
+                            shoppingCartProduct = new ShoppingCartProduct
+                            {
+                                Product = product,
+                                ShoppingCart = cart,
+                                Quantity = quantity
+                            };
+                        }
+                        // Product found: update it
+                        else
+                        {
+                            shoppingCartProduct.ShoppingCart = cart;
+                            shoppingCartProduct.Quantity += quantity;
+                        }
+
+                        _context.Update(shoppingCartProduct);
+
+                        var t2 = Task.Run(
+                            async () =>
+                            {
+                                await _context.SaveChangesAsync();
+                            });
+                        t2.Wait();
+                        returnCode = 0; // success
                     }
-                    // Product found: update it
-                    else
+                    catch (Exception)
                     {
-                        shoppingCartProduct.ShoppingCart = cart;
-                        shoppingCartProduct.Quantity += quantity;
+                        returnCode = 1; // exception
+                                        //throw new Exception(e.ToString());
                     }
-
-                    _context.Update(shoppingCartProduct);
-
-                    var t2 = Task.Run(
-                        async () =>
-                        {
-                            await _context.SaveChangesAsync();
-                        });
-                    t2.Wait();
-                    returnCode = 0; // success
-                }
-                catch (Exception)
-                {
-                    returnCode = 1; // exception
-                    //throw new Exception(e.ToString());
-                }
-            });
-            return returnCode;
+                });
+                return returnCode;
+            }
+            else
+            {
+                await session.AddSessionProductAsync(product.Id, quantity);
+                return 0;
+            }
         }
 
-        public async Task<int> ChangeShoppingCartProductCountAsync(Product product, ShoppingCart shoppingCart, string operation)
+        public async Task<int> ChangeShoppingCartProductCountAsync(Product product, ShoppingCart shoppingCart, string operation, ISession session)
         {
-            int returnCode = 1;
-
-            await Task.Run(() =>
+            if (shoppingCart != null)
             {
-                try
+                int returnCode = 1;
+
+                await Task.Run(() =>
                 {
-                    ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
-                        .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
-                        .FirstOrDefault();
+                    try
+                    {
+                        ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
+                            .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
+                            .FirstOrDefault();
 
-                    //Change
-                    if (operation == "reduce" && shoppingCartProduct.Quantity > 1)
-                        shoppingCartProduct.Quantity--;
-                    else if (operation == "increase")
-                        shoppingCartProduct.Quantity++;
+                        //Change
+                        if (operation == "reduce" && shoppingCartProduct.Quantity > 1)
+                            shoppingCartProduct.Quantity--;
+                        else if (operation == "increase")
+                            shoppingCartProduct.Quantity++;
 
-                    _context.Update(shoppingCartProduct);
-                    _context.Update(shoppingCart);
+                        _context.Update(shoppingCartProduct);
+                        _context.Update(shoppingCart);
 
-                    var t2 = Task.Run(
-                        async () =>
-                        {
-                            await _context.SaveChangesAsync();
-                        });
-                    t2.Wait();
-                    returnCode = 0;
-                }
-                catch (Exception)
-                {
-                    returnCode = 1;
-                }
-            });
-            return returnCode;
+                        var t2 = Task.Run(
+                            async () =>
+                            {
+                                await _context.SaveChangesAsync();
+                            });
+                        t2.Wait();
+                        returnCode = 0;
+                    }
+                    catch (Exception)
+                    {
+                        returnCode = 1;
+                    }
+                });
+                return returnCode;
+            }
+            else
+            {
+                if (operation == "reduce")
+                    await session.AddSessionProductAsync(product.Id, -1);
+                else if (operation == "increase")
+                    await session.AddSessionProductAsync(product.Id, 1);
+                return 0;
+            }
         }
 
-        public async Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart)
+        public async Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart, ISession session)
         {
-            int returnCode = 1;
-
-            await Task.Run(() =>
+            if (shoppingCart != null)
             {
-                try
-                {
-                    ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
-                        .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
-                        .FirstOrDefault();
+                int returnCode = 1;
 
-                    _context.Remove(shoppingCartProduct);
-                    _context.Update(shoppingCart);
-
-                    var t2 = Task.Run(
-                        async () =>
-                        {
-                            await _context.SaveChangesAsync();
-                        });
-                    t2.Wait();
-                    returnCode = 0;
-                }
-                catch (Exception)
+                await Task.Run(() =>
                 {
-                    returnCode = 1;
-                }
-            });
-            return returnCode;
+                    try
+                    {
+                        ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
+                            .Where(scp => scp.Product.Name == product.Name && scp.ShoppingCart == shoppingCart)
+                            .FirstOrDefault();
+
+                        _context.Remove(shoppingCartProduct);
+                        _context.Update(shoppingCart);
+
+                        var t2 = Task.Run(
+                            async () =>
+                            {
+                                await _context.SaveChangesAsync();
+                            });
+                        t2.Wait();
+                        returnCode = 0;
+                    }
+                    catch (Exception)
+                    {
+                        returnCode = 1;
+                    }
+                });
+                return returnCode;
+            }
+            else
+            {
+                return await session.DeleteSessionProductAsync(product.Id) ? 0 : 1;
+            }
         }
     }
 }
