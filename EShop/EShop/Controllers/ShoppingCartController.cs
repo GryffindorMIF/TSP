@@ -45,8 +45,8 @@ namespace EShop.Controllers
 
             if (user != null)
             {
-                if (User.Identity.IsAuthenticated)
-                {
+                //if (User.Identity.IsAuthenticated)
+                //{
                     if (user.ShoppingCartId != null)
                         shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
                     if (shoppingCart == null)
@@ -57,8 +57,8 @@ namespace EShop.Controllers
                         user.ShoppingCartId = shoppingCart.Id;
                         await _context.SaveChangesAsync();
                     }
-                }
-                else return null;
+                //}
+                //else return null;
             }
             else
             {
