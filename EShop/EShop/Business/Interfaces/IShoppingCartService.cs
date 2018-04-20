@@ -1,4 +1,5 @@
 ﻿using EShop.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,10 @@ namespace EShop.Business
 {
     public interface IShoppingCartService
     {
-        Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart);
-        Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart shoppingCart, int quantity);
-        Task<int> ChangeShoppingCartProductCountAsync(Product product, ShoppingCart shoppingCart, string operation);
-        Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart);
+        Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart, ISession session);
+        Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart shoppingCart, int quantity, ISession session);
+        Task<int> ChangeShoppingCartProductCountAsync(Product product, ShoppingCart shoppingCart, string operation, ISession session);
+        Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart, ISession session);
         // 0 - success
         // 1 - error
     }

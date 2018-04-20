@@ -32,8 +32,6 @@ namespace EShop
                 }
             }
 
-            CartRemover.StartService(host);
-
             host.Run();
         }
 

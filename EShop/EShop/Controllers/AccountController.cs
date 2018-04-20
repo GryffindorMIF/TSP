@@ -15,6 +15,7 @@ using EShop.Models.AccountViewModels;
 using EShop.Business;
 using Microsoft.AspNetCore.Http;
 using EShop.Data;
+using EShop.Util;
 
 namespace EShop.Controllers
 {
@@ -225,17 +226,25 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                int? cartid = HttpContext.Session.GetInt32("cartid");
-
-                if (!cartid.HasValue)
+                ShoppingCart shoppingCart = new ShoppingCart();
+                await _context.ShoppingCart.AddAsync(shoppingCart);
+                await _context.SaveChangesAsync();
+                var sessionProducts = await HttpContext.Session.GetSessionProductsAsync();
+                foreach (var sessionProduct in sessionProducts)
                 {
-                    ShoppingCart shoppingCart = new ShoppingCart();
-                    _context.ShoppingCart.Add(shoppingCart);
-                    await _context.SaveChangesAsync();
-                    cartid = shoppingCart.Id;
+                    var shoppingCartProduct = new ShoppingCartProduct
+                    {
+                        Product = _context.Product.AsEnumerable().First(p => { return p.Id == sessionProduct.ID; }),
+                        ShoppingCart = shoppingCart,
+                        Quantity = sessionProduct.Count
+                    };
+                    await _context.ShoppingCartProduct.AddAsync(shoppingCartProduct);
                 }
+                await _context.SaveChangesAsync();
 
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = cartid };
+                HttpContext.Session.ClearProducts();
+
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = shoppingCart.Id };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
