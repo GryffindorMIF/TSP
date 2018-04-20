@@ -132,7 +132,8 @@
                         @Html.DisplayFor(modelItem => item.Value.Name)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.Description)
+                        @Html.DisplayFor(modelItem => item.Value.Description) <br/>
+                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">See product page</a">
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.Price)

@@ -226,7 +226,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
-            ViewData["product_Id"] = id; //To retrieve it in view
+            ViewData["product_id"] = id; //To retrieve it in view
             ViewData["show_alert"] = showAlert;
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
@@ -234,7 +234,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult AddProperty(int productId) //Add Property view
         {
-            ViewData["product_Id"] = productId;
+            ViewData["product_id"] = productId;
             return View();
         }
 

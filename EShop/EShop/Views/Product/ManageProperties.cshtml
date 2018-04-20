@@ -4,9 +4,9 @@
     ViewData["Title"] = "ManageProperties";
 }
 
-<h2>Product properties: product id is @ViewData["product_Id"]</h2>
+<h2>Product properties: product id is @ViewData["product_id"]</h2>
 <p>
-    <a asp-action="AddProperty" asp-route-productId=@ViewData["product_Id"]>Add new property</a>
+    <a asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>Add new property</a>
 </p>
 <table class="table">
     <thead>
@@ -20,7 +20,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_Id"])))
+        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
         {
             <tr>
                 <td>
@@ -39,12 +39,6 @@
     </tbody>
 </table>
 
-<div class="alert alert-success" role="alert">
-    This is a success alert with <a href="#" class="alert-link">an example link</a>. Give it a click if you like.
-</div>
-
-<p>does it shows?</p>
-
 @if (Convert.ToBoolean(ViewData["show_alert"]) == true)
 {
 <div class="alert alert-success" role="alert">
@@ -57,7 +51,3 @@
     $(document).ready(function () {
     });
 </script>
-
-<!-- <div class="alert alert-success" id="alert" role="alert">
-    This is a success alert—check it out!
-</div> -->

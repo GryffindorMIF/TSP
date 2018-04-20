@@ -144,5 +144,16 @@ namespace EShop.Controllers
                 }
             }
         }
+
+        //Denis added product page, not tested yet
+        [AllowAnonymous]
+        public async Task<IActionResult> ProductPage(int id)
+        {
+            Product temp = _context.Product.Where(p => p.Id == id).Single();
+            ViewData["product_id"] = temp.Id;
+            ViewData["product_name"] = temp.Name;
+            ViewData["product_price"] = temp.Price;
+            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
+        }
     }
 }

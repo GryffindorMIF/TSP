@@ -1,0 +1,54 @@
+﻿@model IEnumerable<EShop.Models.ProductDetails>
+
+@{
+    ViewData["Title"] = "ProductPage";
+}
+
+<h2>@ViewData["product_name"] </h2>
+<p>
+    <!-- Placeholder -->
+    <img src="~/images/products/product-image-placeholder.jpg"
+         alt="Mountain View" height="150" width="110" style="float: left; margin-right: 10px; margin-top: 20px;">
+</p>
+<div id="sidebar">
+    <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewData["product_price"]</h3>
+    @if (!this.User.IsInRole("Admin"))
+    {
+        <div>
+            <form id="add-btn-form-@ViewData["product_id"]" style="margin-left: 200px;">
+                Quantity &nbsp<input id="quantity-id-@ViewData["product_id"]" type="number" size="2" min="1" value="1" required="required" />
+                <input id="hidden-id-@ViewData["product_id"]" type="hidden" size="2" value="@ViewData["product_id"]" required="required" />
+                <button id="add-btn-@ViewData["product_id"]" type="submit" class="btn btn-info">
+                    <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
+                </button>
+            </form>
+        </div>
+    }
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Property)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Property)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="alert alert-success" role="alert">
