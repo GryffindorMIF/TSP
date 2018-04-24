@@ -4,48 +4,51 @@
     ViewData["Title"] = "ManageProperties";
 }
 
-<h2>Product properties: product id is @ViewData["product_id"]</h2>
-<p>
-    <a asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>Add new property</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Property)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
-        {
+<div class="sidenav"></div>
+<div class="main">
+    <h2>Product properties: product id is @ViewData["product_id"]</h2>
+    <p>
+        <a asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>Add new property</a>
+    </p>
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Property)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                   <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->                   
-                    <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
-                    <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
-                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.Property)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Property)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
+                        <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
+                        <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-@if (Convert.ToBoolean(ViewData["show_alert"]) == true)
-{
-<div class="alert alert-success" role="alert">
-    <a href="#" class="close" data-dismiss="alert">&times;</a>
-    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+    @if (Convert.ToBoolean(ViewData["show_alert"]) == true)
+    {
+        <div class="alert alert-success" role="alert">
+            <a href="#" class="close" data-dismiss="alert">&times;</a>
+            <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+        </div>
+    }
 </div>
-}
 
 <script type="text/javascript">
     $(document).ready(function () {

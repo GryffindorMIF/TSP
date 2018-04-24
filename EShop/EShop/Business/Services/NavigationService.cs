@@ -18,6 +18,7 @@ namespace EShop.Business
             _context = context;
         }
 
+        
         public async Task<ICollection<Product>> GetProductsInCategoryAsync(Category category)
         {
             ICollection<Product> productsInCategory = null;
@@ -29,6 +30,57 @@ namespace EShop.Business
                                         select p).ToList();
             });
             return productsInCategory;
+        }
+        
+        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage)
+        {
+            ICollection<Product> productsInCategory = null;
+
+            await Task.Run(() =>
+            {
+                if (category != null)
+                {
+                    productsInCategory = (from p in _context.Product
+                                            join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                                            where pc.CategoryId == category.Id
+                                            select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                }
+                else
+                {
+                    productsInCategory = _context.Product.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                }
+            });
+            return productsInCategory;
+        }
+
+        public async Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage)
+        {
+            int productsTotalCount;
+            int pageCount = 0;
+
+            await Task.Run(() =>
+            {
+                if (category != null)
+                {
+                    productsTotalCount = (from p in _context.Product
+                                          join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                                          where pc.CategoryId == category.Id
+                                          select p).Count();
+                }
+                else
+                {
+                    productsTotalCount = _context.Product.Count();
+                }
+
+                pageCount = productsTotalCount / productsPerPage;
+
+                if (productsTotalCount % productsPerPage != 0)
+                {
+                    pageCount++;
+                }
+
+            });
+            return pageCount;
         }
 
         public async Task<List<Category>> GetTopLevelCategoriesAsync()

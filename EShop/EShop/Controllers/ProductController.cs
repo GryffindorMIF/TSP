@@ -74,9 +74,9 @@ namespace EShop.Controllers
                     };
                     _context.Add(product);
                     // TODO: Cia pakeiciau kad veiktu ir kuriant produkta be kategoriju. Ar taip turi but ar atstatyt atgal?
-                    if (model.SelectedCategoryIds != null)
+                    if (model.IdsOfSelectedCategories != null)
                     {
-                        foreach (int categoryId in model.SelectedCategoryIds)
+                        foreach (int categoryId in model.IdsOfSelectedCategories)
                         {
                             ProductCategory productCategory = new ProductCategory
                             {
@@ -157,7 +157,7 @@ namespace EShop.Controllers
                         _context.Remove(pc);
                     };
 
-                    foreach (int categoryId in model.SelectedCategoryIds)
+                    foreach (int categoryId in model.IdsOfSelectedCategories)
                     {
                         ProductCategory productCategory = new ProductCategory
                         {

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using EShop.Business;
+using Microsoft.Extensions.Options;
 
 namespace EShop.Controllers
 {
@@ -19,6 +20,8 @@ namespace EShop.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INavigationService _navigationService;
+        private const int productsPerPage = 3;
+        private const int startingPageNumber = 0;
 
         public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService)
         {
@@ -29,33 +32,42 @@ namespace EShop.Controllers
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? categoryId, bool backToParentCategory, string absoluteNavigationPath, string navigateToCategoryNamed)
+        public async Task<IActionResult> Index(int? categoryId = null,  bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
         {
+            ViewBag.CurrentPageNumber = startingPageNumber;
+            ViewBag.PreviousPageNumber = null;
+            ViewBag.NextPageNumber = 1;
+
+            Category currentCategory = null;
+            ICollection<Product> productsToView = null;// products to return
+            ICollection<Category> selectableCategories = null;// navigation menu
+
             if (categoryId == null)
             {
                 if (navigateToCategoryNamed == null)// (GET)
                 {
-                    ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveMenuAsync();
-                    ViewBag.TopLevelCategories = categoryViewModels;
-                    ViewBag.ParentCategoryId = null;
-                    ViewBag.AbsoluteNavigationPath = null;
+                    // build menu
+                    selectableCategories = await _navigationService.GetTopLevelCategoriesAsync();
 
-                    return View(await _context.Product.ToListAsync());
+                    //ViewBag.ParentCategoryId = null;
+                    //ViewBag.AbsoluteNavigationPath = null;
+                    ViewBag.CurrentCategoryId = categoryId;
+
+                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);                  
                 }
                 else// (POST) specific path segment selected ([segment]/.../...)
                 {
                     // get that category by name
-                    Category category = await (from c in _context.Category
+                    currentCategory = await (from c in _context.Category
                                                         where c.Name == navigateToCategoryNamed
                                                         select c).FirstAsync();
+                    // build menu
+                    selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
 
-                    // build sub-categories
-                    ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveSubMenuAsync(category);
-                    // get category products
-                    ICollection<Product> products = await _navigationService.GetProductsInCategoryAsync(category);
+                    // products to return
+                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(currentCategory, startingPageNumber, productsPerPage);
 
-                    ViewBag.TopLevelCategories = categoryViewModels;
-
+                    // get parent category by absoluteNavigationPath
                     string[] pathSegments = absoluteNavigationPath.Split("/");
                     pathSegments = pathSegments.Skip(1).ToArray();// remove empty segment ([empty segment]/[some segment]/...)
 
@@ -71,27 +83,27 @@ namespace EShop.Controllers
                             if (i <= parentCategoryIndexInPath) newAbsoluteNavigationPath += ("/" + pathSegments[i]);
                         }
                     });
+
                     Category parentCategory = await (from c in _context.Category
                                                         where c.Name == parentCategoryName
-                                                        select c).FirstAsync();
+                                                        select c).FirstAsync();// category name is unique
 
                     ViewBag.ParentCategoryId = parentCategory.Id;
                     ViewBag.AbsoluteNavigationPath = newAbsoluteNavigationPath;
                     ViewBag.CurrentCategoryName = parentCategory.Name;
-
-                    return View(products);
-                }
+                    ViewBag.CurrentCategoryId = currentCategory.Id;
+                }                        
             }
             else// (POST) backward and forward navigation
             {
-                Category currentCategory = await _context.Category.FindAsync(categoryId);
+                currentCategory = await _context.Category.FindAsync(categoryId);
 
                 if (backToParentCategory)// Backward navigation
                 {
                     absoluteNavigationPath = await _navigationService.RemoveLastUriSegmentAsync(absoluteNavigationPath);
                     ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
 
-                    ICollection<CategoryViewModel> categoryViewModels = null;// category and category children
+                    selectableCategories = null;// navigation menu
                     Category parentCategory = null;
 
                     // categories may have multiple parent-categories
@@ -99,11 +111,12 @@ namespace EShop.Controllers
 
                     if (!parentCategories.Any())// already a top-level category
                     {
-                        categoryViewModels = await _navigationService.BuildRecursiveMenuAsync();
-                        ViewBag.ParentCategoryId = null;
-                        ViewBag.TopLevelCategories = categoryViewModels;
+                        selectableCategories = await _navigationService.GetTopLevelCategoriesAsync();
 
-                        return View(await _context.Product.ToListAsync());
+                        ViewBag.ParentCategoryId = null;                    
+                        ViewBag.CurrentCategoryId = currentCategory.Id;
+
+                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
                     }
                     else// not a top-level category
                     {
@@ -116,33 +129,73 @@ namespace EShop.Controllers
                                 break;
                             }
                         }
-                        categoryViewModels = await _navigationService.BuildRecursiveSubMenuAsync(parentCategory);
+                        // build menu
+                        selectableCategories = await _navigationService.GetChildCategoriesAsync(parentCategory);
+
                         ViewBag.CurrentCategoryName = parentCategory.Name;
                         ViewBag.ParentCategoryId = parentCategory.Id;
-                        ViewBag.TopLevelCategories = categoryViewModels;
+                        ViewBag.CurrentCategoryId = parentCategory.Id;
 
-                        return View(await _navigationService.GetProductsInCategoryAsync(parentCategory));
+                        // products to return
+                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(parentCategory, startingPageNumber, productsPerPage);
                     }
                 }
                 else // Forward navigation
                 {
                     // Add new segment to absoluteNavigationPath
                     absoluteNavigationPath += ("/" + currentCategory.Name);
-
-                    ICollection<CategoryViewModel> categoryViewModels = await _navigationService.BuildRecursiveSubMenuAsync(currentCategory);
-
-                    ViewBag.TopLevelCategories = categoryViewModels;
-                    ViewBag.ParentCategoryId = categoryId;
-                    ViewBag.CurrentCategoryName = currentCategory.Name;
                     ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
 
-                    if (categoryId == null)
-                    {
-                        return View(await _context.Product.ToListAsync());
-                    }
-                    else return View(await _navigationService.GetProductsInCategoryAsync(currentCategory));
+                    // build menu
+                    selectableCategories = selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
+
+                    ViewBag.CurrentCategoryName = currentCategory.Name;
+                    ViewBag.ParentCategoryId = categoryId;
+                    ViewBag.CurrentCategoryId = currentCategory.Id;
+
+                    // products to return
+                    if (categoryId == null) productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                    else productsToView = await _navigationService.GetProductsInCategoryByPageAsync(currentCategory, startingPageNumber, productsPerPage);
                 }
             }
+
+            int pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            ViewBag.PageCount = pageCount;
+
+            if (startingPageNumber + 1 < pageCount) ViewBag.NextPageNumber = startingPageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+
+            ViewBag.TopLevelCategories = selectableCategories;
+
+            return View(productsToView);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        {
+            ViewBag.ParentCategoryId = parentCategoryId;
+            ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
+            ViewBag.CurrentCategoryId = categoryId;
+            ViewBag.CurrentPageNumber = pageNumber;
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            Category category = null;
+            if (categoryId != null) category = await _context.Category.FindAsync(categoryId);
+
+            if (category == null) ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+            else
+            {
+                ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
+                ViewBag.CurrentCategoryName = category.Name;
+            }
+
+            ICollection<Product> products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+            return View("Index", products);
         }
 
         //Denis added product page, not tested yet

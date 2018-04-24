@@ -4,57 +4,60 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Manage users</h2>
+<div class="sidenav"></div>
+<div class="main">
+    <h2>Manage users</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.User.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Role)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User.IsSuspended)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.User.Email)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Role)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.User.IsSuspended)
-                </td>
-                <td>
-                    <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
-
-                    @if(!item.User.IsAdmin)
-                    {
-                        <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
-                    }
-                    else
-                    {
-                        <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
-                    }                      
-                    @if (!item.User.IsSuspended)
-                    {
-                        <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
-                    }
-                    else
-                    {
-                        <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
-                    }
-                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Role)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.IsSuspended)
+                </th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Role)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.IsSuspended)
+                    </td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+
+                        @if (!item.User.IsAdmin)
+                        {
+                            <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
+                        }
+                        else
+                        {
+                            <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
+                        }
+                        @if (!item.User.IsSuspended)
+                        {
+                            <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
+                        }
+                        else
+                        {
+                            <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

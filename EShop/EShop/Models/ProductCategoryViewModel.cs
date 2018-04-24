@@ -9,8 +9,8 @@ namespace EShop.Models
     public class ProductCategoryViewModel
     {
         public Product Product { get; set; }
-        
-        public int[] SelectedCategoryIds { get; set; }
+
+        public int[] IdsOfSelectedCategories { get; set; }
         public bool[] IsCategorySelected { get; set; }
         public List<Category> Categories { get; set; }
 

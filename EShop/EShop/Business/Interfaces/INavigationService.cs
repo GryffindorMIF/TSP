@@ -9,6 +9,8 @@ namespace EShop.Business
     public interface INavigationService
     {
         Task<ICollection<Product>> GetProductsInCategoryAsync(Category category);
+        Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage);
+        Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage);
         Task<List<Category>> GetTopLevelCategoriesAsync();
         Task<List<Category>> GetChildCategoriesAsync(Category parentCategory);
         Task<ICollection<CategoryViewModel>> BuildRecursiveMenuAsync();
