@@ -62,12 +62,52 @@
                 </div>
             </form>
         </div>
-    </div>
+        <div class="col-md-1"></div>
+            <div class="col-md-4">
+                <div class="row">
+                    <label class="control-label">Primary image: </label><br>
+                    <a href="~/images/products/@ViewBag.PrimaryImage" target="_blank"><img src="~/images/products/@ViewBag.PrimaryImage" height="150" width="110"></a>
+                </div>
+                <div class="row">
+                    @if (ViewBag.OtherImages.Count > 0)
+            {
+                <hr><label class="control-label">Other images: </label><br>
+    }
+                    @foreach (ProductImage item in ViewBag.OtherImages)
+            {
+                <a href="~/images/products/@item.ImageUrl" target="_blank"><img id="other-image-@item.Id" src="~/images/products/@item.ImageUrl" height="100" width="73"></a>
+    }
+                </div>
+            </div>
+        </div>
 
-    <div>
-        <a asp-action="Index">Back to List</a>
+        <div>
+            <a asp-action="Index">Back to List</a>
+        </div>
     </div>
-</div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var allAdditionalImages = $("img[id^='other-image-']");
+        $("#IdsOfSelectedImages").change(function () {
+
+            var allSelected = $(this).val();
+            console.log(allAdditionalImages[0]);
+            for (var i = 0; i < allAdditionalImages.length; i++)
+            {
+                if (allSelected.includes(allAdditionalImages.eq(i).prop("id").replace("other-image-", ""))) {
+                    $("#" + allAdditionalImages.eq(i).prop("id")).fadeTo(300, 1);
+                }
+                else {
+                    $("#" + allAdditionalImages.eq(i).prop("id")).fadeTo(300, 0.25);
+                }
+                
+            }
+
+        });
+    });
+</script>
     @section Scripts {
         @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     }

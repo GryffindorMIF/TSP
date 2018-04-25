@@ -163,7 +163,8 @@ namespace EShop.Controllers
 
             IEnumerable<Category> categories = null;
             IEnumerable<int> selectedCategoryIds = null;
-            IEnumerable<ProductImage> images = null;
+            List<ProductImage> otherImages = null;
+            List<ProductImage> primaryImages = null;
 
             var task = Task.Run(() =>
            {
@@ -174,16 +175,32 @@ namespace EShop.Controllers
                                       where pc.ProductId == product.Id
                                       select pc.CategoryId).ToList();
 
-               images = (from i in _context.ProductImage
+               otherImages = (from i in _context.ProductImage
                          where i.Product == product
                          where i.IsPrimary == false
                          select i).ToList();
+
+               primaryImages = (from pi in _context.ProductImage
+                                where pi.Product == product
+                                where pi.IsPrimary == true
+                                select pi).ToList();
            });
             task.Wait();
 
             model.Product = product;
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", selectedCategoryIds);
-            model.ImagesToRemoveSelectList = new MultiSelectList(images, "Id", "ImageUrl");
+            model.ImagesToRemoveSelectList = new MultiSelectList(otherImages, "Id", "ImageUrl");
+
+            if (primaryImages.Count > 0)
+            {
+                ViewBag.PrimaryImage = primaryImages[0].ImageUrl;
+            }
+            else
+            {
+                ViewBag.PrimaryImage = "product-image-placeholder.jpg";
+            }
+            ViewBag.OtherImages = otherImages;
+
 
             return View(model);
         }
