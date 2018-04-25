@@ -59,6 +59,7 @@ namespace EShop
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
             services.AddTransient<INavigationService, NavigationService>();
+            services.AddSingleton(Configuration);
             services.AddMvc();
 
             // Set SecurityStampValidator options to immediately update after a change in account's status

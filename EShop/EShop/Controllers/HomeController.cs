@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using EShop.Business;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -20,14 +21,20 @@ namespace EShop.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INavigationService _navigationService;
-        private const int productsPerPage = 3;
+        private readonly int productsPerPage;
+
         private const int startingPageNumber = 0;
 
-        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
             _navigationService = navigationService;
+
+            if(!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
+            {
+                throw new InvalidOperationException("Invalid ProductsConfig:ProductsPerPage in appsettings.json. Not an int value.");
+            }
         }
 
         // GET, POST
