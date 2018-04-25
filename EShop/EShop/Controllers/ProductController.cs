@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
 using EShop.Models;
+using EShop.Util;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +18,12 @@ namespace EShop.Controllers
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHostingEnvironment _appEnvironment;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment)
         {
             _context = context;
+            _appEnvironment = appEnvironment;
         }
 
         [Authorize(Roles = "Admin")]
@@ -73,7 +78,34 @@ namespace EShop.Controllers
                         Price = model.Product.Price
                     };
                     _context.Add(product);
-                    // TODO: Cia pakeiciau kad veiktu ir kuriant produkta be kategoriju. Ar taip turi but ar atstatyt atgal?
+
+                    if (model.PrimaryImage != null)
+                    {
+                        var primaryImagePath = _appEnvironment.UploadImage(model.PrimaryImage);
+                        ProductImage primaryImage = new ProductImage
+                        {
+                            IsPrimary = true,
+                            ImageUrl = primaryImagePath,
+                            Product = product
+                        };
+                        _context.Add(primaryImage);
+                    }
+
+                    if (model.OtherImages != null)
+                    {
+                        foreach (IFormFile image in model.OtherImages)
+                        {
+                            var otherImagePath = _appEnvironment.UploadImage(image);
+                            ProductImage otherImage = new ProductImage
+                            {
+                                IsPrimary = false,
+                                ImageUrl = otherImagePath,
+                                Product = product
+                            };
+                            _context.Add(otherImage);
+                        }
+                    }
+
                     if (model.IdsOfSelectedCategories != null)
                     {
                         foreach (int categoryId in model.IdsOfSelectedCategories)
@@ -111,6 +143,7 @@ namespace EShop.Controllers
 
             IEnumerable<Category> categories = null;
             IEnumerable<int> selectedCategoryIds = null;
+            IEnumerable<ProductImage> images = null;
 
             var task = Task.Run(() =>
            {
@@ -120,11 +153,17 @@ namespace EShop.Controllers
                selectedCategoryIds = (from pc in _context.ProductCategory
                                       where pc.ProductId == product.Id
                                       select pc.CategoryId).ToList();
+
+               images = (from i in _context.ProductImage
+                         where i.Product == product
+                         where i.IsPrimary == false
+                         select i).ToList();
            });
             task.Wait();
 
             model.Product = product;
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", selectedCategoryIds);
+            model.ImagesToRemoveSelectList = new MultiSelectList(images, "Id", "ImageUrl");
 
             return View(model);
         }
@@ -144,27 +183,90 @@ namespace EShop.Controllers
                 try
                 {
                     IEnumerable<ProductCategory> relatedProductCategories = null;
+                    List<ProductImage> possiblePrimaryImages = null;
+                    List<ProductImage> possibleOtherImages = null;
                     var task = Task.Run(() =>
                    {
                        relatedProductCategories = (from pc in _context.ProductCategory
                                                    where pc.ProductId == model.Product.Id
                                                    select pc).ToList();
+
+                       if (model.PrimaryImage != null)
+                       {
+                           possiblePrimaryImages = (from pi in _context.ProductImage
+                                                   where pi.Product == model.Product
+                                                   where pi.IsPrimary == true
+                                                   select pi).ToList();
+                       }
+
+                       if (model.IdsOfSelectedImages != null)
+                       {
+                           //TODO: Select the selected
+                           possibleOtherImages = (from oi in _context.ProductImage
+                                                  where oi.Product == model.Product
+                                                  select oi).ToList();
+                       }
                    });
                     task.Wait();
+
+                    //New primary image
+                    if (possiblePrimaryImages != null && possiblePrimaryImages.Count > 0)
+                    {
+                        var primaryImagePath = _appEnvironment.UploadImage(model.PrimaryImage);
+                        ProductImage primaryImage = new ProductImage
+                        {
+                            IsPrimary = true,
+                            ImageUrl = primaryImagePath,
+                            Product = model.Product
+                        };
+                        _appEnvironment.DeleteImage(possiblePrimaryImages[0].ImageUrl);
+                        _context.Remove(possiblePrimaryImages[0]);
+                        _context.Add(primaryImage);
+                    }
+
+                    //New additional images
+                    if (model.OtherImages != null)
+                    {
+                        foreach (IFormFile image in model.OtherImages)
+                        {
+                            var otherImagePath = _appEnvironment.UploadImage(image);
+                            ProductImage otherImage = new ProductImage
+                            {
+                                IsPrimary = false,
+                                ImageUrl = otherImagePath,
+                                Product = model.Product
+                            };
+                            _context.Add(otherImage);
+                        }
+                    }
+
+                    //Remove old images
+                    if (possibleOtherImages != null && possibleOtherImages.Count > 0)
+                    {
+                        foreach (ProductImage image in possibleOtherImages)
+                        {
+                            _appEnvironment.DeleteImage(image.ImageUrl);
+                            _context.Remove(image);
+                        }
+                    }
+
 
                     foreach (var pc in relatedProductCategories)
                     {
                         _context.Remove(pc);
                     };
 
-                    foreach (int categoryId in model.IdsOfSelectedCategories)
+                    if (model.IdsOfSelectedCategories != null)
                     {
-                        ProductCategory productCategory = new ProductCategory
+                        foreach (int categoryId in model.IdsOfSelectedCategories)
                         {
-                            ProductId = model.Product.Id,
-                            CategoryId = categoryId
-                        };
-                        _context.Update(productCategory);
+                            ProductCategory productCategory = new ProductCategory
+                            {
+                                ProductId = model.Product.Id,
+                                CategoryId = categoryId
+                            };
+                            _context.Update(productCategory);
+                        }
                     }
 
                     _context.Update(model.Product);
@@ -210,6 +312,25 @@ namespace EShop.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Product.SingleOrDefaultAsync(m => m.Id == id);
+            List<ProductImage> images = null; 
+            await Task.Run(() =>
+            {
+                images = (from oi in _context.ProductImage
+                          where oi.Product == product
+                          select oi).ToList();
+            });
+
+            //Remove images
+            if (images != null && images.Count > 0)
+            {
+                foreach (ProductImage image in images)
+                {
+                    _appEnvironment.DeleteImage(image.ImageUrl);
+                    _context.Remove(image);
+                }
+            }
+
+
             _context.Product.Remove(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index), new { showAlert = true });

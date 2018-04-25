@@ -12,7 +12,7 @@
     <hr />
     <div class="row">
         <div class="col-md-4">
-            <form asp-action="Create">
+            <form asp-action="Create" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Product.Name" class="control-label"></label>
@@ -32,6 +32,14 @@
                 <div class="form-group">
                     <label class="control-label">Select categories (ctrl + click)</label> <br />
                     <select asp-for="IdsOfSelectedCategories" class="form-control" asp-items="Model.CategoryMultiSelectList"></select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Primary image: </label> <br />
+                    <input asp-for="PrimaryImage" class="form-control"></input>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Other images: </label> <br />
+                    <input asp-for="OtherImages" class="form-control" multiple></input>
                 </div>
                 <div class="form-group">
                     <input type="submit" value="Create" class="btn btn-default" />

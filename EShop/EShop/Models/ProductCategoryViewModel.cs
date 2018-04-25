@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace EShop.Models
         public List<Category> Categories { get; set; }
 
         public MultiSelectList CategoryMultiSelectList { get; set; }
-        
+
+        public IFormFile PrimaryImage { get; set; }
+
+        public int[] IdsOfSelectedImages { get; set; }
+        public List<IFormFile> OtherImages { get; set; }
+        public MultiSelectList ImagesToRemoveSelectList { get; set; }
     }
 }
