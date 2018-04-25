@@ -82,13 +82,21 @@ namespace EShop.Controllers
                     if (model.PrimaryImage != null)
                     {
                         var primaryImagePath = _appEnvironment.UploadImage(model.PrimaryImage);
-                        ProductImage primaryImage = new ProductImage
+                        if (primaryImagePath != null)
                         {
-                            IsPrimary = true,
-                            ImageUrl = primaryImagePath,
-                            Product = product
-                        };
-                        _context.Add(primaryImage);
+                            ProductImage primaryImage = new ProductImage
+                            {
+                                IsPrimary = true,
+                                ImageUrl = primaryImagePath,
+                                Product = product
+                            };
+                            _context.Add(primaryImage);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "Primary image file is not an image.");
+                            return;
+                        }
                     }
 
                     if (model.OtherImages != null)
@@ -96,13 +104,21 @@ namespace EShop.Controllers
                         foreach (IFormFile image in model.OtherImages)
                         {
                             var otherImagePath = _appEnvironment.UploadImage(image);
-                            ProductImage otherImage = new ProductImage
+                            if (otherImagePath != null)
                             {
-                                IsPrimary = false,
-                                ImageUrl = otherImagePath,
-                                Product = product
-                            };
-                            _context.Add(otherImage);
+                                ProductImage otherImage = new ProductImage
+                                {
+                                    IsPrimary = false,
+                                    ImageUrl = otherImagePath,
+                                    Product = product
+                                };
+                                _context.Add(otherImage);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError(string.Empty, "One of the additional image files is not an image.");
+                                return;
+                            }
                         }
                     }
 
@@ -119,6 +135,10 @@ namespace EShop.Controllers
                         }
                     }
                 });
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -201,7 +221,6 @@ namespace EShop.Controllers
 
                        if (model.IdsOfSelectedImages != null)
                        {
-                           //TODO: Select the selected
                            possibleOtherImages = (from oi in _context.ProductImage
                                                   where oi.Product == model.Product
                                                   select oi).ToList();
@@ -213,15 +232,24 @@ namespace EShop.Controllers
                     if (possiblePrimaryImages != null && possiblePrimaryImages.Count > 0)
                     {
                         var primaryImagePath = _appEnvironment.UploadImage(model.PrimaryImage);
-                        ProductImage primaryImage = new ProductImage
+                        if (primaryImagePath != null)
                         {
-                            IsPrimary = true,
-                            ImageUrl = primaryImagePath,
-                            Product = model.Product
-                        };
-                        _appEnvironment.DeleteImage(possiblePrimaryImages[0].ImageUrl);
-                        _context.Remove(possiblePrimaryImages[0]);
-                        _context.Add(primaryImage);
+                            ProductImage primaryImage = new ProductImage
+                            {
+                                IsPrimary = true,
+                                ImageUrl = primaryImagePath,
+                                Product = model.Product
+                            };
+                            _appEnvironment.DeleteImage(possiblePrimaryImages[0].ImageUrl);
+                            _context.Remove(possiblePrimaryImages[0]);
+                            _context.Add(primaryImage);
+                        }
+                        // TODO: Change from silently failing to failing normally without bugging out the edit view (no relation based data populated)
+                        /*else
+                        {
+                            ModelState.AddModelError(string.Empty, "Primary image file is not an image.");
+                            return View(model);
+                        }*/
                     }
 
                     //New additional images
@@ -230,13 +258,22 @@ namespace EShop.Controllers
                         foreach (IFormFile image in model.OtherImages)
                         {
                             var otherImagePath = _appEnvironment.UploadImage(image);
-                            ProductImage otherImage = new ProductImage
+                            if (otherImagePath != null)
                             {
-                                IsPrimary = false,
-                                ImageUrl = otherImagePath,
-                                Product = model.Product
-                            };
-                            _context.Add(otherImage);
+                                ProductImage otherImage = new ProductImage
+                                {
+                                    IsPrimary = false,
+                                    ImageUrl = otherImagePath,
+                                    Product = model.Product
+                                };
+                                _context.Add(otherImage);
+                            }
+                            // TODO: Change from silently failing to failing normally without bugging out the edit view (no relation based data populated)
+                            /*else
+                            {
+                                ModelState.AddModelError(string.Empty, "One of the additional image files is not an image.");
+                                return View(model);
+                            }*/
                         }
                     }
 
