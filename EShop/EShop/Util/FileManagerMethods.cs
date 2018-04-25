@@ -10,11 +10,11 @@ namespace EShop.Util
 {
     public static class FileManagerMethods
     {
-        public static async Task<string> UploadImageAsync(this IHostingEnvironment appEnvironment, IFormFile file)
+        public static async Task<string> UploadImageAsync(this IHostingEnvironment appEnvironment, IFormFile file, int uploadMaxByteSize = -1)
         {
             var uploads = Path.Combine(appEnvironment.WebRootPath, "images\\products");
-            if (file.Length > 0 && (Path.GetExtension(file.FileName).ToLower() == ".jpg" || Path.GetExtension(file.FileName).ToLower() == ".png" || 
-                Path.GetExtension(file.FileName).ToLower() == ".gif" || Path.GetExtension(file.FileName).ToLower() == ".jpeg"))
+            if (file.Length > 0 && (file.Length < uploadMaxByteSize || uploadMaxByteSize < 0) && (Path.GetExtension(file.FileName).ToLower() == ".jpg" || 
+                Path.GetExtension(file.FileName).ToLower() == ".png" || Path.GetExtension(file.FileName).ToLower() == ".gif" || Path.GetExtension(file.FileName).ToLower() == ".jpeg"))
             {
                 var fileName = Guid.NewGuid().ToString().Replace("-","") + Path.GetExtension(file.FileName).ToLower();
                 using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))

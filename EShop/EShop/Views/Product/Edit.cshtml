@@ -11,7 +11,7 @@
     <h4>Product</h4>
     <hr />
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <form asp-action="Edit" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" asp-for="Product.Id" />
@@ -42,11 +42,11 @@
 
                 </div>
                 <div class="form-group">
-                    <label class="control-label">Primary image: </label> <br />
+                    <label class="control-label">Primary image (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
                     <input asp-for="PrimaryImage" class="form-control"></input>
                 </div>
                 <div class="form-group">
-                    <label class="control-label">Other images: </label> <br />
+                    <label class="control-label">Other images (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
                     <input asp-for="OtherImages" class="form-control" multiple></input>
                 </div>
                 <div class="form-group">

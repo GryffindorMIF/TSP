@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -19,11 +20,17 @@ namespace EShop.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly int uploadMaxByteSize;
 
-        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment)
+        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration)
         {
             _context = context;
             _appEnvironment = appEnvironment;
+            if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
+            {
+                throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
+            }
+
         }
 
         [Authorize(Roles = "Admin")]
@@ -59,6 +66,8 @@ namespace EShop.Controllers
                               select c).ToList();
 
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name");
+
+            ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
             return View(model);
         }
 
@@ -81,7 +90,7 @@ namespace EShop.Controllers
 
                     if (model.PrimaryImage != null)
                     {
-                        var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage).GetAwaiter().GetResult();
+                        var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage, uploadMaxByteSize).GetAwaiter().GetResult();
                         if (primaryImagePath != null)
                         {
                             ProductImage primaryImage = new ProductImage
@@ -94,7 +103,7 @@ namespace EShop.Controllers
                         }
                         else
                         {
-                            ModelState.AddModelError(string.Empty, "Primary image file is not an image.");
+                            ModelState.AddModelError(string.Empty, "Primary image does not match the file requirements.");
                             return;
                         }
                     }
@@ -103,7 +112,7 @@ namespace EShop.Controllers
                     {
                         foreach (IFormFile image in model.OtherImages)
                         {
-                            var otherImagePath = _appEnvironment.UploadImageAsync(image).GetAwaiter().GetResult(); ;
+                            var otherImagePath = _appEnvironment.UploadImageAsync(image, uploadMaxByteSize).GetAwaiter().GetResult(); ;
                             if (otherImagePath != null)
                             {
                                 ProductImage otherImage = new ProductImage
@@ -116,7 +125,7 @@ namespace EShop.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError(string.Empty, "One of the additional image files is not an image.");
+                                ModelState.AddModelError(string.Empty, "One of the additional image files doesn't match the file requirements.");
                                 return;
                             }
                         }
@@ -137,6 +146,7 @@ namespace EShop.Controllers
                 });
                 if (!ModelState.IsValid)
                 {
+                    ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
                     return View(model);
                 }
                 await _context.SaveChangesAsync();
@@ -200,7 +210,7 @@ namespace EShop.Controllers
                 ViewBag.PrimaryImage = "product-image-placeholder.jpg";
             }
             ViewBag.OtherImages = otherImages;
-
+            ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
 
             return View(model);
         }
@@ -249,7 +259,7 @@ namespace EShop.Controllers
                     //New primary image
                     if (model.PrimaryImage != null)
                     {
-                        var primaryImagePath = await _appEnvironment.UploadImageAsync(model.PrimaryImage);
+                        var primaryImagePath = await _appEnvironment.UploadImageAsync(model.PrimaryImage, uploadMaxByteSize);
                         if (primaryImagePath != null)
                         {
                             ProductImage primaryImage = new ProductImage
@@ -278,7 +288,7 @@ namespace EShop.Controllers
                     {
                         foreach (IFormFile image in model.OtherImages)
                         {
-                            var otherImagePath = await _appEnvironment.UploadImageAsync(image);
+                            var otherImagePath = await _appEnvironment.UploadImageAsync(image, uploadMaxByteSize);
                             if (otherImagePath != null)
                             {
                                 ProductImage otherImage = new ProductImage
