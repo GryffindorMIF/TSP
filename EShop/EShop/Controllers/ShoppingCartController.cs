@@ -94,5 +94,18 @@ namespace EShop.Controllers
 
             return RedirectToAction("Index", "ShoppingCart");
         }
+        
+        [HttpGet]
+        public async Task AddSessionProductsToCartAsync()
+        {
+            var shoppingCart = await GetCartAsync();
+            await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
+        }
+
+        [HttpGet]
+        public void DiscardSessionProducts()
+        {
+            HttpContext.Session.ClearProducts();
+        }
     }
 }

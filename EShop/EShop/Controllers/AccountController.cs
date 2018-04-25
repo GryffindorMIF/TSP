@@ -28,19 +28,22 @@ namespace EShop.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IShoppingCartService _shoppingCartService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            ApplicationDbContext context)
+            ApplicationDbContext context, 
+            IShoppingCartService shoppingCartService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
             _context = context;
+            _shoppingCartService = shoppingCartService;
         }
 
         [TempData]
@@ -229,20 +232,8 @@ namespace EShop.Controllers
                 ShoppingCart shoppingCart = new ShoppingCart();
                 await _context.ShoppingCart.AddAsync(shoppingCart);
                 await _context.SaveChangesAsync();
-                var sessionProducts = await HttpContext.Session.GetSessionProductsAsync();
-                foreach (var sessionProduct in sessionProducts)
-                {
-                    var shoppingCartProduct = new ShoppingCartProduct
-                    {
-                        Product = _context.Product.AsEnumerable().First(p => { return p.Id == sessionProduct.ID; }),
-                        ShoppingCart = shoppingCart,
-                        Quantity = sessionProduct.Count
-                    };
-                    await _context.ShoppingCartProduct.AddAsync(shoppingCartProduct);
-                }
-                await _context.SaveChangesAsync();
 
-                HttpContext.Session.ClearProducts();
+                await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
 
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = shoppingCart.Id };
 

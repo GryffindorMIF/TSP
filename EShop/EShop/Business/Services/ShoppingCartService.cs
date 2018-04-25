@@ -43,15 +43,14 @@ namespace EShop.Business
             }
             else
             {
-                var sessionProducts = await session.GetSessionProductsAsync();
-                productsInCart = (from sp in sessionProducts
-                                  join p in _context.Product on sp.ID equals p.Id
+                var products = await session.GetProductsAsync(_context);
+                productsInCart = (from p in products
                                   select new ProductInCartViewModel
                                   {
-                                      Name = p.Name,
-                                      Price = p.Price,
-                                      Quantity = sp.Count,
-                                      TotalPrice = sp.Count * p.Price
+                                      Name = p.Product.Name,
+                                      Price = p.Product.Price,
+                                      Quantity = p.Count,
+                                      TotalPrice = p.Count * p.Product.Price
                                   }).AsQueryable();
             }
             return productsInCart;

@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EShop.Business;
+using EShop.Data;
+using EShop.Models;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,20 +12,41 @@ namespace EShop.Util
 {
     public static class SessionExtMethods
     {
-        public struct SessionProducts
+        public const string PRODUCTS_KEY = "products";
+
+        private struct SessionProducts
         {
             public int ID { get; set; }
             public int Count { get; set; }
         }
 
-        public static async Task<List<SessionProducts>> GetSessionProductsAsync(this ISession session)
+        public struct Products
+        {
+            public Product Product { get; set; }
+            public int Count { get; set; }
+        }
+
+        private static async Task<List<SessionProducts>> GetSessionProductsAsync(this ISession session)
         {
             if (session.IsAvailable)
                 await session.LoadAsync();
-            string products = session.GetString("products");
+            string products = session.GetString(PRODUCTS_KEY);
             if (string.IsNullOrWhiteSpace(products))
                 return new List<SessionProducts>();
             return JsonConvert.DeserializeObject<List<SessionProducts>>(products);
+        }
+
+        public static async Task<List<Products>> GetProductsAsync(this ISession session, ApplicationDbContext context)
+        {
+            List<Products> products = new List<Products>();
+            List<SessionProducts> sessionProducts = await session.GetSessionProductsAsync();
+
+            products = (from sp in sessionProducts
+                        join p in context.Product on sp.ID equals p.Id
+                        select new Products { Product = p, Count = sp.Count }
+                        ).ToList();
+
+            return products;
         }
 
         public static async Task AddSessionProductAsync(this ISession session, int productId, int count)
@@ -58,12 +82,22 @@ namespace EShop.Util
 
         public static void ClearProducts(this ISession session)
         {
-            session.Remove("products");
+            session.Remove(PRODUCTS_KEY);
         }
 
         private static void SaveSessionProducts(this ISession session, List<SessionProducts> products)
         {
-            session.SetString("products", JsonConvert.SerializeObject(products));
+            if (products.Count == 0)
+                session.Remove(PRODUCTS_KEY);
+            else session.SetString(PRODUCTS_KEY, JsonConvert.SerializeObject(products));
+        }
+
+        public static async Task TransferSessionProductsToCartAsync(this ISession session, ShoppingCart shoppingCart, ApplicationDbContext context, IShoppingCartService shoppingCartService)
+        {
+            var products = await session.GetProductsAsync(context);
+            foreach (var product in products)
+                await shoppingCartService.AddProductToShoppingCartAsync(product.Product, shoppingCart, product.Count, session);
+            session.ClearProducts();
         }
     }
 }
