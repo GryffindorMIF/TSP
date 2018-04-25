@@ -46,16 +46,16 @@
                     <input asp-for="PrimaryImage" class="form-control"></input>
                 </div>
                 <div class="form-group">
+                    <label class="control-label">Other images: </label> <br />
+                    <input asp-for="OtherImages" class="form-control" multiple></input>
+                </div>
+                <div class="form-group">
                     <label class="control-label">Select images to remove (ctrl + click): </label>
 
                     <select asp-for="IdsOfSelectedImages"
                             class="form-control"
                             asp-items="@Model.ImagesToRemoveSelectList"></select>
 
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Other images: </label> <br />
-                    <input asp-for="OtherImages" class="form-control" multiple></input>
                 </div>
                 <div class="form-group">
                     <input type="submit" value="Save" class="btn btn-default" />
