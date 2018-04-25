@@ -174,6 +174,30 @@ namespace EShop.Controllers
 
             ViewBag.TopLevelCategories = selectableCategories;
 
+            String[] allPrimaryImageLinks = new String[productsToView.Count];
+            
+            await Task.Run(() =>
+            {
+                var listProducts = productsToView.ToList();
+                for (int i = 0; i < listProducts.Count; i++)
+                {
+                    List<ProductImage> primaryImage = (from pi in _context.ProductImage
+                                                      where pi.IsPrimary
+                                                      where pi.Product == listProducts[i]
+                                                       select pi).ToList();
+                    if (primaryImage.Count > 0)
+                    {
+                        allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
+                    }
+                    else
+                    {
+                        allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
+                    }
+                }
+            });
+
+            ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
+
             return View(productsToView);
         }
 

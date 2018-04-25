@@ -114,16 +114,16 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index]  }))
             {
                 <tr>
                     <td>
                         <!-- Placeholder -->
-                        <img src="~/images/products/product-image-placeholder.jpg"
+                        <img src="~/images/products/@item.ImageLink"
                              alt="Mountain View" height="150" width="110">
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.Name)
+                        @Html.DisplayFor(modelItem => item.Value.Name )
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.Description) <br />
