@@ -124,6 +124,9 @@ namespace EShop.Controllers
                         ViewBag.CurrentCategoryId = currentCategory.Id;
 
                         productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+
+                        // for later page count calculation
+                        currentCategory = null;
                     }
                     else// not a top-level category
                     {
@@ -145,6 +148,9 @@ namespace EShop.Controllers
 
                         // products to return
                         productsToView = await _navigationService.GetProductsInCategoryByPageAsync(parentCategory, startingPageNumber, productsPerPage);
+
+                        // for later page count calculation
+                        currentCategory = parentCategory;
                     }
                 }
                 else // Forward navigation
