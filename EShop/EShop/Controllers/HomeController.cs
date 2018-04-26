@@ -31,7 +31,7 @@ namespace EShop.Controllers
             _userManager = userManager;
             _navigationService = navigationService;
 
-            if(!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
+            if (!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
             {
                 throw new InvalidOperationException("Invalid ProductsConfig:ProductsPerPage in appsettings.json. Not an int value.");
             }
@@ -39,7 +39,7 @@ namespace EShop.Controllers
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? categoryId = null,  bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
+        public async Task<IActionResult> Index(int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
         {
             ViewBag.CurrentPageNumber = startingPageNumber;
             ViewBag.PreviousPageNumber = null;
@@ -60,14 +60,14 @@ namespace EShop.Controllers
                     //ViewBag.AbsoluteNavigationPath = null;
                     ViewBag.CurrentCategoryId = categoryId;
 
-                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);                  
+                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
                 }
                 else// (POST) specific path segment selected ([segment]/.../...)
                 {
                     // get that category by name
                     currentCategory = await (from c in _context.Category
-                                                        where c.Name == navigateToCategoryNamed
-                                                        select c).FirstAsync();
+                                             where c.Name == navigateToCategoryNamed
+                                             select c).FirstAsync();
                     // build menu
                     selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
 
@@ -92,14 +92,14 @@ namespace EShop.Controllers
                     });
 
                     Category parentCategory = await (from c in _context.Category
-                                                        where c.Name == parentCategoryName
-                                                        select c).FirstAsync();// category name is unique
+                                                     where c.Name == parentCategoryName
+                                                     select c).FirstAsync();// category name is unique
 
                     ViewBag.ParentCategoryId = parentCategory.Id;
                     ViewBag.AbsoluteNavigationPath = newAbsoluteNavigationPath;
                     ViewBag.CurrentCategoryName = parentCategory.Name;
                     ViewBag.CurrentCategoryId = currentCategory.Id;
-                }                        
+                }
             }
             else// (POST) backward and forward navigation
             {
@@ -120,7 +120,7 @@ namespace EShop.Controllers
                     {
                         selectableCategories = await _navigationService.GetTopLevelCategoriesAsync();
 
-                        ViewBag.ParentCategoryId = null;                    
+                        ViewBag.ParentCategoryId = null;
                         ViewBag.CurrentCategoryId = currentCategory.Id;
 
                         productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
@@ -175,15 +175,15 @@ namespace EShop.Controllers
             ViewBag.TopLevelCategories = selectableCategories;
 
             String[] allPrimaryImageLinks = new String[productsToView.Count];
-            
+
             await Task.Run(() =>
             {
                 var listProducts = productsToView.ToList();
                 for (int i = 0; i < listProducts.Count; i++)
                 {
                     List<ProductImage> primaryImage = (from pi in _context.ProductImage
-                                                      where pi.IsPrimary
-                                                      where pi.Product == listProducts[i]
+                                                       where pi.IsPrimary
+                                                       where pi.Product == listProducts[i]
                                                        select pi).ToList();
                     if (primaryImage.Count > 0)
                     {
@@ -195,7 +195,6 @@ namespace EShop.Controllers
                     }
                 }
             });
-
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
 
             return View(productsToView);
@@ -253,14 +252,24 @@ namespace EShop.Controllers
             return View("Index", products);
         }
 
-        //Denis added product page, not tested yet
+        //Denis added product page, not finished yet
         [AllowAnonymous]
         public async Task<IActionResult> ProductPage(int id)
         {
             Product temp = _context.Product.Where(p => p.Id == id).Single();
-            ViewData["product_id"] = temp.Id;
-            ViewData["product_name"] = temp.Name;
-            ViewData["product_price"] = temp.Price;
+            ViewBag.Product = temp;
+            await Task.Run(() => //Loading primary image and in future should start loading all images
+            {
+                try //If product doesn't have any image
+                {
+                    ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
+                    ViewBag.PrimaryImage = primaryImage.ImageUrl;
+                }
+                catch (Exception) //Could appear if product doesn't have any photos
+                {
+                    ViewBag.PrimaryImage = "product-image-placeholder.jpg"; //Then just set placeholder
+                }
+            });
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
     }
