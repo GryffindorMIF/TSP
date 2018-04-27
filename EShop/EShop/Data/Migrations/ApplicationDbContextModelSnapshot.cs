@@ -177,6 +177,27 @@ namespace EShop.Data.Migrations
                     b.ToTable("ProductDetails");
                 });
 
+            modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("DiscountPrice");
+
+                    b.Property<DateTime>("Ends");
+
+                    b.Property<int?>("ProductId")
+                        .IsRequired();
+
+                    b.Property<DateTime>("Starts");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductDiscount");
+                });
+
             modelBuilder.Entity("EShop.Models.ProductImage", b =>
                 {
                     b.Property<int>("Id")
@@ -345,6 +366,14 @@ namespace EShop.Data.Migrations
 
                     b.HasOne("EShop.Models.Product", "Product")
                         .WithMany("ProductCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
+                {
+                    b.HasOne("EShop.Models.Product", "Product")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

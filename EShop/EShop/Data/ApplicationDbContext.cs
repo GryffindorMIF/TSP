@@ -25,6 +25,7 @@ namespace EShop.Data
         public DbSet<Category> Category { get; set; }
         public DbSet<ProductCategory> ProductCategory { get; set; }
         public DbSet<CategoryCategory> CategoryCategory { get; set; }
+        public DbSet<ProductDiscount> ProductDiscount { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
