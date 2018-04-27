@@ -4,6 +4,10 @@
     ViewData["Title"] = "ProductPage";
 }
 
+<head>
+    <link rel="stylesheet" type="text/css" href="~/css/image_modal.css" media="screen" /> <!--Css file for image modal-->
+</head>
+
 <!-- Pop-up modal on "Add" button click -->
 <div id="add-modal-id" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -37,18 +41,20 @@
 </div>
 
 <div class="main">
-    <h2 id="testh">@ViewBag.Product.Name</h2>
-    <p>
-        <img id="imgProduct" src="~/images/products/@ViewBag.PrimaryImage" height="180" width="150" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
-         <div id="modalImg" class="modalImg"> <!--Enlarged image here-->
-            <!-- The Close Button -->
-            <span id="imgClose" class="close">&times;</span>
-            <!-- Modal Content (The Image) -->
-            <img class="modalImg-content" id="img01">
-            <!-- Modal Caption (Image Text) -->
-            <div id="caption"></div>
-        </div>
-    </p>
+    <h2>@ViewBag.Product.Name</h2>
+    <img id="productImage" src="~/images/products/@ViewBag.PrimaryImage" height="180" width="150" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+
+
+    <!--Enlarged image modal-->
+    <div id="imageModal" class="modal-image">
+        <!-- The Close Button -->
+        <span id="imgClose" class="close">&times;</span>
+        <!-- Modal Content (The Image) -->
+        <img class="modal-content" id="img01">
+        <!-- Modal Caption (Image Text) -->
+        <div id="caption"></div>
+    </div>
+
     <div id="sidebar">
         <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
         @if (!this.User.IsInRole("Admin"))
@@ -102,17 +108,17 @@
             $('#add-modal-id').fadeOut();
         });
 
-        var modal = document.getElementById('modalImg');
+        var modal = document.getElementById('imageModal');
 
         // Get the image and insert it inside the modal - use its "alt" text as a caption
-        var img = document.getElementById('imgProduct');
+        var img = document.getElementById('productImage');
         var modalImg = document.getElementById("img01");
         var captionText = document.getElementById("caption");
 
         img.onclick = function () {
             modal.style.display = "block";
             modalImg.src = this.src;
-            captionText.innerHTML = this.alt;
+            captionText.innerHTML = '@ViewBag.Product.Name'; //this.alt; <-- name of picture
         }
 
         // Get the <span> element that closes the modal
@@ -122,17 +128,6 @@
         // When the user clicks on <span> (x), close the modal
         span.onclick = function () {
             modal.style.display = "none";
-        }
-
-
-
-        @{
-            <text>
-                /*$('#imgProduct').click(function() { //Enlarge image on click
-                    $('#imgProduct').height(400);
-                    $('#imgProduct').width(300);
-                });*/
-            </text>
         }
 
         @{
