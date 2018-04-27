@@ -32,20 +32,22 @@
                     totalCost += item.Value.TotalPrice;
                     <tr>
                         <td>
-                            @Html.DisplayFor(currentModelItem => item.Value.Name)
+                            <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                                @Html.DisplayFor(currentModelItem => item.Value.Name)
+                            </a>
                         </td>
                         <td>
                             @Html.DisplayFor(currentModelItem => item.Value.Quantity)
                         </td>
                         <td>
-                            @Html.DisplayFor(currentModelItem => item.Value.TotalPrice)
+                            €@Html.DisplayFor(currentModelItem => item.Value.TotalPrice)
                         </td>
                     </tr>
                 }
             }
         </tbody>
     </table>
-    <p style="text-align:center;">Total cost: @totalCost</p>
+    <p style="text-align:center;">Total cost: €@totalCost</p>
 
     <hr>
 

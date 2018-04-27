@@ -36,7 +36,9 @@
                     totalCost += item.Value.TotalPrice;
                     <tr>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Value.Name)
+                            <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                                @Html.DisplayFor(modelItem => item.Value.Name)
+                            </a>
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.Value.Price)
@@ -77,20 +79,20 @@
         </table>
         <p>Total cost: @totalCost</p>
     }
-        <form asp-controller="Checkout" asp-action="Checkout">
-            @if (totalCost > 0)
-            {
-                <button id="checkout-btn" type="submit" class="btn btn-success">
-                    <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Proceed To Checkout
-                </button>
-            }
-            else
-            {
-                <button id="checkout-btn" type="submit" class="btn btn-success" disabled="disabled">
-                    <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Proceed To Checkout
-                </button>
-            }
-        </form>
+    <form asp-controller="Checkout" asp-action="Checkout">
+        @if (totalCost > 0)
+        {
+            <button id="checkout-btn" type="submit" class="btn btn-success">
+                <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Proceed To Checkout
+            </button>
+        }
+        else
+        {
+            <button id="checkout-btn" type="submit" class="btn btn-success" disabled="disabled">
+                <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Proceed To Checkout
+            </button>
+        }
+    </form>
 </div>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>

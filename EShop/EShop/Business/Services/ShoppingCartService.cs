@@ -34,6 +34,7 @@ namespace EShop.Business
                                      where sc.Id == shoppingCart.Id
                                      select new ProductInCartViewModel
                                      {
+                                         Id = p.Id,
                                          Name = p.Name,
                                          Price = p.Price,
                                          Quantity = scp.Quantity,
