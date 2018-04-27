@@ -268,14 +268,17 @@ namespace EShop.Controllers
             {
                 try //If product doesn't have any image
                 {
-                    ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
+                    ProductImage primaryImage = _context.ProductImage.Single(pi => pi.IsPrimary && pi.Product.Id == temp.Id);
                     ViewBag.PrimaryImage = primaryImage.ImageUrl;
+                    List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
+                    ViewBag.SecondaryImages = secondaryImages;
                 }
                 catch (Exception) //Could appear if product doesn't have any photos
                 {
                     ViewBag.PrimaryImage = "product-image-placeholder.jpg"; //Then just set placeholder
+                    ViewBag.SecondaryImages = "product-image-placeholder.jpg";
                 }
-            });
+            });        
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
     }

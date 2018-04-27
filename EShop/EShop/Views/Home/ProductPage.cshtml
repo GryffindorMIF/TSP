@@ -37,9 +37,20 @@
 </div>
 
 <div class="main">
-    <h2>@ViewBag.Product.Name</h2>
+    <h2 id="testh">@ViewBag.Product.Name</h2>
     <p>
         <img id="imgPrimary" src="~/images/products/@ViewBag.PrimaryImage" height="180" width="150" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+        <div id="myModal" class="modal"> <!--Enlarged image here-->
+
+            <!-- The Close Button -->
+            <span class="close">&times;</span>
+
+            <!-- Modal Content (The Image) -->
+            <img class="modal-content" id="img01">
+
+            <!-- Modal Caption (Image Text) -->
+            <div id="caption"></div>
+        </div>
     </p>
     <div id="sidebar">
         <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
@@ -96,6 +107,15 @@
 
         @{
             <text>
+                $('imgPrimary').click(function() { //Enlarge image on click
+                    $('#imgPrimary').height(400);
+                    $('#imgPrimary').width(300);
+                });
+            </text>
+        }
+
+        @{
+            <text>
                 $('#add-btn').click(function (e) {
 
                     e.preventDefault();// prevents page refreshing
@@ -129,3 +149,4 @@
         }
     });
 </script>
+

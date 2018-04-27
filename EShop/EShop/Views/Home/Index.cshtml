@@ -114,22 +114,25 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index]  }))
+            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index] }))
             {
                 <tr>
                     <td>
                         <!-- Placeholder -->
-                        <img src="~/images/products/@item.ImageLink" height="150" width="110">
+                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                            <img src="~/images/products/@item.ImageLink" height="150" width="110">
+                        </a>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.Name )
+                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                            <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
+                        </a>
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.Description) <br />
-                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">See product page</a>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.Price)
+                        €@Html.DisplayFor(modelItem => item.Value.Price)
                     </td>
                     <td>
                         @if (!this.User.IsInRole("Admin"))
@@ -186,9 +189,9 @@
                 if (i == ViewBag.CurrentPageNumber)
                 {
                     <text>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
-                        </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
+                    </li>
                     </text>
                 }
                 else
@@ -225,12 +228,12 @@
             else
             {
                 <text>
-                    <li class="page-item disabled">
-                        <a href="#" class="page-link" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </li>
+                <li class="page-item disabled">
+                    <a href="#" class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
                 </text>
             }
         </ul>
