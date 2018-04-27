@@ -11,9 +11,10 @@ using System;
 namespace EShop.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180427102653_DiscountTable")]
+    partial class DiscountTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,28 +78,6 @@ namespace EShop.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("EShop.Models.CardInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired();
-
-                    b.Property<int>("ExpMonth");
-
-                    b.Property<int>("ExpYear");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CardInfo");
-                });
-
             modelBuilder.Entity("EShop.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -131,68 +110,16 @@ namespace EShop.Data.Migrations
                     b.ToTable("CategoryCategory");
                 });
 
-            modelBuilder.Entity("EShop.Models.DeliveryAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address")
-                        .IsRequired();
-
-                    b.Property<string>("City")
-                        .IsRequired();
-
-                    b.Property<string>("Country")
-                        .IsRequired();
-
-                    b.Property<string>("County")
-                        .IsRequired();
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.Property<string>("Zipcode")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DeliveryAddress");
-                });
-
             modelBuilder.Entity("EShop.Models.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AddressId")
-                        .IsRequired();
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired();
-
-                    b.Property<DateTime>("ConfirmationDate");
-
-                    b.Property<DateTime>("PurchaseDate");
-
-                    b.Property<int?>("ShoppingCartId")
-                        .IsRequired();
-
                     b.Property<int>("StatusCode");
 
-                    b.Property<int>("TotalPrice");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<decimal>("TotalPrice");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("ShoppingCartId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Order");
                 });
@@ -429,40 +356,6 @@ namespace EShop.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens");
-                });
-
-            modelBuilder.Entity("EShop.Models.CardInfo", b =>
-                {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("EShop.Models.DeliveryAddress", b =>
-                {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("EShop.Models.Order", b =>
-                {
-                    b.HasOne("EShop.Models.DeliveryAddress", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
-                        .WithMany()
-                        .HasForeignKey("ShoppingCartId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("EShop.Models.ProductCategory", b =>
