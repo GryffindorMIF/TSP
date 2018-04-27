@@ -19,12 +19,14 @@ namespace EShop.Data
         public DbSet<Product> Product { get; set; }
         public DbSet<ProductImage> ProductImage { get; set; }
         public DbSet<Order> Order { get; set; }
+        public DbSet<CardInfo> CardInfo { get; set; }
         public DbSet<ShoppingCart> ShoppingCart { get; set; }
         public DbSet<ShoppingCartProduct> ShoppingCartProduct { get; set; }
         public DbSet<ProductDetails> ProductDetails { get; set; }
         public DbSet<Category> Category { get; set; }
         public DbSet<ProductCategory> ProductCategory { get; set; }
         public DbSet<CategoryCategory> CategoryCategory { get; set; }
+        public DbSet<DeliveryAddress> DeliveryAddress { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

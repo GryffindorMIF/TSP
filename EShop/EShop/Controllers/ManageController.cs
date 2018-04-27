@@ -13,6 +13,11 @@ using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.ManageViewModels;
 using EShop.Business;
+using EShop.Data;
+using EShop.Business.Interfaces;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace EShop.Controllers
 {
@@ -20,24 +25,30 @@ namespace EShop.Controllers
     [Route("[controller]/[action]")]
     public class ManageController : Controller
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
+        private readonly IAddressManager _addressManager;
         private readonly UrlEncoder _urlEncoder;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
 
         public ManageController(
+          ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
           IEmailSender emailSender,
+          IAddressManager addressManager,
           ILogger<ManageController> logger,
           UrlEncoder urlEncoder)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _addressManager = addressManager;
             _emailSender = emailSender;
             _logger = logger;
             _urlEncoder = urlEncoder;
@@ -130,6 +141,93 @@ namespace EShop.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ¯\_(ツ)_/¯
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> RemoveSavedAddress(ManageDeliveryAddressesViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            DeliveryAddress addressOnDeathrow = await _context.DeliveryAddress.
+                Where(da => da.Zipcode == model.RemovalZipcode).FirstOrDefaultAsync();
+
+            int resultCode = await _addressManager.RemoveDeliveryAddressAsync(user, addressOnDeathrow);
+
+            Debug.WriteLine("Code is: " + addressOnDeathrow.Zipcode);
+            StatusMessage = "Delivery address removed";
+
+            return RedirectToAction(nameof(ManageDeliveryAddresses));
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> ManageDeliveryAddresses()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var model = new ManageDeliveryAddressesViewModel {StatusMessage = StatusMessage };
+
+            var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
+
+            model.savedAddresses = new List<SelectListItem>();
+
+            foreach (DeliveryAddress da in savedAddresses)
+            {
+                model.savedAddresses.Add(new SelectListItem
+                {
+                    Text = da.Zipcode,
+                    Value = da.Zipcode
+                });
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageDeliveryAddresses(ManageDeliveryAddressesViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            DeliveryAddress newAddress = await _context.DeliveryAddress.Where(da => da.Zipcode == model.Zipcode).FirstOrDefaultAsync();
+
+            if (newAddress == null)
+            {
+                newAddress = new DeliveryAddress();
+                newAddress.Country = model.Country;
+                newAddress.County = model.County;
+                newAddress.City = model.City;
+                newAddress.Address = model.Address;
+                newAddress.Zipcode = model.Zipcode;
+                newAddress.User = user;
+                _context.DeliveryAddress.Add(newAddress);
+                await _context.SaveChangesAsync();
+            }
+
+            StatusMessage = "New delivery address added";
+
+            return RedirectToAction(nameof(ManageDeliveryAddresses));
+        }
+
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
@@ -149,6 +247,7 @@ namespace EShop.Controllers
             return View(model);
         }
 
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
