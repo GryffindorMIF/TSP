@@ -1,0 +1,67 @@
+﻿@model IEnumerable<EShop.Models.Order>
+
+@{
+    ViewData["Title"] = "Order";
+}
+
+<div class="main">
+    <h2>Order History</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <p>Shopping Cart ID</p>
+                </th>
+                <th>
+                    <p>Total Price</p>
+                </th>
+                <th>
+                    <p>Delivery Address Zip Code</p>
+                </th>
+                <th>
+                    <p>Payment Card Number</p>
+                </th>
+                <th>
+                    <p>Purchase Time</p>
+                </th>
+                <th>
+                    <p>Confirmed Time</p>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.ShoppingCart.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.TotalPrice)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.Address.Zipcode)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.CardNumber)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
+                    </td>
+                    <td>
+                        @if (item.Value.StatusCode == 2)
+                        {
+                            @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
+}
+                        else
+                        {
+                            <p>Confirmation Pending</p>
+                        }
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>

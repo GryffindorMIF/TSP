@@ -12,6 +12,9 @@ using EShop.Data;
 using EShop.Models;
 using EShop.Business;
 using System.Diagnostics;
+using EShop.Business.Services;
+using EShop.Business.Interfaces;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace EShop
 {
@@ -39,6 +42,11 @@ namespace EShop
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = "/Account/Login";
+            });
+
             services.AddIdentity<ApplicationUser, IdentityRole>(o =>
                 {
                     // Custom password requirements
@@ -55,9 +63,23 @@ namespace EShop
                 options.IdleTimeout = TimeSpan.FromSeconds(300);
             });
 
+
+            var corsBuilder = new CorsPolicyBuilder();
+            corsBuilder.AllowAnyHeader();
+            corsBuilder.AllowAnyMethod();
+            corsBuilder.AllowAnyOrigin(); // For anyone access.
+            //corsBuilder.WithOrigins("http://localhost:44355");
+            corsBuilder.AllowCredentials();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("EShopCorsPolicy", corsBuilder.Build());
+            });
+
             // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
+            services.AddTransient<IAddressManager, AddressManager>();
             services.AddTransient<INavigationService, NavigationService>();
             services.AddSingleton(Configuration);
             services.AddMvc();
@@ -84,6 +106,8 @@ namespace EShop
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            app.UseCors("EShopCorsPolicy");
 
             app.UseStaticFiles();
 

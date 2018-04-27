@@ -15,6 +15,8 @@ namespace EShop.Views.Manage
 
         public static string ChangePassword => "ChangePassword";
 
+        public static string ManageDeliveryAddresses => "ManageDeliveryAddresses";
+
         public static string ExternalLogins => "ExternalLogins";
 
         public static string TwoFactorAuthentication => "TwoFactorAuthentication";
@@ -26,6 +28,8 @@ namespace EShop.Views.Manage
         public static string ExternalLoginsNavClass(ViewContext viewContext) => PageNavClass(viewContext, ExternalLogins);
 
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, TwoFactorAuthentication);
+
+        public static string ManageDeliveryAddressesNavClas(ViewContext viewContext) => PageNavClass(viewContext, ManageDeliveryAddresses);
     
         public static string PageNavClass(ViewContext viewContext, string page)
         {
