@@ -41,11 +41,11 @@
             </form>
         </div>
 
-        <!--Make this look good somewhere on the page it looks gay and out of place at the moment-->
+        <!--Order model contains an Address object type. If this gets deleted things will break badly-->
         <div class="col-md-6">
             <form asp-controller="Manage" asp-action="RemoveSavedAddress" method="post">
                 <select asp-for="RemovalZipcode" asp-items="Model.savedAddresses"></select>
-                <br /><button type="submit">Remove Selected Address</button>
+                <br /><button type="submit" disabled="disabled">Remove Selected Address</button>
             </form>
         </div>
     </div>
