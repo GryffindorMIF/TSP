@@ -268,7 +268,7 @@ namespace EShop.Controllers
             {
                 try //If product doesn't have any image
                 {
-                    ProductImage primaryImage = _context.ProductImage.Single(pi => pi.IsPrimary && pi.Product.Id == temp.Id);
+                    ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
                     ViewBag.PrimaryImage = primaryImage.ImageUrl;
                     List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
                     ViewBag.SecondaryImages = secondaryImages;

@@ -39,15 +39,12 @@
 <div class="main">
     <h2 id="testh">@ViewBag.Product.Name</h2>
     <p>
-        <img id="imgPrimary" src="~/images/products/@ViewBag.PrimaryImage" height="180" width="150" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
-        <div id="myModal" class="modal"> <!--Enlarged image here-->
-
+        <img id="imgProduct" src="~/images/products/@ViewBag.PrimaryImage" height="180" width="150" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+         <div id="modalImg" class="modalImg"> <!--Enlarged image here-->
             <!-- The Close Button -->
-            <span class="close">&times;</span>
-
+            <span id="imgClose" class="close">&times;</span>
             <!-- Modal Content (The Image) -->
-            <img class="modal-content" id="img01">
-
+            <img class="modalImg-content" id="img01">
             <!-- Modal Caption (Image Text) -->
             <div id="caption"></div>
         </div>
@@ -105,12 +102,36 @@
             $('#add-modal-id').fadeOut();
         });
 
+        var modal = document.getElementById('modalImg');
+
+        // Get the image and insert it inside the modal - use its "alt" text as a caption
+        var img = document.getElementById('imgProduct');
+        var modalImg = document.getElementById("img01");
+        var captionText = document.getElementById("caption");
+
+        img.onclick = function () {
+            modal.style.display = "block";
+            modalImg.src = this.src;
+            captionText.innerHTML = this.alt;
+        }
+
+        // Get the <span> element that closes the modal
+        //var span = document.getElementsByClassName("close")[0];
+        var span = document.getElementById('imgClose');
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+
+
         @{
             <text>
-                $('imgPrimary').click(function() { //Enlarge image on click
-                    $('#imgPrimary').height(400);
-                    $('#imgPrimary').width(300);
-                });
+                /*$('#imgProduct').click(function() { //Enlarge image on click
+                    $('#imgProduct').height(400);
+                    $('#imgProduct').width(300);
+                });*/
             </text>
         }
 
