@@ -48,6 +48,7 @@ namespace EShop.Business
                 productsInCart = (from p in products
                                   select new ProductInCartViewModel
                                   {
+                                      Id = p.Product.Id,
                                       Name = p.Product.Name,
                                       Price = p.Product.Price,
                                       Quantity = p.Count,

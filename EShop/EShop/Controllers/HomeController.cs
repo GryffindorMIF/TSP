@@ -262,14 +262,16 @@ namespace EShop.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ProductPage(int id)
         {
-            Product temp = _context.Product.Where(p => p.Id == id).Single();
+            Product temp = _context.Product.Single(p => p.Id == id);
             ViewBag.Product = temp;
+
             await Task.Run(() => //Loading primary image and in future should start loading all images
             {
-                try //If product doesn't have any image
+                try //If product has an image
                 {
                     ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
-                    ViewBag.PrimaryImage = primaryImage.ImageUrl;
+                    ViewData["primary_image"] = primaryImage.ImageUrl;
+                    //ViewBag.PrimaryImage = primaryImage.ImageUrl;
                     List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
                     ViewBag.SecondaryImages = secondaryImages;
                 }
