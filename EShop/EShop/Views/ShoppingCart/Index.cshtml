@@ -41,7 +41,7 @@
                             </a>
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Value.Price)
+                            €@Html.DisplayFor(modelItem => item.Value.Price)
                         </td>
                         <td>
                             <form asp-controller="ShoppingCart" asp-action="ChangeShoppingCartProductCount"
@@ -63,7 +63,7 @@
                             </form>
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Value.TotalPrice)
+                            €@Html.DisplayFor(modelItem => item.Value.TotalPrice)
                         </td>
                         <td>
                             <form asp-controller="ShoppingCart" asp-action="RemoveShoppingCartProduct" asp-route-productName="@item.Value.Name">
@@ -77,7 +77,7 @@
 
             </tbody>
         </table>
-        <p>Total cost: @totalCost</p>
+        <p>Total cost: €@totalCost</p>
     }
     <form asp-controller="Checkout" asp-action="Checkout">
         @if (totalCost > 0)
