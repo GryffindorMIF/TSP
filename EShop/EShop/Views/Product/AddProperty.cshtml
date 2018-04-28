@@ -8,7 +8,10 @@
 <div class="main">
     <h2>Create</h2>
 
-    <h4>Product Property for product with ID: @ViewData["product_id"]</h4>
+    <h4>
+        Property for:
+        <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@ViewData["product_id"]">@ViewData["product_name"]</a>
+    </h4>
     <hr />
     <div class="row">
         <div class="col-md-4">

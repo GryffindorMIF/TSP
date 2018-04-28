@@ -6,7 +6,10 @@
 
 <div class="sidenav"></div>
 <div class="main">
-    <h2>Product properties: product id is @ViewData["product_id"]</h2>
+    <h2>
+        Product properties for: 
+        <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@ViewData["product_id"]">@ViewData["product_name"]</a>
+    </h2>
     <p>
         <a asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>Add new property</a>
     </p>
@@ -41,13 +44,13 @@
         </tbody>
     </table>
 
-    @if (Convert.ToBoolean(ViewData["show_alert"]) == true)
+    <!-- if (Convert.ToBoolean(ViewData["show_alert"]) == true)
     {
         <div class="alert alert-success" role="alert">
             <a href="#" class="close" data-dismiss="alert">&times;</a>
             <strong>Holy guacamole!</strong> You should check in on some of those fields below.
         </div>
-    }
+    } -->
 </div>
 
 <script type="text/javascript">

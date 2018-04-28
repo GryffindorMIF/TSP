@@ -31,17 +31,20 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     @if (!this.User.IsInRole("Admin"))
-    {
-                <li><a asp-area="" asp-controller="ShoppingCart" asp-action="Index">Shopping Cart</a></li>
-                <!--Make order only appear to non-anonymous customers-->
-                <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
-}
+                    {
+                        <li><a asp-area="" asp-controller="ShoppingCart" asp-action="Index">Shopping Cart</a></li>
+                    }
+                    <!--Make order only appear to non-anonymous customers-->
+                    @if (this.User.IsInRole("Customer"))
+                    {
+                        <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
+                    }
                     @if (this.User.IsInRole("Admin"))
-    {
-                <li><a asp-area="" asp-controller="Product" asp-action="Index">Manage products</a></li>
-                <li><a asp-area="" asp-controller="User" asp-action="Index">Manage users</a></li>
-                <li><a asp-area="" asp-controller="Category" asp-action="Index">Manage categories</a></li>
-}
+                    {
+                        <li><a asp-area="" asp-controller="Product" asp-action="Index">Manage products</a></li>
+                        <li><a asp-area="" asp-controller="User" asp-action="Index">Manage users</a></li>
+                        <li><a asp-area="" asp-controller="Category" asp-action="Index">Manage categories</a></li>
+                    }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>

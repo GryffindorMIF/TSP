@@ -420,15 +420,20 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
-            ViewData["product_id"] = id; //To retrieve it in view
-            ViewData["show_alert"] = showAlert;
+            Product temp = _context.Product.First(p => p.Id == id);
+            //Using ViewData to retrieve values in view
+            ViewData["product_name"] = temp.Name;
+            ViewData["product_id"] = id;
+            //ViewData["show_alert"] = showAlert;
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
 
         [Authorize(Roles = "Admin")]
         public IActionResult AddProperty(int productId) //Add Property view
         {
-            ViewData["product_id"] = productId;
+            Product temp = _context.Product.First(p => p.Id == productId);
+            ViewData["product_name"] = temp.Name;
+            ViewData["product_id"] = temp.Id;
             return View();
         }
 
@@ -464,6 +469,9 @@ namespace EShop.Controllers
              {
                  return NotFound();
              }
+
+             _context.ProductDetails.Remove(property);
+             await _context.SaveChangesAsync();
 
              return View(property);
          }
