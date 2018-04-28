@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
 using EShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,7 @@ namespace EShop.Controllers
             _userManager = userManager;
         }
 
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
@@ -33,6 +35,7 @@ namespace EShop.Controllers
             return View(orders);
         }
 
+        [Authorize(Roles = "Customer")]
         public async Task<IQueryable<Order>> QueryAllOrders(ApplicationUser user)
         {
             IQueryable<Order> savedOrders = null;

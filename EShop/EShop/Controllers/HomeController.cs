@@ -122,6 +122,8 @@ namespace EShop.Controllers
 
                         ViewBag.ParentCategoryId = null;
                         ViewBag.CurrentCategoryId = currentCategory.Id;
+                        ViewBag.AbsoluteNavigationPath = null;
+                        ViewBag.CurrentCategoryName = null;
 
                         productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
 
@@ -221,9 +223,14 @@ namespace EShop.Controllers
             else ViewBag.PreviousPageNumber = null;
 
             Category category = null;
-            if (categoryId != null) category = await _context.Category.FindAsync(categoryId);
+            if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
 
-            if (category == null) ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+            if (category == null) 
+            {
+                ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+                ViewBag.CurrentCategoryName = null;
+                ViewBag.AbsoluteNavigationPath = null;
+            }
             else
             {
                 ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
