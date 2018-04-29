@@ -186,9 +186,9 @@ namespace EShop.Controllers
                                       select pc.CategoryId).ToList();
 
                otherImages = (from i in _context.ProductImage
-                         where i.Product == product
-                         where i.IsPrimary == false
-                         select i).ToList();
+                              where i.Product == product
+                              where i.IsPrimary == false
+                              select i).ToList();
 
                primaryImages = (from pi in _context.ProductImage
                                 where pi.Product == product
@@ -241,9 +241,9 @@ namespace EShop.Controllers
                        if (model.PrimaryImage != null)
                        {
                            possiblePrimaryImages = (from pi in _context.ProductImage
-                                                   where pi.Product == model.Product
-                                                   where pi.IsPrimary == true
-                                                   select pi).ToList();
+                                                    where pi.Product == model.Product
+                                                    where pi.IsPrimary == true
+                                                    select pi).ToList();
                        }
 
                        if (model.IdsOfSelectedImages != null)
@@ -311,7 +311,7 @@ namespace EShop.Controllers
                     //Remove old images
                     if (possibleOtherImages != null && possibleOtherImages.Count > 0 && model.IdsOfSelectedImages != null)
                     {
-                        
+
                         foreach (int imageId in model.IdsOfSelectedImages)
                         {
                             List<ProductImage> imageToClean = possibleOtherImages.Where(image => image.Id == imageId).ToList();
@@ -385,7 +385,7 @@ namespace EShop.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Product.SingleOrDefaultAsync(m => m.Id == id);
-            List<ProductImage> images = null; 
+            List<ProductImage> images = null;
             await Task.Run(() =>
             {
                 images = (from oi in _context.ProductImage
@@ -453,47 +453,33 @@ namespace EShop.Controllers
             return View(productDetails);
         }
 
-        /* //Delete product property page
-         [Authorize(Roles = "Admin")]
-         public async Task<IActionResult> DeleteProperty(int? propertyId)
-         {
+        public async Task<IActionResult> RemoveProductProperty(int id)
+        {
+            ProductDetails property = _context.ProductDetails.FirstOrDefault(pd => pd.Id == id);
+            int productId = property.ProductId;
 
-             if (propertyId == null)
-             {
-                 return NotFound();
-             }
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Product product = _context.Product.FirstOrDefault(p => p.Id == property.ProductId);
+                    _context.Remove(property);
+                    //_context.Update(product);
 
-             var property = await _context.ProductDetails.SingleOrDefaultAsync(p => p.Id == propertyId);
-
-             if (property == null)
-             {
-                 return NotFound();
-             }
-
-             _context.ProductDetails.Remove(property);
-             await _context.SaveChangesAsync();
-
-             return View(property);
-         }
-
-         //Method to delete property
-         [HttpPost, ActionName("Delete")]
-         [Authorize(Roles = "Admin")]
-         [ValidateAntiForgeryToken]
-         public async Task<IActionResult> DeletePropertyConfirmed(int propertyId)
-         {
-             ProductDetails property = await _context.ProductDetails.SingleOrDefaultAsync(p => p.Id == propertyId);
-
-             if (property == null)
-             {
-                 return NotFound();
-             }
-
-             int productId = property.ProductId;
-             //var productDetail = await _context.ProductDetails.SingleOrDefaultAsync(pd => pd.Id == productId);
-             _context.ProductDetails.Remove(property);
-             await _context.SaveChangesAsync();
-             return RedirectToAction(nameof(ManageProperties), new { id = productId }); //showAlert = true });
-         }*/
+                    var t2 = Task.Run(
+                        async () =>
+                        {
+                            await _context.SaveChangesAsync();
+                        });
+                    t2.Wait();
+                    return RedirectToAction(nameof(ManageProperties), new { id = productId });
+                }
+                catch (Exception)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+            });
+            return RedirectToAction(nameof(ManageProperties), new { id = productId });
+        }
     }
 }

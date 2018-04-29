@@ -35,6 +35,11 @@
                         @Html.DisplayFor(modelItem => item.Description)
                     </td>
                     <td>
+                        <form asp-controller="Product" asp-action="RemoveProductProperty" asp-route-id="@item.Id">
+                            <button type="submit" class="btn btn-danger">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Remove
+                            </button>
+                        </form>
                         <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
                         <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
                         <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
