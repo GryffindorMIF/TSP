@@ -271,7 +271,6 @@ namespace EShop.Controllers
         {
             Product temp = _context.Product.Single(p => p.Id == id);
             ViewBag.Product = temp;
-
             await Task.Run(() => //Loading primary image and in future should start loading all images
             {
                 try //If product has an image
