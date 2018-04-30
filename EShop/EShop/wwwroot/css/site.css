@@ -40,7 +40,7 @@
 
 .sidenav {
     height: 100%;
-    width: 180px;
+    width: auto;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -52,16 +52,16 @@
     padding-right: 10px;
 }
 
-    .sidenav a {
-        padding: 0;
-        text-decoration: none;
-        color: #818181;
-        display: inline;
-    }
+.sidenav a {
+    padding: 0;
+    text-decoration: none;
+    color: #818181;
+    display: inline;
+}
 
-        .sidenav a:hover {
-            color: #0082ff;
-        }
+.sidenav a:hover {
+    color: #0082ff;
+}
 
 .main {
     margin-left: 180px;
@@ -92,10 +92,6 @@ ul {
     vertical-align: middle;
 }
 
-
-
-
-
 /*For image enlargement modal*/
 @-webkit-keyframes zoom {
     from {
@@ -122,4 +118,21 @@ ul {
     .modal-content {
         width: 100%;
     }
+}
+
+/* 'manage categories' tree view (Views/Category/Index && Views/Category/_IndexPartial) */
+.tree-view ul {
+    padding-bottom: 0;
+}
+.tree-view li {
+    margin-left: 2em
+}
+
+.clickable-category text:hover {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+.clickable-category {
+    cursor: pointer;
 }

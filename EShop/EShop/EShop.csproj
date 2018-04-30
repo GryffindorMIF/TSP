@@ -5,6 +5,10 @@
     <UserSecretsId>aspnet-EShop-E9402E04-5150-4EEA-9437-EFC446A9A6FF</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Views\Home\Index.cshtml~RF3cdd78b0.TMP" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
