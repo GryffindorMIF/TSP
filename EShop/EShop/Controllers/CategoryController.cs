@@ -7,147 +7,159 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EShop.Data;
 using EShop.Models;
+using EShop.Business;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EShop.Views
 {
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly INavigationService _navigationService;
 
-        public CategoryController(ApplicationDbContext context)
+        public CategoryController(ApplicationDbContext context, INavigationService navigationService)
         {
             _context = context;
+            _navigationService = navigationService;
         }
 
         // GET: Categories
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Category.ToListAsync());
+            ICollection<CategoryViewModel> recursiveMenu = await _navigationService.BuildRecursiveMenuAsync();
+            return View(recursiveMenu);
+
+            //return View(await _context.Category.ToListAsync());
         }
 
-        // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Category
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
-        }
-
-        // GET: Categories/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Categories/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // AJAX
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description")] Category category)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RenameCategory([FromBody] CategoryNewNamePostModel postModel)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(category);
+                Category category = await _context.Category.FindAsync(postModel.CategoryId);
+                category.Name = postModel.NewName;
+                category.Description = postModel.NewDescription;
+                _context.Update(category);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                return Json(0);// success
             }
-            return View(category);
+            catch
+            {
+                return Json(1);// exception
+            }
         }
 
-        // GET: Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            return View(category);
-        }
-
-        // POST: Categories/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // AJAX
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Category category)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteCategory([FromBody] CategoryPostModel postModel)
         {
-            if (id != category.Id)
+            try
             {
-                return NotFound();
-            }
+                Category category = await _context.Category.FindAsync(postModel.CategoryId);
 
-            if (ModelState.IsValid)
-            {
-                try
+                await DeleteSubcategories(category);// recursive method
+
+                _context.Remove(category);
+
+                ICollection<CategoryCategory> categoryCategories = await _context.CategoryCategory.Where(cc => cc.CategoryId == category.Id).ToListAsync();
+                foreach(var cc in categoryCategories)
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    _context.Remove(cc);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(category.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+
+                await _context.SaveChangesAsync();
+
+                return Json(0);// success
             }
-            return View(category);
+            catch
+            {
+                return Json(1);// exception
+            }
         }
 
-        // GET: Categories/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        private async Task<int> DeleteSubcategories(Category category)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                ICollection<Category> subCategories = await _navigationService.GetChildCategoriesAsync(category);
+                foreach (var subCategory in subCategories)
+                {
+                    if (await DeleteSubcategories(subCategory) == 0)// recursion
+                    {
+                        ICollection<CategoryCategory> categoryCategories = await _context.CategoryCategory.Where(cc => cc.CategoryId == subCategory.Id).ToListAsync();
+                        foreach (var cc in categoryCategories)
+                        {
+                            _context.Remove(cc);
+                        }
+                        _context.Remove(subCategory);
+                        await _context.SaveChangesAsync();
+                    }
+                    else return 1; //error
+                }
+                return 0;// has no more sub-categories: OK
             }
-
-            var category = await _context.Category
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (category == null)
+            catch
             {
-                return NotFound();
+                return 1;// error
             }
-
-            return View(category);
         }
 
-        // POST: Categories/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        // AJAX
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddCategory([FromBody] AddCategoryPostModel postModel)
         {
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
-            _context.Category.Remove(category);
+            int? parentCategoryId = postModel.ParentCategoryId;
+            string newCategoryName = postModel.CategoryName;
+            string newCategoryDesc = postModel.CategoryDescription;
+
+            try
+            {
+                Category newCategory = new Category();
+                newCategory.Name = newCategoryName;
+                newCategory.Description = newCategoryDesc;
+                _context.Add(newCategory);
+                await _context.SaveChangesAsync();// nes reikes database sugeneruoto Id
+
+                CategoryCategory newCategoryToCategory = new CategoryCategory();
+                newCategoryToCategory.CategoryId = newCategory.Id;
+                newCategoryToCategory.ParentCategoryId = parentCategoryId;
+                _context.Add(newCategoryToCategory);
+
+                await _context.SaveChangesAsync();
+
+                return Json(0);//success
+            }
+            catch
+            {
+                return Json(1);// exception
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddTopLevelCategory(string name, string description)
+        {
+            Category newCategory = new Category();
+            newCategory.Name = name;
+            newCategory.Description = description;
+            _context.Add(newCategory);
+            await _context.SaveChangesAsync();// nes reikes database sugeneruoto Id
+
+            CategoryCategory newCategoryToCategory = new CategoryCategory();
+            newCategoryToCategory.CategoryId = newCategory.Id;
+            newCategoryToCategory.ParentCategoryId = null;
+            _context.Add(newCategoryToCategory);
+
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool CategoryExists(int id)
-        {
-            return _context.Category.Any(e => e.Id == id);
+            return RedirectToAction("Index", "Home");//success
         }
     }
 }
