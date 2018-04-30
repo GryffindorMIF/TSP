@@ -402,8 +402,6 @@ namespace EShop.Controllers
                     _context.Remove(image);
                 }
             }
-
-
             _context.Product.Remove(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index), new { showAlert = true });
@@ -416,7 +414,8 @@ namespace EShop.Controllers
 
 
 
-        //Denis product description changes BELOW
+        //Product properties management below
+        //Page with all product properties with "delete" button
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
@@ -428,6 +427,7 @@ namespace EShop.Controllers
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
 
+        //Page with add property form
         [Authorize(Roles = "Admin")]
         public IActionResult AddProperty(int productId) //Add Property view
         {
@@ -450,9 +450,14 @@ namespace EShop.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProperties), new { id = productId });
             }
-            return View(productDetails);
+            //If admin did not fill every field then refresh page
+            Product temp = _context.Product.First(p => p.Id == productId);
+            ViewData["product_name"] = temp.Name;
+            ViewData["product_id"] = temp.Id;
+            return View();
         }
 
+        //Remove product property delete button action
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
             ProductDetails property = _context.ProductDetails.FirstOrDefault(pd => pd.Id == id);

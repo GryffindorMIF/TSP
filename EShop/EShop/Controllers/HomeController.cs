@@ -283,8 +283,8 @@ namespace EShop.Controllers
                 }
                 catch (Exception) //Could appear if product doesn't have any photos
                 {
-                    ViewBag.PrimaryImage = "product-image-placeholder.jpg"; //Then just set placeholder
-                    ViewBag.SecondaryImages = "product-image-placeholder.jpg";
+                    ViewData["primary_image"] = "product-image-placeholder.jpg"; //Then just set placeholder
+                    ViewBag.SecondaryImages = new List<ProductImage>();
                 }
             });        
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
