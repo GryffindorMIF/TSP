@@ -271,7 +271,6 @@ namespace EShop.Controllers
         {
             Product temp = _context.Product.Single(p => p.Id == id);
             ViewBag.Product = temp;
-
             await Task.Run(() => //Loading primary image and in future should start loading all images
             {
                 try //If product has an image
@@ -284,8 +283,8 @@ namespace EShop.Controllers
                 }
                 catch (Exception) //Could appear if product doesn't have any photos
                 {
-                    ViewBag.PrimaryImage = "product-image-placeholder.jpg"; //Then just set placeholder
-                    ViewBag.SecondaryImages = "product-image-placeholder.jpg";
+                    ViewData["primary_image"] = "product-image-placeholder.jpg"; //Then just set placeholder
+                    ViewBag.SecondaryImages = new List<ProductImage>();
                 }
             });        
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
