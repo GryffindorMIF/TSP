@@ -41,24 +41,6 @@ namespace EShop.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Product
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
-        }
-
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var model = new ProductCategoryViewModel();

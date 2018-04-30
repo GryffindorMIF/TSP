@@ -39,21 +39,24 @@
     </div>
 </div>
 
-<!-- Rename category modal -->
-<div id="input-modal" class="modal" tabindex="-1" role="dialog">
+<!-- Edit category modal -->
+<div id="edit-modal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <p align="center">
-                    <img src="~/images/edit.png" width="30" height="30" /> &nbsp;
+                    <img src="~/images/folder.png" width="30" height="26" />
                     Edit "@ViewBag.CurrentCategoryName" category
-                    <button id="input-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#input-modal').hide();">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#edit-modal').hide();">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </p>
             </div>
             <form id="edit-category-form">
                 <div class="modal-body">
+                    <div id="edit-category-error-modal" hidden class="alert alert-danger">
+                        <strong>Ooops!</strong><text id="edit-category-error-message"></text>
+                    </div>
                     @{
                         Category category;
                         string categoryName;
@@ -76,95 +79,61 @@
                         <tr>
                             <td>Name &nbsp;</td>
                             <td>
-                                <input id="new-category-name" required type="text" pattern="[A-Za-z0-9]{1,20}" value="@categoryName" />
+                                <input id="new-category-name" type="text" value="@categoryName" />
                             </td>
                         </tr>
                         <tr>
                             <td>Description &nbsp;</td>
                             <td>
-                                <textarea id="new-category-description" required pattern="[A-Za-z0-9]{1,20}" rows="5" cols="40" style="resize: none;">@categoryDesc</textarea>
+                                <textarea id="new-category-description" rows="5" cols="40" style="resize: none;">@categoryDesc</textarea>
                             </td>
                         </tr>
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button id="input-modal-rename-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Rename</button>
+                    <button id="edit-category-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Rename</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- New child category modal (PER AJAX) -->
+<!-- New child category modal -->
 <div id="add-child-modal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <p align="center">
-                    <img src="~/images/folder.png" width="30" height="30" /> &nbsp;
+                    <img src="~/images/folder.png" width="30" height="26" />
                     Add new sub-category
-                    <button id="add-child-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#add-child-modal').hide();">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#add-child-modal').hide();">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </p>
             </div>
             <form>
                 <div class="modal-body">
+                    <div id="add-child-error-modal" hidden class="alert alert-danger">
+                        <strong>Ooops!</strong><text id="add-child-error-message"></text>
+                    </div>
+
                     <table align="center">
                         <tr>
                             <td>Name &nbsp;</td>
                             <td>
-                                <input id="add-child-category-name" required type="text" pattern="[A-Za-z0-9]{1,20}" />
+                                <input id="add-child-category-name" type="text"/>
                             </td>
                         </tr>
                         <tr>
                             <td>Description &nbsp;</td>
                             <td>
-                                <textarea id="add-child-category-description" required type="text" pattern="[A-Za-z0-9]{1,20}" rows="5" cols="40" style="resize: none;"></textarea>
+                                <textarea id="add-child-category-description" type="text" rows="5" cols="40" style="resize: none;"></textarea>
                             </td>
                         </tr>
                     </table>
                 </div>
                 <div class="modal-footer">
                     <button id="add-child-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Add</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- New child category modal 2 (PER HELPER METODA) (nes kazkoks bug'as, kad neveikia javascript su buttonais main page'e -->
-<div id="add-child-modal-2" class="modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <p align="center">
-                    <img src="~/images/folder.png" width="30" height="30" /> &nbsp;
-                    Add new sub-category
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#add-child-modal-2').hide();">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </p>
-            </div>
-            <form asp-action="AddTopLevelCategory" asp-controller="Category">
-                <div class="modal-body">
-                    <table align="center">
-                        <tr>
-                            <td>Name &nbsp;</td>
-                            <td>
-                                <input required type="text" name="name" pattern="[A-Za-z0-9]{1,20}" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Description &nbsp;</td>
-                            <td>
-                                <textarea required type="text" name="description" pattern="[A-Za-z0-9]{1,20}" rows="5" cols="40" style="resize: none;"></textarea>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-secondary" data-dismiss="modal">Add</button>
                 </div>
             </form>
         </div>
@@ -179,21 +148,24 @@
                 <p align="center">
                     <img src="~/images/remove.png" width="30" height="30" /> &nbsp;
                     Remove "@ViewBag.CurrentCategoryName" category
-                    <button id="remove-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#remove-modal').hide();">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#remove-modal').hide();">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </p>
             </div>
             <div class="modal-body">
-                <div id="input-modal-warning" class="alert alert-danger" role="alert">
-                    This will also delete all sub-categories!
+                <div id="remove-error-modal" hidden class="alert alert-danger">
+                    <strong>Ooops!</strong><text id="remove-error-message"></text>
+                </div>
+                <div class="alert alert-danger" role="alert">
+                    <strong>Warning!</strong> This will also delete all sub-categories!
                 </div>
                 <p align="center">
                     Are you sure you want to perform this action?
                 </p>
             </div>
             <div class="modal-footer">
-                <button id="remove-modal-remove-btn" type="button" class="btn btn-danger" data-dismiss="modal">Remove</button>
+                <button id="remove-category-modal-btn" type="button" class="btn btn-danger" data-dismiss="modal">Remove</button>
             </div>
         </div>
     </div>
@@ -235,9 +207,13 @@
 
             if (this.User.IsInRole("Admin"))
             {
-                <button type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal-2').fadeIn();">
-                    <span class="glyphicon glyphicon-plus"></span> Child
-                </button>
+                <ul>
+                    <li>
+                        <button type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                            <span class="glyphicon glyphicon-plus"></span> Child
+                        </button>
+                    </li>
+                </ul>
             }
         }
         else
@@ -246,24 +222,32 @@
 
             if (this.User.IsInRole("Admin"))
             {
-                <button id="add-child-btn" type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
-                    <span class="glyphicon glyphicon-plus"></span> Child
-                </button>
-                <button id="rename-parent" type="button" class="btn btn-warning btn-xs" onclick="$('#input-modal').fadeIn();">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                </button>
-                <button id="remove-categort-btn" type="button" class="btn btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </button>
+                <ul>
+                    <li>
+                        <button id="add-child-btn" type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                            <span class="glyphicon glyphicon-plus"></span> Child
+                        </button>
+                    </li>
+                    <li>
+                        <button id="rename-parent" type="button" class="btn btn-warning btn-xs" onclick="$('#edit-modal').fadeIn();">
+                            <span class="glyphicon glyphicon-pencil"></span> Edit
+                        </button>
+                    </li>
+                    <li>
+                        <button id="remove-categort-btn" type="button" class="btn btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
+                            <span class="glyphicon glyphicon-trash"></span> Remove
+                        </button>
+                    </li>
+                </ul>
             }
         }
 
     </h3>
     <ul>
-        @foreach (Category category in ViewBag.TopLevelCategories)
+        @foreach (Category cat in ViewBag.TopLevelCategories)
         {
             <li>
-                <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@category.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">@category.Name &nbsp;</a>
+                <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">@cat.Name &nbsp;</a>
             </li>
         }
     </ul>
@@ -271,16 +255,6 @@
 
 <div class="main">
     <br />
-
-    <!-- Status modal: SUCCESS -->
-    <div id="success-modal" hidden class="alert alert-success">
-        <strong>Success!</strong> <text id="success-text"></text>
-    </div>
-
-    <!-- Status modal: ERROR-->
-    <div id="error-modal" hidden class="alert alert-danger">
-        <strong>Ooops!</strong> Some unexpected error occured. Please try again!
-    </div>
 
     @if (@ViewBag.CurrentCategoryName == null)
     {
@@ -290,6 +264,11 @@
     {
         <h4>@ViewBag.CurrentCategoryName</h4>
     }
+    @if (this.User.IsInRole("Admin"))
+    {
+        <a asp-controller="Product" asp-action="Create">Create New</a>
+    }
+
     <table class="table">
         <thead>
             <tr>
@@ -306,6 +285,10 @@
                     @Html.DisplayNameFor(model => model.Price)
                 </th>
                 <th></th>
+                @if (this.User.IsInRole("Admin"))
+                {
+                    <th>Management</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -313,7 +296,6 @@
             {
                 <tr>
                     <td>
-                        <!-- Placeholder -->
                         <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
                             <img src="~/images/products/@item.ImageLink" height="150" width="110">
                         </a>
@@ -343,6 +325,15 @@
                             </div>
                         }
                     </td>
+                    @if (this.User.IsInRole("Admin"))
+                    {
+                        <td>
+                            <ul>
+                                <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Value.Id">Edit</a></li>
+                                <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
+                            </ul>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -438,48 +429,85 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    $('#modal-exit-btn, #modal-continue-btn').click(function () {
+        $('#add-modal-id').fadeOut();
+    });
 
-        $('#add-child-modal-btn').click(function (e) {
-            if ($.trim($('#add-child-category-name').val())) {
-                e.preventDefault();
+    @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+    {
+        <text>
+            $("#add-btn-@item.Index").click(function (e) {
 
-                var AddCategoryPostModel = {
-                    Categoryname: $('#add-child-category-name').val(),
-                    CategoryDescription: $('#add-child-category-description').val(),
-                    ParentCategoryId: @ViewBag.CurrentCategoryId,
+                e.preventDefault();// prevents page refreshing
+
+                // Arguments we pass to controller's action method
+                var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
+                    ProductId: $('#hidden-id-@item.Index').val(),
+                    Quantity: $('#quantity-id-@item.Index').val()
                 }
 
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AddCategory", "Category")',
-                    data: JSON.stringify(AddCategoryPostModel),
+                    url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
+                    data: JSON.stringify(ProductToCartPostModel),
                     dataType: 'json',
                     contentType: "application/json",
                     success: function (response) {
                         if (response == 0) {
-                            $('#add-child-modal').hide();
-                            location.reload();// page refresh
+                            $('#add-modal-id').fadeIn();
                         }
                         else if (response == 1) {
-                            $('#add-child-modal').hide();
-                            $('#error-modal').attr('hidden', false);
+                            //TODO: handle failure sent from controller (modify modal box)
                         }
                     },
                     failure: function (response) {
-                        $('#add-child-modal').hide();
-                        $('#error-modal').attr('hidden', false);
+                        //TODO: handle AJAX request failure
                     }
                 });
+            });
+        </text>
+    }
+
+    $('#add-child-modal-btn').click(function () {
+        if ($.trim($('#add-child-category-name').val()) && $.trim($('#add-child-category-description').val())) {
+            var AddCategoryPostModel = {
+                CategoryName: $('#add-child-category-name').val(),
+                ParentCategoryId: "@ViewBag.CurrentCategoryId",
+                CategoryDescription: $('#add-child-category-description').val()
             }
-        });
 
-        $('#remove-modal-remove-btn').click(function (e) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddCategory", "Category")',
+                data: JSON.stringify(AddCategoryPostModel),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#add-child-modal').hide();
+                        location.reload();// page refresh
+                    }
+                    else if (response == 1) {
+                        $('#add-child-error-modal').attr('hidden', false);
+                        $('#add-child-error-message').text(" Some  value violated the integrity constraints!")
+                    }
+                },
+                failure: function (response) {
+                    $('#add-child-error-modal').attr('hidden', false);
+                    $('#add-child-error-message').text(" Some unexpected error occured. Please try again!")
+                }
+            });
+        }
+        else {
+            $('#add-child-error-modal').attr('hidden', false);
+            $('#add-child-error-message').text(" Illegal input.")
+        }
+    });
 
-            e.preventDefault();// prevents page refreshing
+    $('#remove-category-modal-btn').click(function () {
 
             var CategoryPostModel = {
-                CategoryId: @ViewBag.CurrentCategoryId,
+                CategoryId: "@ViewBag.CurrentCategoryId"
             }
 
             $.ajax({
@@ -494,89 +522,52 @@
                         window.location = '@Url.Action("Index", "Home")'// TODO: return to parent category instead of home/index
                     }
                     else if (response == 1) {
-                        $('#remove-modal').hide();
-                        $('#error-modal').attr('hidden', false);
+                        $('#remove-error-modal').attr('hidden', false);
+                        $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
                     }
                 },
                 failure: function (response) {
-                    $('#remove-modal').hide();
-                    $('#error-modal').attr('hidden', false);
+                    $('#remove-error-modal').attr('hidden', false);
+                    $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
                 }
             });
-        });
+    });
 
-        $('#input-modal-rename-btn').click(function (e) {
+    $('#edit-category-modal-btn').click(function() {
+        if ($.trim($('#new-category-name').val()) && $.trim($('#new-category-description').val())) {
 
-            if ($.trim($('#new-category-name').val()) && $.trim($('#new-category-description').val())){
-                e.preventDefault();// prevents page refreshing
-
-                var CategoryNewNamePostModel = {
-                    CategoryId: @ViewBag.CurrentCategoryId,
-                    NewName: $('#new-category-name').val(),
-                    NewDescription: $('#new-category-description').val(),
-                }
-
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("RenameCategory", "Category")',
-                    data: JSON.stringify(CategoryNewNamePostModel),
-                    dataType: 'json',
-                    contentType: "application/json",
-                    success: function (response) {
-                        if (response == 0) {
-                            $('#input-modal').hide();
-                            location.reload();// page refresh
-                        }
-                        else if (response == 1) {
-                            $('#input-modal').hide();
-                            $('#error-modal').attr('hidden', false);
-                        }
-                    },
-                    failure: function (response) {
-                        $('#input-modal').hide();
-                        $('#error-modal').attr('hidden', false);
-                    }
-                });
+            var CategoryNewNamePostModel = {
+                CategoryId: "@ViewBag.CurrentCategoryId",
+                NewName: $('#new-category-name').val(),
+                NewDescription: $('#new-category-description').val(),
             }
-        });
 
-        $('#modal-exit-btn, #modal-continue-btn').click(function () {
-            $('#add-modal-id').fadeOut();
-        });
-
-        @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
-        {
-            <text>
-                $("#add-btn-@item.Index").click(function (e) {
-
-                    e.preventDefault();// prevents page refreshing
-
-                    // Arguments we pass to controller's action method
-                    var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
-                        ProductId: $('#hidden-id-@item.Index').val(),
-                        Quantity: $('#quantity-id-@item.Index').val()
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RenameCategory", "Category")',
+                data: JSON.stringify(CategoryNewNamePostModel),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#edit-modal').hide();
+                        location.reload();// page refresh
                     }
+                    else if (response == 1) {
+                        $('#edit-category-error-modal').attr('hidden', false);
+                        $('#edit-category-error-message').text(" Some value violated the integrity constraints!")
+                    }
+                },
+                failure: function (response) {
+                    $('#edit-category-error-modal').attr('hidden', false);
+                    $('#edit-category-error-message').text(" Some unexpected error occured. Please try again!")
+                }
+            });
+        }
+        else {
+            $('#edit-category-error-modal').attr('hidden', false);
+            $('#edit-category-error-message').text(" Illegal input.")
 
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
-                        data: JSON.stringify(ProductToCartPostModel),
-                        dataType: 'json',
-                        contentType: "application/json",
-                        success: function (response) {
-                            if (response == 0) {
-                                $('#add-modal-id').fadeIn();
-                            }
-                            else if (response == 1) {
-                                //TODO: handle failure sent from controller (modify modal box)
-                            }
-                        },
-                        failure: function (response) {
-                            //TODO: handle AJAX request failure
-                        }
-                    });
-                });
-            </text>
         }
     });
 </script>
