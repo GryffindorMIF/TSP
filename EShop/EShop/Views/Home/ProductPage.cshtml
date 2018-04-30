@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<EShop.Models.ProductDetails>
 
 @{
-    ViewData["Title"] = "ProductPage";
+    ViewData["Title"] = ViewBag.Product.Name;
     int totalImages = ViewBag.SecondaryImages.Count + 1;
 }
 
