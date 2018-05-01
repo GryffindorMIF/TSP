@@ -1,0 +1,40 @@
+﻿<div id="add-child-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p align="center">
+                    <img src="~/images/folder.png" width="30" height="26" />
+                    Add new sub-category
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#add-child-modal').hide();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div id="add-child-error-modal" hidden class="alert alert-danger">
+                        <strong>Ooops!</strong><text id="add-child-error-message"></text>
+                    </div>
+
+                    <table align="center">
+                        <tr>
+                            <td>Name &nbsp;</td>
+                            <td>
+                                <input id="add-child-category-name" type="text" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Description &nbsp;</td>
+                            <td>
+                                <textarea id="add-child-category-description" type="text" rows="5" cols="40" style="resize: none;"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="add-child-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

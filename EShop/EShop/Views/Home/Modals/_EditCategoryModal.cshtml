@@ -1,0 +1,60 @@
+﻿@using EShop.Data;
+@inject ApplicationDbContext context
+
+<div id="edit-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p align="center">
+                    <img src="~/images/folder.png" width="30" height="26" />
+                    Edit "@ViewBag.CurrentCategoryName" category
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#edit-modal').hide();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+            </div>
+            <form id="edit-category-form">
+                <div class="modal-body">
+                    <div id="edit-category-error-modal" hidden class="alert alert-danger">
+                        <strong>Ooops!</strong><text id="edit-category-error-message"></text>
+                    </div>
+                    @{
+                        Category category;
+                        string categoryName;
+                        string categoryDesc;
+
+                        if (ViewBag.CurrentCategoryId == null)
+                        {
+                            category = null;
+                            categoryName = "";
+                            categoryDesc = "";
+                        }
+                        else
+                        {
+                            category = await context.Category.FindAsync(ViewBag.CurrentCategoryId);
+                            categoryName = category.Name;
+                            categoryDesc = category.Description;
+                        }
+                    }
+                    <table align="center">
+                        <tr>
+                            <td>Name &nbsp;</td>
+                            <td>
+                                <input id="new-category-name" type="text" value="@categoryName" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Description &nbsp;</td>
+                            <td>
+                                <textarea id="new-category-description" rows="5" cols="40" style="resize: none;">@categoryDesc</textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="edit-category-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Rename</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

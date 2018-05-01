@@ -1,0 +1,79 @@
+﻿<h3>Navigation</h3>
+<h3 id="result"></h3>
+
+@if (ViewBag.CurrentCategoryName == null)
+{
+    <h5><a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">All</a></h5>
+}
+else
+{
+    string[] pathSegments = ViewBag.AbsoluteNavigationPath.Split("/");
+    pathSegments = pathSegments.Skip(1).ToArray(); // skippinam pirma tarpa
+    pathSegments = pathSegments.Take(pathSegments.Count() - 1).ToArray(); // skippinam paskutini tarpa
+    <h5>
+        <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">All</a>
+        @foreach (var pathSegment in pathSegments)
+        {
+            <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" asp-route-navigateToCategoryNamed="@pathSegment" onclick="$('#loading-modal').fadeIn()">/ @pathSegment</a>
+        }
+        <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" asp-route-navigateToCategoryNamed="@ViewBag.CurrentCategoryName" onclick="$('#loading-modal').fadeIn()">/ @ViewBag.CurrentCategoryName</a>
+    </h5>
+}
+<form asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
+    <button type="submit" class="btn btn-primary" onclick="$('#loading-modal').fadeIn()">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
+    </button>
+</form>
+
+<h3>
+    @if (ViewBag.CurrentCategoryName == null)
+    {
+        <text>All</text>
+
+        if (this.User.IsInRole("Admin"))
+        {
+            <ul>
+                <li>
+                    <button type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                        <span class="glyphicon glyphicon-plus"></span> Child
+                    </button>
+                </li>
+            </ul>
+        }
+    }
+    else
+    {
+        <text>@ViewBag.CurrentCategoryName</text>
+
+        if (this.User.IsInRole("Admin"))
+        {
+            <ul>
+                <li>
+                    <button id="add-child-btn" type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                        <span class="glyphicon glyphicon-plus"></span> Child
+                    </button>
+                </li>
+                <li>
+                    <button id="rename-parent" type="button" class="btn btn-warning btn-xs" onclick="$('#edit-modal').fadeIn();">
+                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                    </button>
+                </li>
+                <li>
+                    <button id="remove-categort-btn" type="button" class="btn btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
+                        <span class="glyphicon glyphicon-trash"></span> Remove
+                    </button>
+                </li>
+            </ul>
+        }
+    }
+
+</h3>
+<ul>
+    @foreach (Category cat in ViewBag.TopLevelCategories)
+    {
+        <li>
+            <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">@cat.Name &nbsp;</a>
+        </li>
+    }
+</ul>
+

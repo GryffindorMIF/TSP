@@ -1,0 +1,29 @@
+﻿<div id="remove-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p align="center">
+                    <img src="~/images/remove.png" width="30" height="30" /> &nbsp;
+                    Remove "@ViewBag.CurrentCategoryName" category
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#remove-modal').hide();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+            </div>
+            <div class="modal-body">
+                <div id="remove-error-modal" hidden class="alert alert-danger">
+                    <strong>Ooops!</strong><text id="remove-error-message"></text>
+                </div>
+                <div class="alert alert-danger" role="alert">
+                    <strong>Warning!</strong> This will also delete all sub-categories!
+                </div>
+                <p align="center">
+                    Are you sure you want to perform this action?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="remove-category-modal-btn" type="button" class="btn btn-danger" data-dismiss="modal">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
