@@ -58,3 +58,45 @@
         </div>
     </div>
 </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $('#edit-category-modal-btn').click(function() {
+        if ($.trim($('#new-category-name').val()) && $.trim($('#new-category-description').val())) {
+
+            var CategoryNewNamePostModel = {
+                CategoryId: "@ViewBag.CurrentCategoryId",
+                NewName: $('#new-category-name').val(),
+                NewDescription: $('#new-category-description').val(),
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RenameCategory", "Category")',
+                data: JSON.stringify(CategoryNewNamePostModel),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#edit-modal').hide();
+                        location.reload();// page refresh
+                    }
+                    else if (response == 1) {
+                        $('#edit-category-error-modal').attr('hidden', false);
+                        $('#edit-category-error-message').text(" Some value violated the integrity constraints!")
+                    }
+                },
+                failure: function (response) {
+                    $('#edit-category-error-modal').attr('hidden', false);
+                    $('#edit-category-error-message').text(" Some unexpected error occured. Please try again!")
+                }
+            });
+        }
+        else {
+            $('#edit-category-error-modal').attr('hidden', false);
+            $('#edit-category-error-message').text(" Illegal input.")
+
+        }
+    });
+</script>

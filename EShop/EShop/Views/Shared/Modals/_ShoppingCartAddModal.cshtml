@@ -1,4 +1,6 @@
-﻿<div id="add-modal-id" class="modal" tabindex="-1" role="dialog">
+﻿@model IEnumerable<EShop.Models.Product>
+
+<div id="add-modal-id" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -23,3 +25,46 @@
         </div>
     </div>
 </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $('#modal-exit-btn, #modal-continue-btn').click(function () {
+            $('#add-modal-id').fadeOut();
+        });
+
+    @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+    {
+        <text>
+            $("#add-btn-@item.Index").click(function (e) {
+
+            e.preventDefault();// prevents page refreshing
+
+            // Arguments we pass to controller's action method
+            var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
+                ProductId: $('#hidden-id-@item.Index').val(),
+                Quantity: $('#quantity-id-@item.Index').val()
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
+                data: JSON.stringify(ProductToCartPostModel),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#add-modal-id').fadeIn();
+                    }
+                    else if (response == 1) {
+                        //TODO: handle failure sent from controller (modify modal box)
+                    }
+                    },
+                    failure: function (response) {
+                        //TODO: handle AJAX request failure
+                    }
+                });
+            });
+        </text>
+    }
+</script>

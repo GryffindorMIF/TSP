@@ -11,6 +11,8 @@
 
 <div class="main">
     <br />
+    @Html.Partial("_MainCarousel")
+
     @if (@ViewBag.CurrentCategoryName == null)
     {
         <h4>All</h4>
@@ -25,27 +27,6 @@
     }
 
     <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    Image
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Price)
-                </th>
-                <th></th>
-                @if (this.User.IsInRole("Admin"))
-                {
-                    <th>Management</th>
-                }
-            </tr>
-        </thead>
         <tbody>
             @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index] }))
             {
@@ -102,18 +83,8 @@
 @Html.Partial("Modals/_AddChildCategoryModal")
 @Html.Partial("Modals/_RemoveCategoryModal")
 @Html.Partial("Modals/_EditCategoryModal")
+@Html.Partial("Modals/_ShoppingCartSessionModal")
 
 <!-- Shared modals -->
 @Html.Partial("Modals/_ShoppingCartAddModal")
 @Html.Partial("Modals/_LoadingModal")
-
-<!-- Private Razor-scripts  -->
-@Html.Partial("RazorScripts/_AddChildCategoryRS")
-@Html.Partial("RazorScripts/_RemoveCategoryRS")
-@Html.Partial("RazorScripts/_EditCategoryRS")
-
-<!-- Shared Razor-scripts -->
-@Html.Partial("RazorScripts/_ShoppingCartAddRS")
-
-<!-- Other -->
-@Html.Partial("Modals/_ShoppingCartSessionModal")
