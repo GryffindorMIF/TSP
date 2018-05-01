@@ -18,7 +18,7 @@
                     @Html.DisplayNameFor(model => model.Role)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.User.IsSuspended)
+                    Suspended
                 </th>
                 <th></th>
             </tr>
@@ -37,7 +37,7 @@
                         @Html.DisplayFor(modelItem => item.User.IsSuspended)
                     </td>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+                        <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> |
 
                         @if (!item.User.IsAdmin)
                         {
@@ -46,7 +46,8 @@
                         else
                         {
                             <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
-                        }
+                        } |
+
                         @if (!item.User.IsSuspended)
                         {
                             <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
