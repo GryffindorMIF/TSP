@@ -1,0 +1,41 @@
+﻿
+<!-- TODO: make this carousel dynamically configurable --> 
+
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
+    <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+        <li data-target="#myCarousel" data-slide-to="2"></li>
+    </ol>
+    <div class="carousel-inner" role="listbox">
+        <div class="item active">
+            <a asp-action="ProductPage" asp-route-id="2044">
+                <img src="~/images/main carousel/tincup-whiskey.png" alt="ASP.NET" class="img-responsive" style="cursor: pointer;" />
+            </a>
+            <div class="carousel-caption" role="option">
+            </div>
+        </div>
+        <div class="item">
+            <a asp-action="ProductPage" asp-route-id="2">
+                <img src="~/images/main carousel/heineken.png" alt="Visual Studio" class="img-responsive" style="cursor: pointer;" />
+            </a>
+            <div class="carousel-caption" role="option">
+            </div>
+        </div>
+        <div class="item">
+            <a asp-action="ProductPage" asp-route-id="2045">
+                <img src="~/images/main carousel/warhold-absolut.png" alt="Package Management" class="img-responsive" style="cursor: pointer;" />
+            </a>
+            <div class="carousel-caption" role="option">
+            </div>
+        </div>
+    </div>
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
