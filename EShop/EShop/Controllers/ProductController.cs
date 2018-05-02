@@ -72,7 +72,7 @@ namespace EShop.Controllers
 
                     if (model.PrimaryImage != null)
                     {
-                        var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage, uploadMaxByteSize).GetAwaiter().GetResult();
+                        var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage, "products", uploadMaxByteSize).GetAwaiter().GetResult();
                         if (primaryImagePath != null)
                         {
                             ProductImage primaryImage = new ProductImage
@@ -94,7 +94,7 @@ namespace EShop.Controllers
                     {
                         foreach (IFormFile image in model.OtherImages)
                         {
-                            var otherImagePath = _appEnvironment.UploadImageAsync(image, uploadMaxByteSize).GetAwaiter().GetResult(); ;
+                            var otherImagePath = _appEnvironment.UploadImageAsync(image, "products", uploadMaxByteSize).GetAwaiter().GetResult(); ;
                             if (otherImagePath != null)
                             {
                                 ProductImage otherImage = new ProductImage
@@ -154,7 +154,7 @@ namespace EShop.Controllers
             }
 
             IEnumerable<Category> categories = null;
-            IEnumerable<int> selectedCategoryIds = null;
+            IEnumerable<int> idsOfSelectedCategories = null;
             List<ProductImage> otherImages = null;
             List<ProductImage> primaryImages = null;
 
@@ -163,7 +163,7 @@ namespace EShop.Controllers
                categories = (from c in _context.Category
                              select c).ToList();
 
-               selectedCategoryIds = (from pc in _context.ProductCategory
+               idsOfSelectedCategories = (from pc in _context.ProductCategory
                                       where pc.ProductId == product.Id
                                       select pc.CategoryId).ToList();
 
@@ -180,7 +180,7 @@ namespace EShop.Controllers
             task.Wait();
 
             model.Product = product;
-            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", selectedCategoryIds);
+            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", idsOfSelectedCategories);
             model.ImagesToRemoveSelectList = new MultiSelectList(otherImages, "Id", "ImageUrl");
 
             if (primaryImages.Count > 0)
@@ -241,7 +241,7 @@ namespace EShop.Controllers
                     //New primary image
                     if (model.PrimaryImage != null)
                     {
-                        var primaryImagePath = await _appEnvironment.UploadImageAsync(model.PrimaryImage, uploadMaxByteSize);
+                        var primaryImagePath = await _appEnvironment.UploadImageAsync(model.PrimaryImage, "products", uploadMaxByteSize);
                         if (primaryImagePath != null)
                         {
                             ProductImage primaryImage = new ProductImage
@@ -252,7 +252,7 @@ namespace EShop.Controllers
                             };
                             if (possiblePrimaryImages != null && possiblePrimaryImages.Count > 0)
                             {
-                                await _appEnvironment.DeleteImageAsync(possiblePrimaryImages[0].ImageUrl);
+                                await _appEnvironment.DeleteImageAsync(possiblePrimaryImages[0].ImageUrl, "products");
                                 _context.Remove(possiblePrimaryImages[0]);
                             }
                             _context.Add(primaryImage);
@@ -270,7 +270,7 @@ namespace EShop.Controllers
                     {
                         foreach (IFormFile image in model.OtherImages)
                         {
-                            var otherImagePath = await _appEnvironment.UploadImageAsync(image, uploadMaxByteSize);
+                            var otherImagePath = await _appEnvironment.UploadImageAsync(image, "products", uploadMaxByteSize);
                             if (otherImagePath != null)
                             {
                                 ProductImage otherImage = new ProductImage
@@ -299,7 +299,7 @@ namespace EShop.Controllers
                             List<ProductImage> imageToClean = possibleOtherImages.Where(image => image.Id == imageId).ToList();
                             if (imageToClean.Count > 0)
                             {
-                                await _appEnvironment.DeleteImageAsync(imageToClean[0].ImageUrl);
+                                await _appEnvironment.DeleteImageAsync(imageToClean[0].ImageUrl, "products");
                                 _context.Remove(imageToClean[0]);
                             }
                         }
@@ -338,9 +338,9 @@ namespace EShop.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
-            return View(model.Product);
+            return RedirectToAction("Index", "Home");
         }
 
         [Authorize(Roles = "Admin")]
@@ -380,7 +380,7 @@ namespace EShop.Controllers
             {
                 foreach (ProductImage image in images)
                 {
-                    await _appEnvironment.DeleteImageAsync(image.ImageUrl);
+                    await _appEnvironment.DeleteImageAsync(image.ImageUrl, "products");
                     _context.Remove(image);
                 }
             }

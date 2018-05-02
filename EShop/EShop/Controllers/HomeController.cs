@@ -13,6 +13,9 @@ using System.Security.Claims;
 using EShop.Business;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Hosting;
+using EShop.Util;
 
 namespace EShop.Controllers
 {
@@ -21,19 +24,26 @@ namespace EShop.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INavigationService _navigationService;
+        private readonly IHostingEnvironment _appEnvironment;
+        private readonly int uploadMaxByteSize;
         private readonly int productsPerPage;
 
         private const int startingPageNumber = 0;
 
-        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment)
         {
             _context = context;
             _userManager = userManager;
             _navigationService = navigationService;
+            _appEnvironment = appEnvironment;
 
             if (!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
             {
                 throw new InvalidOperationException("Invalid ProductsConfig:ProductsPerPage in appsettings.json. Not an int value.");
+            }
+            if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
+            {
+                throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
             }
         }
 
@@ -204,6 +214,9 @@ namespace EShop.Controllers
                 }
             });
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
+            // -----------------------------------------
+            ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
+            ViewBag.ProductAds = productAds;
 
             return View(productsToView);
         }
@@ -262,6 +275,10 @@ namespace EShop.Controllers
             });
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
+            // -----------------------------------------
+            ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
+            ViewBag.ProductAds = productAds;
+
             return View("Index", products);
         }
 
@@ -288,6 +305,86 @@ namespace EShop.Controllers
                 }
             });        
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditMainCarousel()
+        {
+            ProductAdViewModel productAdViewModel = new ProductAdViewModel();
+
+            List<Product> products = null;
+            List<ProductAd> productAds = null;
+
+            await Task.Run(() =>
+            {
+                products = (from p in _context.Product
+                              select p).ToList();
+
+                productAds = (from pa in _context.ProductAd
+                               select pa).ToList();
+            
+
+                productAdViewModel.ProductSelectList = new SelectList(products, "Id", "Name");
+                productAdViewModel.AdsToRemoveSelectList = new MultiSelectList(productAds, "Id", "Product.Name");
+
+                ViewBag.ProductAds = productAds;
+                ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
+            });
+
+            return View("EditMainCarousel", productAdViewModel);
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateAd(ProductAdViewModel productAdViewModel)
+        {
+            IList<ProductAd> possibleAdImages = null;
+
+            var task = Task.Run(() =>
+            {
+                if (productAdViewModel.ProductAdImage != null)
+                {
+                    possibleAdImages = (from pai in _context.ProductAd
+                                             where pai.Product.Id == productAdViewModel.SelectedProductId
+                                             select pai).ToList();
+                }
+            });
+            task.Wait();
+
+            var img = productAdViewModel.ProductAdImage;
+
+            if (productAdViewModel.ProductAdImage != null)
+            {
+                var adImagePath = await _appEnvironment.UploadImageAsync(productAdViewModel.ProductAdImage, "main carousel", uploadMaxByteSize);
+                if (adImagePath != null)
+                {
+                    ProductAd productAd = new ProductAd
+                    {
+                        AdImageUrl = adImagePath,
+                        Product = await _context.Product.FindAsync(productAdViewModel.SelectedProductId)
+                    };
+                    if (possibleAdImages != null && possibleAdImages.Count > 0)
+                    {
+                        await _appEnvironment.DeleteImageAsync(possibleAdImages[0].AdImageUrl, "main carousel");
+                        _context.Remove(possibleAdImages[0]);
+                    }
+                    _context.Add(productAd);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return await EditMainCarousel();
+        }
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteAds(ProductAdViewModel productAdViewModel)
+        {
+            foreach(var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
+            {
+               var adToRemove = await _context.ProductAd.FindAsync(adId);
+                _context.Remove(adToRemove);
+                await _appEnvironment.DeleteImageAsync(adToRemove.AdImageUrl, "main carousel");
+            }
+            await _context.SaveChangesAsync();
+
+            return await EditMainCarousel();
         }
     }
 }

@@ -128,6 +128,10 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ParentCategoryId");
+
                     b.ToTable("CategoryCategory");
                 });
 
@@ -211,6 +215,22 @@ namespace EShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Product");
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductAd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("AdImageUrl");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAd");
                 });
 
             modelBuilder.Entity("EShop.Models.ProductCategory", b =>
@@ -439,6 +459,18 @@ namespace EShop.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("EShop.Models.CategoryCategory", b =>
+                {
+                    b.HasOne("EShop.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EShop.Models.Category", "ParentCategory")
+                        .WithMany()
+                        .HasForeignKey("ParentCategoryId");
+                });
+
             modelBuilder.Entity("EShop.Models.DeliveryAddress", b =>
                 {
                     b.HasOne("EShop.Models.ApplicationUser", "User")
@@ -462,6 +494,14 @@ namespace EShop.Data.Migrations
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductAd", b =>
+                {
+                    b.HasOne("EShop.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

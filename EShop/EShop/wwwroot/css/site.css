@@ -120,20 +120,3 @@ ul {
         width: 100%;
     }
 }
-
-/* 'manage categories' tree view (Views/Category/Index && Views/Category/_IndexPartial) */
-.tree-view ul {
-    padding-bottom: 0;
-}
-.tree-view li {
-    margin-left: 2em
-}
-
-.clickable-category text:hover {
-    background-color: yellow;
-    font-weight: bold;
-}
-
-.clickable-category {
-    cursor: pointer;
-}
