@@ -11,7 +11,10 @@
 
 <div class="main">
     <br />
-    @Html.Partial("_MainCarousel")
+    @{ 
+        ICollection<ProductAd> productAds = ViewBag.ProductAds;
+    }
+    @Html.Partial("_MainCarousel", productAds)
 
     @if (@ViewBag.CurrentCategoryName == null)
     {

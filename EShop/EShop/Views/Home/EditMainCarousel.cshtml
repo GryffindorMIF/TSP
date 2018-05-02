@@ -1,0 +1,64 @@
+﻿@model EShop.Models.ProductAdViewModel
+
+@{
+    ViewData["Title"] = "EditMainCarousel";
+}
+
+<div class="sidenav"></div>
+<div class="main">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>New ad</h3>
+            <hr>
+            <form asp-action="CreateAd" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label class="control-label">Select ad image</label>
+                    <input type="file" asp-for="ProductAdImage" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Select related product</label>
+                    <select asp-for="SelectedProductId" class="form-control" asp-items="@Model.ProductSelectList"></select>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="row">
+                <h3>Existing ads</h3>
+                <hr>
+                @if (ViewBag.ProductAds.Count > 0)
+                {
+                    <label class="control-label">Ads </label><br>
+                }
+                <ul>
+                    @foreach (ProductAd ad in ViewBag.ProductAds)
+                    {
+                        <li>
+                            <a href="~/images/main carousel/@ad.AdImageUrl" target="_blank">
+                                <img src="~/images/main carousel/@ad.AdImageUrl" height="60" width="190">
+                            </a>
+                        </li>
+                        <li>@ad.Product.Name</li>
+                    }
+                </ul>
+                <form asp-action="DeleteAds">
+                    <div class="form-group">
+                        </br>
+                        <label class="control-label">Select ads to remove (ctrl + click) </label>
+
+                        <select asp-for="IdsOfSelectedAdsToRemove"
+                                class="form-control"
+                                asp-items="@Model.AdsToRemoveSelectList"></select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Remove" class="btn btn-danger" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

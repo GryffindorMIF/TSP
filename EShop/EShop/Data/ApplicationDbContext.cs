@@ -28,6 +28,7 @@ namespace EShop.Data
         public DbSet<CategoryCategory> CategoryCategory { get; set; }
         public DbSet<DeliveryAddress> DeliveryAddress { get; set; }
         public DbSet<ProductDiscount> ProductDiscount { get; set; }
+        public DbSet<ProductAd> ProductAd { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
