@@ -509,5 +509,40 @@ namespace EShop.Controllers
 
             return model;
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Discount(int productId)
+        {
+            ViewBag.Product = await _context.Product.FindAsync(productId);
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
+        {
+            _context.Add(productDiscount);
+            await _context.SaveChangesAsync();
+            if (page == "Index")
+                return RedirectToAction("Index", "Home");
+            else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
+
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveDiscount(string page, int productId)
+        {
+            var productDiscount = await (from pd in _context.ProductDiscount
+                                         where pd.ProductId == productId
+                                         select pd).FirstOrDefaultAsync();
+
+            _context.Remove(productDiscount);
+            await _context.SaveChangesAsync();
+            if (page == "Index")
+                return RedirectToAction("Index", "Home");
+            return RedirectToAction("ProductPage", "Home", new { id = productId });
+        }
     }
 }
