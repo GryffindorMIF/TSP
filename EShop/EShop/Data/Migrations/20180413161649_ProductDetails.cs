@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
-    public partial class ProductProperty : Migration
+    public partial class ProductDetails : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ProductProperty",
+                name: "ProductDetails",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -21,9 +21,9 @@ namespace EShop.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductProperty", x => x.Id);
+                    table.PrimaryKey("PK_ProductDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductProperty_Product_ProductId",
+                        name: "FK_ProductDetails_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "Id",
@@ -31,15 +31,15 @@ namespace EShop.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductProperty_ProductId",
-                table: "ProductProperty",
+                name: "IX_ProductDetails_ProductId",
+                table: "ProductDetails",
                 column: "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ProductProperty");
+                name: "ProductDetails");
         }
     }
 }

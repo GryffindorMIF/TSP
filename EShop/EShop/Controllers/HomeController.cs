@@ -392,7 +392,7 @@ namespace EShop.Controllers
                 }
             }
 
-            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
 
         [Authorize(Roles = "Admin")]
@@ -402,7 +402,7 @@ namespace EShop.Controllers
 
             List<Product> products = null;
             List<ProductAd> productAds = null;
-            
+
             await Task.Run(() =>
             {
                 products = (from p in _context.Product

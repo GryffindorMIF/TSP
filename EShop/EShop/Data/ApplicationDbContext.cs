@@ -22,7 +22,7 @@ namespace EShop.Data
         public DbSet<CardInfo> CardInfo { get; set; }
         public DbSet<ShoppingCart> ShoppingCart { get; set; }
         public DbSet<ShoppingCartProduct> ShoppingCartProduct { get; set; }
-        public DbSet<ProductProperty> ProductProperty { get; set; }
+        public DbSet<ProductDetails> ProductDetails { get; set; }
         public DbSet<Category> Category { get; set; }
         public DbSet<ProductCategory> ProductCategory { get; set; }
         public DbSet<CategoryCategory> CategoryCategory { get; set; }
