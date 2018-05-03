@@ -314,15 +314,16 @@ namespace EShop.Controllers
                             ModelState.AddModelError("Product.Price", $"Current value: {databaseValues.Price}");
                         }
 
-                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x=>x.Category.Name).ToList());
-                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x=> model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToList());
-                        if (dbProductCategoryNames != clientProductCategoryNames)
+                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x=>x.Category.Name).ToArray());
+                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x=> model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
+                        if (!dbProductCategoryNames.ToHashSet().SetEquals(clientProductCategoryNames.ToHashSet()))
                         {
                             string categoryStrings = String.Join(", ", dbProductCategoryNames);
                             ModelState.AddModelError("IdsOfSelectedCategories", $"Current value: {categoryStrings}");
                         }
 
-                        ModelState.AddModelError(string.Empty, "The product's values were changed while you were editing them. Review the changes and if you still wish to changed them, submit them again.");
+                        ModelState.AddModelError(string.Empty, "The product's values were updated while you were editing them. Review the changes (if any) " +
+                            "and if you still wish to submit them, click the 'Save' button again.");
 
                         await FillUpProductEditData(model, model.Product);
 
