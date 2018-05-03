@@ -11,8 +11,8 @@ using System;
 namespace EShop.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180413161649_ProductDetails")]
-    partial class ProductDetails
+    [Migration("20180413161649_ProductProperty")]
+    partial class ProductProperty
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -110,7 +110,7 @@ namespace EShop.Data.Migrations
                     b.ToTable("Product");
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductDetails", b =>
+            modelBuilder.Entity("EShop.Models.ProductProperty", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -129,7 +129,7 @@ namespace EShop.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductDetails");
+                    b.ToTable("ProductProperty");
                 });
 
             modelBuilder.Entity("EShop.Models.ProductImage", b =>
@@ -293,7 +293,7 @@ namespace EShop.Data.Migrations
                         .HasForeignKey("ShoppingCartId");
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductDetails", b =>
+            modelBuilder.Entity("EShop.Models.ProductProperty", b =>
                 {
                     b.HasOne("EShop.Models.Product", "product")
                         .WithMany("DetailsList")

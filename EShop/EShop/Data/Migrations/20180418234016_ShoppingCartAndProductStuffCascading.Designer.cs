@@ -159,7 +159,7 @@ namespace EShop.Data.Migrations
                     b.ToTable("ProductCategory");
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductDetails", b =>
+            modelBuilder.Entity("EShop.Models.ProductProperty", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -176,7 +176,7 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductDetails");
+                    b.ToTable("ProductProperty");
                 });
 
             modelBuilder.Entity("EShop.Models.ProductImage", b =>

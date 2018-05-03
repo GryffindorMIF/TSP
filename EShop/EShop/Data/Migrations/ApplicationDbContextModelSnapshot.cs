@@ -275,26 +275,6 @@ namespace EShop.Data.Migrations
                     b.ToTable("ProductCategory");
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductDetails", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(200);
-
-                    b.Property<int>("ProductId");
-
-                    b.Property<string>("Property")
-                        .IsRequired()
-                        .HasMaxLength(200);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductDetails");
-                });
-
             modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
                 {
                     b.Property<int>("Id")
@@ -330,6 +310,26 @@ namespace EShop.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImage");
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductProperty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20);
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductProperty");
                 });
 
             modelBuilder.Entity("EShop.Models.ShoppingCart", b =>

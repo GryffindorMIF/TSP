@@ -406,7 +406,7 @@ namespace EShop.Controllers
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = id;
             //ViewData["show_alert"] = showAlert;
-            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
         }
 
         //Page with add property form
@@ -423,12 +423,12 @@ namespace EShop.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Property,Description,ProductId")] ProductDetails productDetails)
+        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Name,Description,ProductId")] ProductProperty ProductProperty)
         {
             if (ModelState.IsValid)
             {
-                //productDetails.ProductId = productId;
-                _context.Add(productDetails);
+                //ProductProperty.ProductId = productId;
+                _context.Add(ProductProperty);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProperties), new { id = productId });
             }
@@ -443,7 +443,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
-            ProductDetails property = _context.ProductDetails.FirstOrDefault(pd => pd.Id == id);
+            ProductProperty property = _context.ProductProperty.FirstOrDefault(pd => pd.Id == id);
             int productId = property.ProductId;
 
             await Task.Run(() =>

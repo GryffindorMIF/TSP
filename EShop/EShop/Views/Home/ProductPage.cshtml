@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EShop.Models.ProductDetails>
+﻿@model IEnumerable<EShop.Models.ProductProperty>
 
 @{
     ViewData["Title"] = ViewBag.Product.Name;
@@ -165,7 +165,7 @@
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Property)
+                    Property
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Description)
@@ -177,7 +177,7 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Property)
+                        @Html.DisplayFor(modelItem => item.Name)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Description)
