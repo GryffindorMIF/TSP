@@ -37,7 +37,8 @@
                     <tr>
                         <td>
                             <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
-                                @Html.DisplayFor(modelItem => item.Value.Name)
+                                @Html.DisplayFor(modelItem => item.Value.Name)<br />
+                                <img src="~/images/products/@item.Value.ImageUrl" height="112" width="82">
                             </a>
                         </td>
                         <td>

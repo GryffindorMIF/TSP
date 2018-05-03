@@ -12,5 +12,6 @@ namespace EShop.Models
         public Decimal Price { get; set; }
         public int Quantity { get; set; }
         public Decimal TotalPrice { get; set; }
+        public string ImageUrl { get; set; }
     }
 }
