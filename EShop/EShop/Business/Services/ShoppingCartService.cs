@@ -40,7 +40,8 @@ namespace EShop.Business
                                          Name = p.Name,
                                          Price = p.Price,
                                          Quantity = scp.Quantity,
-                                         TotalPrice = scp.Quantity * p.Price
+                                         TotalPrice = scp.Quantity * p.Price,
+                                         ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Id).ImageUrl
                                      };
                 });
             }
@@ -54,7 +55,8 @@ namespace EShop.Business
                                       Name = p.Product.Name,
                                       Price = p.Product.Price,
                                       Quantity = p.Count,
-                                      TotalPrice = p.Count * p.Product.Price
+                                      TotalPrice = p.Count * p.Product.Price,
+                                      ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Product.Id).ImageUrl
                                   }).AsQueryable();
             }
             return (await DiscountProducts(productsInCart.ToList())).AsQueryable();

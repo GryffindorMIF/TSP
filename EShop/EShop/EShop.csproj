@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\Migrations\20180503134709_Order_Review.cs" />
+    <Compile Remove="Data\Migrations\20180503134709_Order_Review.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Views\Home\Index.cshtml~RF3cdd78b0.TMP" />
   </ItemGroup>
 

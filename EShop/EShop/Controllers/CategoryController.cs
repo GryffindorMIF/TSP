@@ -41,12 +41,21 @@ namespace EShop.Views
             try
             {
                 Category category = await _context.Category.FindAsync(postModel.CategoryId);
+
+                _context.Entry(category).Property("RowVersion").OriginalValue = Convert.FromBase64String(postModel.RowVersion);
+
+                var test = Convert.FromBase64String(postModel.RowVersion);
+
                 category.Name = postModel.NewName;
                 category.Description = postModel.NewDescription;
                 _context.Update(category);
                 await _context.SaveChangesAsync();
 
                 return Json(0);// success
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Json(2); // Optimistic locking
             }
             catch
             {

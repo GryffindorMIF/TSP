@@ -108,6 +108,10 @@ namespace EShop.Data.Migrations
 
                     b.Property<string>("Name");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
@@ -170,7 +174,7 @@ namespace EShop.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AddressId")
+                    b.Property<string>("Address")
                         .IsRequired();
 
                     b.Property<string>("CardNumber")
@@ -185,20 +189,40 @@ namespace EShop.Data.Migrations
 
                     b.Property<int>("StatusCode");
 
-                    b.Property<int>("TotalPrice");
+                    b.Property<decimal>("TotalPrice");
 
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
-
                     b.HasIndex("ShoppingCartId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Order");
+                });
+
+            modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("CustomerComment");
+
+                    b.Property<int?>("OrderId")
+                        .IsRequired();
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrderReview");
                 });
 
             modelBuilder.Entity("EShop.Models.Product", b =>
@@ -478,14 +502,22 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.Order", b =>
                 {
-                    b.HasOne("EShop.Models.DeliveryAddress", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
                         .WithMany()
                         .HasForeignKey("ShoppingCartId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EShop.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
+                {
+                    b.HasOne("EShop.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("EShop.Models.ApplicationUser", "User")

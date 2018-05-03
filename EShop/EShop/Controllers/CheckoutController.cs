@@ -114,8 +114,9 @@ namespace EShop.Controllers
 
                     newOrder.ShoppingCart = shoppingCart;
                     newOrder.User = user;
-                    newOrder.TotalPrice = costOut;
-                    newOrder.Address = confirmAddress;
+                    newOrder.TotalPrice = Convert.ToDecimal(totalCost);
+                    newOrder.Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
+                        confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode;
                     newOrder.CardNumber = model.CardNumber;
                     newOrder.PurchaseDate = DateTime.Now;
                     newOrder.StatusCode = 1; //1 - Purchased 2 - Confirmed etc.
