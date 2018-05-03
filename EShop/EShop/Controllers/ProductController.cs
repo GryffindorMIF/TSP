@@ -159,24 +159,24 @@ namespace EShop.Controllers
             List<ProductImage> primaryImages = null;
 
             var task = Task.Run(() =>
-           {
-               categories = (from c in _context.Category
-                             select c).ToList();
+            {
+                categories = (from c in _context.Category
+                              select c).ToList();
 
-               idsOfSelectedCategories = (from pc in _context.ProductCategory
-                                      where pc.ProductId == product.Id
-                                      select pc.CategoryId).ToList();
+                idsOfSelectedCategories = (from pc in _context.ProductCategory
+                                           where pc.ProductId == product.Id
+                                           select pc.CategoryId).ToList();
 
-               otherImages = (from i in _context.ProductImage
-                              where i.Product == product
-                              where i.IsPrimary == false
-                              select i).ToList();
+                otherImages = (from i in _context.ProductImage
+                               where i.Product == product
+                               where i.IsPrimary == false
+                               select i).ToList();
 
-               primaryImages = (from pi in _context.ProductImage
-                                where pi.Product == product
-                                where pi.IsPrimary == true
-                                select pi).ToList();
-           });
+                primaryImages = (from pi in _context.ProductImage
+                                 where pi.Product == product
+                                 where pi.IsPrimary == true
+                                 select pi).ToList();
+            });
             task.Wait();
 
             model.Product = product;
@@ -215,27 +215,27 @@ namespace EShop.Controllers
                     List<ProductImage> possiblePrimaryImages = null;
                     List<ProductImage> possibleOtherImages = null;
                     var task = Task.Run(() =>
-                   {
-                       relatedProductCategories = (from pc in _context.ProductCategory
-                                                   where pc.ProductId == model.Product.Id
-                                                   select pc).ToList();
+                    {
+                        relatedProductCategories = (from pc in _context.ProductCategory
+                                                    where pc.ProductId == model.Product.Id
+                                                    select pc).ToList();
 
-                       if (model.PrimaryImage != null)
-                       {
-                           possiblePrimaryImages = (from pi in _context.ProductImage
-                                                    where pi.Product == model.Product
-                                                    where pi.IsPrimary == true
-                                                    select pi).ToList();
-                       }
+                        if (model.PrimaryImage != null)
+                        {
+                            possiblePrimaryImages = (from pi in _context.ProductImage
+                                                     where pi.Product == model.Product
+                                                     where pi.IsPrimary == true
+                                                     select pi).ToList();
+                        }
 
-                       if (model.IdsOfSelectedImages != null)
-                       {
-                           possibleOtherImages = (from oi in _context.ProductImage
-                                                  where oi.Product == model.Product
-                                                  where oi.IsPrimary == false
-                                                  select oi).ToList();
-                       }
-                   });
+                        if (model.IdsOfSelectedImages != null)
+                        {
+                            possibleOtherImages = (from oi in _context.ProductImage
+                                                   where oi.Product == model.Product
+                                                   where oi.IsPrimary == false
+                                                   select oi).ToList();
+                        }
+                    });
                     task.Wait();
 
                     //New primary image
@@ -406,7 +406,7 @@ namespace EShop.Controllers
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = id;
             //ViewData["show_alert"] = showAlert;
-            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
         }
 
         //Page with add property form
@@ -423,12 +423,12 @@ namespace EShop.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Property,Description,ProductId")] ProductDetails productDetails)
+        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Name,Description,ProductId")] ProductProperty ProductProperty)
         {
             if (ModelState.IsValid)
             {
-                //productDetails.ProductId = productId;
-                _context.Add(productDetails);
+                //ProductProperty.ProductId = productId;
+                _context.Add(ProductProperty);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProperties), new { id = productId });
             }
@@ -443,7 +443,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
-            ProductDetails property = _context.ProductDetails.FirstOrDefault(pd => pd.Id == id);
+            ProductProperty property = _context.ProductProperty.FirstOrDefault(pd => pd.Id == id);
             int productId = property.ProductId;
 
             await Task.Run(() =>
@@ -477,28 +477,32 @@ namespace EShop.Controllers
             ViewBag.Product = await _context.Product.FindAsync(productId);
             return View();
         }
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Discount(ProductDiscount productDiscount)
+        public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
         {
             _context.Add(productDiscount);
             await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index", "Home");
+            if (page == "Index")
+                return RedirectToAction("Index", "Home");
+            else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
 
         }
+
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemoveDiscount(int productId)
+        public async Task<IActionResult> RemoveDiscount(string page, int productId)
         {
             var productDiscount = await (from pd in _context.ProductDiscount
-                                   where pd.ProductId == productId
-                                   select pd).FirstOrDefaultAsync();
+                                         where pd.ProductId == productId
+                                         select pd).FirstOrDefaultAsync();
 
             _context.Remove(productDiscount);
             await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index", "Home");
+            if (page == "Index")
+                return RedirectToAction("Index", "Home");
+            return RedirectToAction("ProductPage", "Home", new { id = productId });
         }
     }
 }

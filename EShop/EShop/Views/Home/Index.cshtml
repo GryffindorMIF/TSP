@@ -59,10 +59,10 @@
                             </a>
                         }
                         else
-                        { 
+                        {
                             <a href="~/images/this-is-fine.gif">
                                 <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
-                            </a>                  
+                            </a>
                         }
                     </td>
                     <td>
@@ -86,7 +86,7 @@
                                 else
                                 {
                                     <li>
-                                         Days left:
+                                        Days left:
                                     </li>
                                 }
                                 <li>
@@ -97,13 +97,13 @@
                                     if (item.Value.Name != "Deadline")
                                     {
                                         <li>
-                                            <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-productId="@item.Value.Id">Remove manually</a>
+                                            <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Remove discount</a>
                                         </li>
                                     }
                                     else
                                     {
                                         <li>
-                                            <a href="~/images/this-is-fine.gif">Remove manually</a>
+                                            <a href="~/images/this-is-fine.gif">TRY TO REMOVE</a>
                                         </li>
                                     }
                                 }
@@ -138,9 +138,9 @@
                                     <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
                                 }
                                 else
-                                { 
+                                {
                                     <li><a href="~/images/this-is-fine.gif">Edit</a></li>
-                                    <li><a href="~/images/this-is-fine.gif">Delete</a></li>                    
+                                    <li><a href="~/images/this-is-fine.gif">Delete</a></li>
                                 }
 
                                 @{
@@ -150,7 +150,7 @@
                                 }
                                 @if (productDiscount == null)
                                 {
-                                    <li><a asp-controller="Product" asp-action="Discount" asp-route-productId="@item.Value.Id">Discount</a></li>
+                                    <li><a asp-controller="Product" asp-action="Discount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Make discount</a></li>
                                 }
                             </ul>
                         </td>

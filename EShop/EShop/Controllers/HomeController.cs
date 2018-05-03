@@ -273,7 +273,7 @@ namespace EShop.Controllers
             Category category = null;
             if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
 
-            if (category == null) 
+            if (category == null)
             {
                 ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
                 ViewBag.CurrentCategoryName = null;
@@ -291,7 +291,7 @@ namespace EShop.Controllers
             String[] allPrimaryImageLinks = new String[products.Count];
 
             await Task.Run(() =>
-            {           
+            {
                 for (int i = 0; i < listProducts.Count; i++)
                 {
                     List<ProductImage> primaryImage = (from pi in _context.ProductImage
@@ -352,7 +352,8 @@ namespace EShop.Controllers
             return View("Index", products);
         }
 
-        //Denis added product page, not finished yet
+
+        //ProductPage index
         [AllowAnonymous]
         public async Task<IActionResult> ProductPage(int id)
         {
@@ -376,8 +377,8 @@ namespace EShop.Controllers
             });
 
             ProductDiscount discount = await (from pd in _context.ProductDiscount
-                            where pd.ProductId == id
-                            select pd).FirstOrDefaultAsync();
+                                              where pd.ProductId == id
+                                              select pd).FirstOrDefaultAsync();
 
             if (discount != null)
             {
@@ -392,8 +393,9 @@ namespace EShop.Controllers
                 }
             }
 
-            return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
         }
+
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditMainCarousel()
@@ -406,11 +408,11 @@ namespace EShop.Controllers
             await Task.Run(() =>
             {
                 products = (from p in _context.Product
-                              select p).ToList();
+                            select p).ToList();
 
                 productAds = (from pa in _context.ProductAd
-                               select pa).ToList();
-            
+                              select pa).ToList();
+
 
                 productAdViewModel.ProductSelectList = new SelectList(products, "Id", "Name");
                 productAdViewModel.AdsToRemoveSelectList = new MultiSelectList(productAds, "Id", "Product.Name");
@@ -421,6 +423,8 @@ namespace EShop.Controllers
 
             return View("EditMainCarousel", productAdViewModel);
         }
+
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAd(ProductAdViewModel productAdViewModel)
@@ -432,8 +436,8 @@ namespace EShop.Controllers
                 if (productAdViewModel.ProductAdImage != null)
                 {
                     possibleAdImages = (from pai in _context.ProductAd
-                                             where pai.Product.Id == productAdViewModel.SelectedProductId
-                                             select pai).ToList();
+                                        where pai.Product.Id == productAdViewModel.SelectedProductId
+                                        select pai).ToList();
                 }
             });
             task.Wait();
@@ -461,12 +465,14 @@ namespace EShop.Controllers
             }
             return await EditMainCarousel();
         }
+
+
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAds(ProductAdViewModel productAdViewModel)
         {
-            foreach(var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
+            foreach (var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
             {
-               var adToRemove = await _context.ProductAd.FindAsync(adId);
+                var adToRemove = await _context.ProductAd.FindAsync(adId);
                 _context.Remove(adToRemove);
                 await _appEnvironment.DeleteImageAsync(adToRemove.AdImageUrl, "main carousel");
             }
