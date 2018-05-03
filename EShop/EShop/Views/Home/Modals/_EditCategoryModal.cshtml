@@ -22,18 +22,21 @@
                         Category category;
                         string categoryName;
                         string categoryDesc;
+                        string rowVersion;
 
                         if (ViewBag.CurrentCategoryId == null)
                         {
                             category = null;
                             categoryName = "";
                             categoryDesc = "";
+                            rowVersion = "";
                         }
                         else
                         {
                             category = await context.Category.FindAsync(ViewBag.CurrentCategoryId);
                             categoryName = category.Name;
                             categoryDesc = category.Description;
+                            rowVersion = Convert.ToBase64String(category.RowVersion);
                         }
                     }
                     <table align="center">
@@ -50,6 +53,7 @@
                             </td>
                         </tr>
                     </table>
+                    <input id="old-category-row-version" type="hidden" value="@rowVersion" />
                 </div>
                 <div class="modal-footer">
                     <button id="edit-category-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Rename</button>
@@ -69,6 +73,7 @@
                 CategoryId: "@ViewBag.CurrentCategoryId",
                 NewName: $('#new-category-name').val(),
                 NewDescription: $('#new-category-description').val(),
+                RowVersion: $('#old-category-row-version').val(),
             }
 
             $.ajax({
@@ -85,6 +90,10 @@
                     else if (response == 1) {
                         $('#edit-category-error-modal').attr('hidden', false);
                         $('#edit-category-error-message').text(" Some value violated the integrity constraints!")
+                    }
+                    else if (response == 2) {
+                        $('#edit-category-error-modal').attr('hidden', false);
+                        $('#edit-category-error-message').text(" Someone already modified this category while you were editing it. Reload the page and try again.")
                     }
                 },
                 failure: function (response) {

@@ -108,6 +108,10 @@ namespace EShop.Data.Migrations
 
                     b.Property<string>("Name");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
