@@ -22,5 +22,9 @@ namespace EShop.Models
         public int[] IdsOfSelectedImages { get; set; }
         public List<IFormFile> OtherImages { get; set; }
         public MultiSelectList ImagesToRemoveSelectList { get; set; }
+
+        public DateTime DiscountStarts { get; set; }
+        public DateTime DiscountEnds { get; set; }
+        public decimal DiscountPrice { get; set; }
     }
 }
