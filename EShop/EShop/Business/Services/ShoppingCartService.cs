@@ -15,10 +15,12 @@ namespace EShop.Business
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IProductService _productService;
 
-        public ShoppingCartService(ApplicationDbContext context)
+        public ShoppingCartService(ApplicationDbContext context, IProductService productService)
         {
             _context = context;
+            _productService = productService;
         }
 
         public async Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart, ISession session)
@@ -54,6 +56,20 @@ namespace EShop.Business
                                       Quantity = p.Count,
                                       TotalPrice = p.Count * p.Product.Price
                                   }).AsQueryable();
+            }
+            return (await DiscountProducts(productsInCart.ToList())).AsQueryable();
+        }
+
+        private async Task<ICollection<ProductInCartViewModel>> DiscountProducts(ICollection<ProductInCartViewModel> productsInCart)
+        {
+            foreach (var productInCart in productsInCart)
+            {
+                Decimal? discountPrice = await _productService.GetDiscountPrice(await _context.Product.FindAsync(productInCart.Id));
+                if (discountPrice != null)
+                {
+                    productInCart.Price = (Decimal)discountPrice;
+                    productInCart.TotalPrice = productInCart.Quantity * (Decimal)discountPrice;
+                }
             }
             return productsInCart;
         }

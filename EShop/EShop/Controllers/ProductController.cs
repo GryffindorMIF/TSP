@@ -440,6 +440,7 @@ namespace EShop.Controllers
         }
 
         //Remove product property delete button action
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
             ProductDetails property = _context.ProductDetails.FirstOrDefault(pd => pd.Id == id);
@@ -467,6 +468,37 @@ namespace EShop.Controllers
                 }
             });
             return RedirectToAction(nameof(ManageProperties), new { id = productId });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Discount(int productId)
+        {
+            ViewBag.Product = await _context.Product.FindAsync(productId);
+            return View();
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Discount(ProductDiscount productDiscount)
+        {
+            _context.Add(productDiscount);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
+
+        }
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveDiscount(int productId)
+        {
+            var productDiscount = await (from pd in _context.ProductDiscount
+                                   where pd.ProductId == productId
+                                   select pd).FirstOrDefaultAsync();
+
+            _context.Remove(productDiscount);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

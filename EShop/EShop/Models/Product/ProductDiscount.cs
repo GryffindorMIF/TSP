@@ -13,10 +13,12 @@ namespace EShop.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [Required]
         public decimal DiscountPrice { get; set; }
-        public DateTime Starts { get; set; }
+
         public DateTime Ends { get; set; }
 
+        public int ProductId { get; set; }
         [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }

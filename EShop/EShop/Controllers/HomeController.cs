@@ -217,6 +217,41 @@ namespace EShop.Controllers
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
+            // -----------------------------------------
+            ICollection<ProductDiscount> discountList = await _context.ProductDiscount.ToListAsync();
+
+            IList<bool> hasDiscountList = new List<bool>();
+            IList<Decimal?> discountPriceList = new List<Decimal?>();
+            IList<DateTime?> dicountEndDateList = new List<DateTime?>();
+
+            foreach (var product in productsToView.Select((value, index) => new { Value = value, Index = index }))
+            {
+                hasDiscountList.Add(false);
+                discountPriceList.Add(null);
+                dicountEndDateList.Add(null);
+
+                foreach (var discount in discountList)
+                {
+                    if (product.Value.Id == discount.ProductId)
+                    {
+                        if (discount.Ends > DateTime.Now)
+                        {
+                            hasDiscountList[product.Index] = true;
+                            discountPriceList[product.Index] = discount.DiscountPrice;
+                            dicountEndDateList[product.Index] = discount.Ends;
+                        }
+                        else
+                        {
+                            _context.Remove(discount);
+                            await _context.SaveChangesAsync();
+                        }
+                        break;
+                    }
+                }
+            }
+            ViewBag.HasDiscountList = hasDiscountList;
+            ViewBag.DiscountPriceList = discountPriceList;
+            ViewBag.DiscountEndDateList = dicountEndDateList;
 
             return View(productsToView);
         }
@@ -251,12 +286,12 @@ namespace EShop.Controllers
             }
 
             ICollection<Product> products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+            var listProducts = products.ToList();
 
             String[] allPrimaryImageLinks = new String[products.Count];
 
             await Task.Run(() =>
-            {
-                var listProducts = products.ToList();
+            {           
                 for (int i = 0; i < listProducts.Count; i++)
                 {
                     List<ProductImage> primaryImage = (from pi in _context.ProductImage
@@ -278,6 +313,41 @@ namespace EShop.Controllers
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
+            // -----------------------------------------
+            ICollection<ProductDiscount> discountList = await _context.ProductDiscount.ToListAsync();
+
+            IList<bool> hasDiscountList = new List<bool>();
+            IList<Decimal?> discountPriceList = new List<Decimal?>();
+            IList<DateTime?> dicountEndDateList = new List<DateTime?>();
+
+            foreach (var product in listProducts.Select((value, index) => new { Value = value, Index = index }))
+            {
+                hasDiscountList.Add(false);
+                discountPriceList.Add(null);
+                dicountEndDateList.Add(null);
+
+                foreach (var discount in discountList)
+                {
+                    if (product.Value.Id == discount.ProductId)
+                    {
+                        if (discount.Ends > DateTime.Now)
+                        {
+                            hasDiscountList[product.Index] = true;
+                            discountPriceList[product.Index] = discount.DiscountPrice;
+                            dicountEndDateList[product.Index] = discount.Ends;
+                        }
+                        else
+                        {
+                            _context.Remove(discount);
+                            await _context.SaveChangesAsync();
+                        }
+                        break;
+                    }
+                }
+            }
+            ViewBag.HasDiscountList = hasDiscountList;
+            ViewBag.DiscountPriceList = discountPriceList;
+            ViewBag.DiscountEndDateList = dicountEndDateList;
 
             return View("Index", products);
         }
@@ -303,7 +373,25 @@ namespace EShop.Controllers
                     ViewData["primary_image"] = "product-image-placeholder.jpg"; //Then just set placeholder
                     ViewBag.SecondaryImages = new List<ProductImage>();
                 }
-            });        
+            });
+
+            ProductDiscount discount = await (from pd in _context.ProductDiscount
+                            where pd.ProductId == id
+                            select pd).FirstOrDefaultAsync();
+
+            if (discount != null)
+            {
+                if (discount.Ends > DateTime.Now)
+                {
+                    ViewBag.Discount = discount;
+                }
+                else
+                {
+                    _context.Remove(discount);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             return View(await _context.ProductDetails.Where(p => p.ProductId == id).ToListAsync());
         }
 

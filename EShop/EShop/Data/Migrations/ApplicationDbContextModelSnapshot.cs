@@ -280,10 +280,7 @@ namespace EShop.Data.Migrations
 
                     b.Property<DateTime>("Ends");
 
-                    b.Property<int?>("ProductId")
-                        .IsRequired();
-
-                    b.Property<DateTime>("Starts");
+                    b.Property<int>("ProductId");
 
                     b.HasKey("Id");
 
