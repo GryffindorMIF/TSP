@@ -1,4 +1,4 @@
-﻿@model EShop.Models.ProductDetails
+﻿@model EShop.Models.ProductProperty
 
 @{
     ViewData["Title"] = "AddProperty";
@@ -18,9 +18,9 @@
             <form asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
-                    Property name:
-                    <input asp-for="Property" class="form-control" />
-                    <span asp-validation-for="Property" class="text-danger"></span> 
+                    Name:
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     Description:
@@ -36,6 +36,6 @@
     </div>
 
     <div>
-        <a asp-action="ManageProperties"  asp-route-id="@ViewData["product_id"]">Back to List</a>
+        <a asp-action="ManageProperties" asp-route-id="@ViewData["product_id"]">Back to List</a>
     </div>
 </div>

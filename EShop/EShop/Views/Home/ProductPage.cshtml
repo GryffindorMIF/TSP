@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EShop.Models.ProductDetails>
+﻿@model IEnumerable<EShop.Models.ProductProperty>
 
 @{
     ViewData["Title"] = ViewBag.Product.Name;
@@ -51,6 +51,14 @@
                 <ul>
                     <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a></li>
                     <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@ViewBag.Product.Id">Delete</a></li>
+                    @if (ViewBag.Discount != null)
+                    {
+                        <li><a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Remove discount</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-controller="Product" asp-action="Discount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Make discount</a></li>
+                    }
                 </ul>
             }
         </p>
@@ -58,7 +66,31 @@
             <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="180" width="150" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
         </div>
         <div>
-            <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
+            @if (ViewBag.Discount == null)
+            {
+                <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
+            }
+            else
+            {
+                <h3 style="margin-top: 70px; margin-left: 200px;">
+                    <ul>
+                        <li>
+                            Current price is:
+                            <img src="~/images/discount.png" height="40" width="40" />
+                            <strike>€@ViewBag.Product.Price</strike>
+                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                        </li>
+                        <li>
+                            <h5>Discount ends in:</h5>
+                        </li>
+                        <li>
+                            <h5>
+                                <font color="red" id="discount-timer"></font>
+                            </h5>
+                        </li>
+                    </ul>
+                </h3>
+            }
             @if (!this.User.IsInRole("Admin"))
             {
                 <div>
@@ -141,7 +173,7 @@
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Property)
+                    Property
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Description)
@@ -153,7 +185,7 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Property)
+                        @Html.DisplayFor(modelItem => item.Name)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Description)
@@ -171,14 +203,47 @@
 <!-- Scripts for shopping cart modal -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-        $(document).ready(function () {
+    $(document).ready(function () {
+
+        @if (ViewBag.Discount != null)
+        {
+            <text>
+            var x = setInterval(function() {
+            @{
+                    string endDate = ViewBag.Discount.Ends.ToString("yyyy-MM-ddTHH:mm:ss");
+                }
+
+                // Set the date we're counting down to
+                var countDownDate = new Date('@endDate').getTime();
+                // Get todays date and time
+                var now = new Date().getTime();
+
+                // Find the distance between now an the count down date
+                var distance = countDownDate - now;
+
+                // Time calculations for days, hours, minutes and seconds
+                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Output the result in an element with id="demo"
+                $("#discount-timer").html(days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
+
+                // If the count down is over, write some text
+                if (distance < 0) {
+                    $("#discount-timer").html("EXPIRED");
+                }
+        }, 1000);
+        </text>
+        }
 
             $('#modal-exit-btn, #modal-continue-btn').click(function () {
                 $('#add-modal-id').fadeOut();
-            });
-            //Below is code that responds for "add to cart" button operation
-            /**/
-            /**/
+        });
+        //Below is code that responds for "add to cart" button operation
+        /**/
+        /**/
 @{
 <text>
         /**/

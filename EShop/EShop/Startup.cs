@@ -81,6 +81,7 @@ namespace EShop
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
             services.AddTransient<IAddressManager, AddressManager>();
             services.AddTransient<INavigationService, NavigationService>();
+            services.AddTransient<IProductService, ProductService>();
             services.AddSingleton(Configuration);
             services.AddMvc();
 
@@ -113,6 +114,17 @@ namespace EShop
 
             app.UseAuthentication();
             app.UseSession();
+
+            app.Use(async (context, next) =>
+            {
+                // Do work that doesn't write to the Response.
+                await next.Invoke();
+                // Do logging or other work that doesn't write to the Response.
+                Console.WriteLine("UserName: " + context.User.Identity.Name);
+                Console.WriteLine("Path: " + context.Request.Path);
+                Console.WriteLine("Query: " + context.Request.QueryString.Value);
+                Console.WriteLine("Scheme: " + context.Request.Scheme);
+            });
 
             app.UseMvc(routes =>
             {
