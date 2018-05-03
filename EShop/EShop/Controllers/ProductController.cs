@@ -153,46 +153,7 @@ namespace EShop.Controllers
                 return NotFound();
             }
 
-            IEnumerable<Category> categories = null;
-            IEnumerable<int> idsOfSelectedCategories = null;
-            List<ProductImage> otherImages = null;
-            List<ProductImage> primaryImages = null;
-
-            var task = Task.Run(() =>
-           {
-               categories = (from c in _context.Category
-                             select c).ToList();
-
-               idsOfSelectedCategories = (from pc in _context.ProductCategory
-                                      where pc.ProductId == product.Id
-                                      select pc.CategoryId).ToList();
-
-               otherImages = (from i in _context.ProductImage
-                              where i.Product == product
-                              where i.IsPrimary == false
-                              select i).ToList();
-
-               primaryImages = (from pi in _context.ProductImage
-                                where pi.Product == product
-                                where pi.IsPrimary == true
-                                select pi).ToList();
-           });
-            task.Wait();
-
-            model.Product = product;
-            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", idsOfSelectedCategories);
-            model.ImagesToRemoveSelectList = new MultiSelectList(otherImages, "Id", "ImageUrl");
-
-            if (primaryImages.Count > 0)
-            {
-                ViewBag.PrimaryImage = primaryImages[0].ImageUrl;
-            }
-            else
-            {
-                ViewBag.PrimaryImage = "product-image-placeholder.jpg";
-            }
-            ViewBag.OtherImages = otherImages;
-            ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
+            model = await FillUpProductEditData(model, product);
 
             return View(model);
         }
@@ -257,12 +218,12 @@ namespace EShop.Controllers
                             }
                             _context.Add(primaryImage);
                         }
-                        // TODO: Change from silently failing to failing normally without bugging out the edit view (no relation based data populated)
-                        /*else
+                        else
                         {
-                            ModelState.AddModelError(string.Empty, "Primary image file is not an image.");
+                            model = await FillUpProductEditData(model, model.Product);
+                            ModelState.AddModelError(string.Empty, "Primary image file is of the wrong format or too large.");
                             return View(model);
-                        }*/
+                        }
                     }
 
                     //New additional images
@@ -281,12 +242,12 @@ namespace EShop.Controllers
                                 };
                                 _context.Add(otherImage);
                             }
-                            // TODO: Change from silently failing to failing normally without bugging out the edit view (no relation based data populated)
-                            /*else
+                            else
                             {
-                                ModelState.AddModelError(string.Empty, "One of the additional image files is not an image.");
+                                model = await FillUpProductEditData(model, model.Product);
+                                ModelState.AddModelError(string.Empty, "One of the additional image files is of the wrong format or too large.");
                                 return View(model);
-                            }*/
+                            }
                         }
                     }
 
@@ -306,11 +267,8 @@ namespace EShop.Controllers
                     }
 
 
-                    foreach (var pc in relatedProductCategories)
-                    {
-                        _context.Remove(pc);
-                    };
 
+                    _context.Entry(model.Product).Property("RowVersion").OriginalValue = model.Product.RowVersion;
                     if (model.IdsOfSelectedCategories != null)
                     {
                         foreach (int categoryId in model.IdsOfSelectedCategories)
@@ -323,11 +281,14 @@ namespace EShop.Controllers
                             _context.Update(productCategory);
                         }
                     }
-
+                    foreach (var pc in relatedProductCategories)
+                    {
+                        _context.Remove(pc);
+                    };
                     _context.Update(model.Product);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!ProductExists(model.Product.Id))
                     {
@@ -335,7 +296,40 @@ namespace EShop.Controllers
                     }
                     else
                     {
-                        throw;
+                        var exceptionEntry = ex.Entries.Single();
+                        var clientValues = (Product)exceptionEntry.Entity;
+                        var databaseEntry = await exceptionEntry.GetDatabaseValuesAsync();
+                        var databaseValues = (Product)databaseEntry.ToObject();
+
+                        if (databaseValues.Name != clientValues.Name)
+                        {
+                            ModelState.AddModelError("Product.Name", $"Current value: {databaseValues.Name}");
+                        }
+                        if (databaseValues.Description != clientValues.Description)
+                        {
+                            ModelState.AddModelError("Product.Description", $"Current value: {databaseValues.Description}");
+                        }
+                        if (databaseValues.Price != clientValues.Price)
+                        {
+                            ModelState.AddModelError("Product.Price", $"Current value: {databaseValues.Price}");
+                        }
+
+                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x=>x.Category.Name).ToList());
+                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x=> model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToList());
+                        if (dbProductCategoryNames != clientProductCategoryNames)
+                        {
+                            string categoryStrings = String.Join(", ", dbProductCategoryNames);
+                            ModelState.AddModelError("IdsOfSelectedCategories", $"Current value: {categoryStrings}");
+                        }
+
+                        ModelState.AddModelError(string.Empty, "The product's values were changed while you were editing them. Review the changes and if you still wish to changed them, submit them again.");
+
+                        await FillUpProductEditData(model, model.Product);
+
+                        model.Product.RowVersion = databaseValues.RowVersion;
+                        ModelState.Remove("Product.RowVersion");
+
+                        return View(model);
                     }
                 }
                 return RedirectToAction("Index", "Home");
@@ -467,6 +461,52 @@ namespace EShop.Controllers
                 }
             });
             return RedirectToAction(nameof(ManageProperties), new { id = productId });
+        }
+
+        private async Task<ProductCategoryViewModel> FillUpProductEditData(ProductCategoryViewModel model, Product product)
+        {
+            IEnumerable<Category> categories = null;
+            IEnumerable<int> idsOfSelectedCategories = null;
+            List<ProductImage> otherImages = null;
+            List<ProductImage> primaryImages = null;
+
+            var task = Task.Run(() =>
+            {
+                categories = (from c in _context.Category
+                              select c).ToList();
+
+                idsOfSelectedCategories = (from pc in _context.ProductCategory
+                                           where pc.ProductId == product.Id
+                                           select pc.CategoryId).ToList();
+
+                otherImages = (from i in _context.ProductImage
+                               where i.Product == product
+                               where i.IsPrimary == false
+                               select i).ToList();
+
+                primaryImages = (from pi in _context.ProductImage
+                                 where pi.Product == product
+                                 where pi.IsPrimary == true
+                                 select pi).ToList();
+            });
+            await task;
+
+            model.Product = product;
+            model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", idsOfSelectedCategories);
+            model.ImagesToRemoveSelectList = new MultiSelectList(otherImages, "Id", "ImageUrl");
+
+            if (primaryImages.Count > 0)
+            {
+                ViewBag.PrimaryImage = primaryImages[0].ImageUrl;
+            }
+            else
+            {
+                ViewBag.PrimaryImage = "product-image-placeholder.jpg";
+            }
+            ViewBag.OtherImages = otherImages;
+            ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
+
+            return model;
         }
     }
 }

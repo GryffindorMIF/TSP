@@ -16,6 +16,9 @@ namespace EShop.Models
         public string Description { get; set; }
         public Decimal Price { get; set; }
 
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
+
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
     }
 }
