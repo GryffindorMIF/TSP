@@ -61,6 +61,8 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
+
+
             var user = await _userManager.FindByIdAsync(id);
 
             if(user.ShoppingCartId != null)// ADMIN neturi shopping-cart
