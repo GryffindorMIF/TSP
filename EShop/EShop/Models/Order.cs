@@ -18,11 +18,10 @@ namespace EShop.Models
         public virtual ShoppingCart ShoppingCart { get; set; }
 
         [Required]
-        public int TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; }
 
         [Required]
-        [ForeignKey("AddressId")]
-        public virtual DeliveryAddress Address { get; set; }
+        public string Address { get; set; }
 
         [Required]
         [ForeignKey("UserId")]
