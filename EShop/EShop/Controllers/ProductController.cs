@@ -512,9 +512,10 @@ namespace EShop.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Discount(int productId)
+        public async Task<IActionResult> Discount(string page, int productId)
         {
             ViewBag.Product = await _context.Product.FindAsync(productId);
+            ViewData["page"] = page;
             return View();
         }
 
