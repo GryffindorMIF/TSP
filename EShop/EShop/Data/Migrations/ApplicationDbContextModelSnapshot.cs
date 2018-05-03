@@ -236,6 +236,10 @@ namespace EShop.Data.Migrations
 
                     b.Property<decimal>("Price");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.HasKey("Id");
 
                     b.ToTable("Product");
