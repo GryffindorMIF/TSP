@@ -524,16 +524,22 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
         {
-            if (ModelState.IsValid) // && await _context.ProductDiscount.FirstOrDefaultAsync(pd => pd.ProductId == productDiscount.ProductId) == null) //if there is no discount for this product
-            {
-                _context.Add(productDiscount);
-                await _context.SaveChangesAsync();
-                if (page == "Index")
-                    return RedirectToAction("Index", "Home");
-                else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
-            }
             ViewBag.Product = await _context.Product.FindAsync(productDiscount.ProductId);
-            ViewData["page"] = page;
+            try
+            {
+                if (ModelState.IsValid) // && await _context.ProductDiscount.FirstOrDefaultAsync(pd => pd.ProductId == productDiscount.ProductId) == null) //if there is no discount for this product
+                {
+                    _context.Add(productDiscount);
+                    await _context.SaveChangesAsync();
+                    if (page == "Index")
+                        return RedirectToAction("Index", "Home");
+                    else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
+                }
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "This product already has a discount.");
+            }
             return View();
         }
 
