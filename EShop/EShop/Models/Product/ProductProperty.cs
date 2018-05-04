@@ -13,10 +13,10 @@ namespace EShop.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Required(ErrorMessage = "The property is required.")]
-        [MaxLength(20)]
+        [MaxLength(20, ErrorMessage = "Property name cannot be longer than 20 symbols.")]
         public string Name { get; set; }
         [Required(ErrorMessage = "The description is required.")]
-        [MaxLength(200)]
+        [MaxLength(200, ErrorMessage = "Description cannot be longer than 200 symbols.")]
         public string Description { get; set; }
         [Required]
         [ForeignKey("Product")]

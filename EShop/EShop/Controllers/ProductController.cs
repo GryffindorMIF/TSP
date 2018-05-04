@@ -314,8 +314,8 @@ namespace EShop.Controllers
                             ModelState.AddModelError("Product.Price", $"Current value: {databaseValues.Price}");
                         }
 
-                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x=>x.Category.Name).ToArray());
-                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x=> model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
+                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x => x.Category.Name).ToArray());
+                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x => model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
                         if (!dbProductCategoryNames.ToHashSet().SetEquals(clientProductCategoryNames.ToHashSet()))
                         {
                             string categoryStrings = String.Join(", ", dbProductCategoryNames);
@@ -434,7 +434,7 @@ namespace EShop.Controllers
             return View();
         }
 
-        //Remove product property delete button action
+        //Product property delete button action
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
@@ -524,12 +524,17 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
         {
-            _context.Add(productDiscount);
-            await _context.SaveChangesAsync();
-            if (page == "Index")
-                return RedirectToAction("Index", "Home");
-            else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
-
+            if (ModelState.IsValid) // && await _context.ProductDiscount.FirstOrDefaultAsync(pd => pd.ProductId == productDiscount.ProductId) == null) //if there is no discount for this product
+            {
+                _context.Add(productDiscount);
+                await _context.SaveChangesAsync();
+                if (page == "Index")
+                    return RedirectToAction("Index", "Home");
+                else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
+            }
+            ViewBag.Product = await _context.Product.FindAsync(productDiscount.ProductId);
+            ViewData["page"] = page;
+            return View();
         }
 
         [HttpGet]

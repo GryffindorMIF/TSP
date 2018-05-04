@@ -15,7 +15,7 @@
     <hr />
     <div class="row">
         <div class="col-md-4">
-            <form asp-action="AddProperty" asp-route-productId=@ViewData["product_id"]>
+            <form asp-action="AddProperty" method="post" asp-route-productId=@ViewData["product_id"]>
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
                     Name:
