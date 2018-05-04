@@ -1,16 +1,66 @@
-﻿@model IEnumerable<EShop.Models.Order>
+﻿@model EShop.Models.OrderHistoryModel
 
 @{
     ViewData["Title"] = "Order";
 }
 
-<div class="main">
+<div id="review-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Leave a comment!</h4>
+                <button id="comment-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Order" asp-action="LeaveReview" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group Rating">
+                        <label asp-for="Rating">Order Rating:</label>@Html.DropDownList("Rating", Enumerable.Range(1, 5).Select(x => new SelectListItem { Text = x.ToString() }), "5")
+                    </div>
+                    <div class="form-group ExtraComments">
+                        <label asp-for="ExtraComments">Comments</label>
+                        <input asp-for="ExtraComments" class="form-control" />
+                        <span asp-validation-for="ExtraComments" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-success" id="confirm-purchase">Leave Comment</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-continue-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="repurchase-modal-id" class="modal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="exit-repurchase-btn" type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Confirm Addition</h4>
+            </div>
+            <div class="modal-body">
+                <p>Your shopping cart will be used to repurchase items from this order</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="Order" asp-action="Repurchase" method="post" class="form-inline" role="form">  
+                    <button id="confirm-repurchase-btn" type="submit" class="btn btn-success"><span class="glyphicon glyphicon-thumbs-up" style="vertical-align:middle;margin-top: -5px"></span> Confirm</button>
+                    <button id="close-repurchase-btn" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main" style="margin-left:auto">
     <h2>Order History</h2>
     <table class="table">
         <thead>
             <tr>
                 <th>
-                    <p>Shopping Cart ID</p>
+                    <p>Order Status</p>
                 </th>
                 <th>
                     <p>Total Price</p>
@@ -27,15 +77,32 @@
                 <th>
                     <p>Confirmed Time</p>
                 </th>
+                <th>
+                    <p>Repurchase</p>
+                </th>
+                <th>
+                    <p>Review</p>
+                </th>
             </tr>
         </thead>
         <tbody>
 
-            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+            @foreach (var item in Model.Orders.Select((value, index) => new { Value = value, Index = index }))
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Value.ShoppingCart.Id)
+                        @if (item.Value.StatusCode == 1)
+                        {
+                            <p>Awaiting Confirmation</p>
+                        }
+                        else if (item.Value.StatusCode == 2)
+                        {
+                            <p>Order Confirmed</p>
+                        }
+                        else if (item.Value.StatusCode == 3)
+                        {
+                            <p>Order Rejected</p>
+                        }
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.TotalPrice)
@@ -50,10 +117,23 @@
                         @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
                     </td>
                     <td>
-                        @if (item.Value.StatusCode == 2)
+                        @if (item.Value.StatusCode == 1)
+                        {
+                            <p>Confirmation Pending</p>
+                        }
+                        else
                         {
                             @Html.DisplayFor(modelItem => item.Value.ConfirmationDate)
-}
+                        }
+                    </td>
+                    <td>
+                        <button type="button" id="repurchase-btn" class="btn btn-info" onclick="repurchaseOpen(@item.Value.Id)">Add to cart</button>
+                    </td>
+                    <td>
+                        @if (item.Value.StatusCode == 2)
+                        {
+                            <button type="button" id="review-btn" class="btn btn-info" onclick="reviewOpen(@item.Value.Id)">Review</button>
+                        }
                         else
                         {
                             <p>Confirmation Pending</p>
@@ -65,3 +145,58 @@
         </tbody>
     </table>
 </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    var selectedId = 0;
+
+    function repurchaseOpen(Id) {
+        selectedId = Id;
+        $('#repurchase-modal-id').fadeIn();
+    }
+
+    function reviewOpen(Id) {
+        selectedId = Id;
+        $('#review-modal-id').fadeIn();
+    }
+
+    $(document).ready(function () {
+
+        $('#confirm-repurchase-btn').click(function (e) {
+
+            e.preventDefault();
+
+            var Selector = {
+                SelectedValue: selectedId
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Repurchase", "Order")',
+                data: JSON.stringify(Selector),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#repurchase-modal-id').fadeOut();
+                    }
+                    else if (response == 1) {
+                        //TODO: handle failure sent from controller (modify modal box)
+                    }
+                },
+                failure: function (response) {
+                    //TODO: handle AJAX request failure
+                }
+            });
+        });
+
+        $('#modal-continue-btn, #comment-exit-btn').click(function () {
+            $('#review-modal-id').fadeOut();
+        });
+
+        $('#exit-repurchase-btn, #close-repurchase-btn').click(function () {
+            $('#repurchase-modal-id').fadeOut();
+        });
+    });
+</script>

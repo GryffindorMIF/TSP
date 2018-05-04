@@ -15,7 +15,7 @@ namespace EShop.Models
 
         [Required]
         [ForeignKey("ShoppingCartId")]
-        public virtual ShoppingCart ShoppingCart { get; set; }
+        public int? ShoppingCartId { get; set; }
 
         [Required]
         public decimal TotalPrice { get; set; }

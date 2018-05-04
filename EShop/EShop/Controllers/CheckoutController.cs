@@ -128,7 +128,7 @@ namespace EShop.Controllers
 
                     Order newOrder = new Order();
 
-                    newOrder.ShoppingCart = shoppingCart;
+                    newOrder.ShoppingCartId = shoppingCart.Id;
                     newOrder.User = user;
                     newOrder.TotalPrice = Convert.ToDecimal(totalCost);
                     newOrder.Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +

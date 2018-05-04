@@ -4,7 +4,7 @@
 }
 
 <div class="main">
-    <h2>Order History</h2>
+    <h2>Orders Awaiting Confirmation</h2>
     <table class="table">
         <thead>
             <tr>
@@ -26,36 +26,46 @@
                 <th>
                     <p>Confirm Order</p>
                 </th>
+                <th>
+                    <p>Reject Order</p>
+                </th>
             </tr>
         </thead>
         <tbody>
 
             @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Value.User.Email)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Value.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Value.ShoppingCart.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Value.TotalPrice)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
-                    </td>
-                    <td>
-                        <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id">
-                            <button id="checkout-btn" type="submit" class="btn btn-success">
-                                <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> Confirm
-                            </button>
-                        </form>
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Value.User.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Value.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Value.ShoppingCart.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Value.TotalPrice)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
+                </td>
+                <td>
+                    <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id">
+                        <button id="checkout-btn" type="submit" class="btn btn-success">
+                            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id">
+                        <button id="checkout-btn" type="submit" class="btn btn-danger">
+                            <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                        </button>
+                    </form>
+                </td>
+            </tr>
             }
         </tbody>
     </table>
