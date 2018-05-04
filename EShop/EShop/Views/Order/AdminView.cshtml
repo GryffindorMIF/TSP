@@ -55,31 +55,45 @@
                         @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
                     </td>
                     <td>
-                        @if (item.Value.StatusCode == 1)
+                        @switch (item.Value.StatusCode)
                         {
-                            <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id">
-                                <button id="checkout-btn" type="submit" class="btn btn-success">
-                                    <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <p>Status Code: @item.Value.StatusCode</p>
+                            case 1:
+                                <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id">
+                                    <button id="checkout-btn" type="submit" class="btn btn-success">
+                                        <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                                break;
+                            case 2:
+                                <p>Order Confirmed</p>
+                                break;
+                            case 3:
+                                <p>Order Rejected</p>
+                                break;
+                            case 4:
+                                <p>Order Confirmed</p>
+                                break;
                         }
                     </td>
                     <td>
-                        @if (item.Value.StatusCode == 1)
+                        @switch (item.Value.StatusCode)
                         {
-                            <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id">
+                            case 1:
+                                <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id">
                                 <button id="checkout-btn" type="submit" class="btn btn-danger">
                                     <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
                                 </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <p>Status Code: @item.Value.StatusCode</p>
+                                </form>
+                                break;
+                            case 2:
+                                <p>Order Confirmed</p>
+                                break;
+                            case 3:
+                                <p>Order Rejected</p>
+                                break;
+                            case 4:
+                                <p>Order Confirmed</p>
+                                break;
                         }
                     </td>
                 </tr>
