@@ -65,11 +65,13 @@ namespace EShop.Data
                 .WithMany(p => p.ProductCategories)
                 .HasForeignKey(pc => pc.ProductId);
 
-        
-
             builder.Entity<ProductDiscount>()
+            .HasAlternateKey(c => c.ProductId)
+            .HasName("AlternateKey_ProductId");
+
+            /*builder.Entity<ProductDiscount>()
                 .HasIndex(pd => pd.ProductId)
-                .IsUnique();
+                .IsUnique();*/
 
             //one-to-one mapping (unique)
             builder.Entity<ProductDiscount>()

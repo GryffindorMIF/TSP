@@ -290,8 +290,8 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasAlternateKey("ProductId")
+                        .HasName("AlternateKey_ProductId");
 
                     b.ToTable("ProductDiscount");
                 });
