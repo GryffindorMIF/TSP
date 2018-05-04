@@ -15,12 +15,15 @@ using System.Diagnostics;
 using EShop.Business.Services;
 using EShop.Business.Interfaces;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Logging;
+using EShop.Util;
 
 namespace EShop
 {
     public class Startup
     {
         private string _contentRootPath;
+        private RequestFileLogger _logger;
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
@@ -92,11 +95,14 @@ namespace EShop
                 //TODO: Test whether it impacts performance that we have to increase this
                 options.ValidationInterval = TimeSpan.Zero;
             });
+
+            services.AddLogging();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime, IConfiguration configuration)
         {
+            applicationLifetime.ApplicationStopping.Register(OnShutdown);
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
@@ -115,16 +121,18 @@ namespace EShop
             app.UseAuthentication();
             app.UseSession();
 
-            app.Use(async (context, next) =>
+            bool requestLogging;
+            if (bool.TryParse(configuration["RequestLoggingConfig:Enabled"], out requestLogging) && requestLogging)
             {
-                // Do work that doesn't write to the Response.
-                await next.Invoke();
-                // Do logging or other work that doesn't write to the Response.
-                Console.WriteLine("UserName: " + context.User.Identity.Name);
-                Console.WriteLine("Path: " + context.Request.Path);
-                Console.WriteLine("Query: " + context.Request.QueryString.Value);
-                Console.WriteLine("Scheme: " + context.Request.Scheme);
-            });
+                _logger = RequestFileLogger.GetRequestFileLogger(configuration);
+                app.Use(async (context, next) =>
+                {
+                    _logger.WriteLine(context.User.Identity.Name, context.Request.Method, context.Request.Path);
+                    // Do work that doesn't write to the Response.
+                    await next.Invoke();
+                    // Do logging or other work that doesn't write to the Response.
+                });
+            }
 
             app.UseMvc(routes =>
             {
@@ -132,6 +140,12 @@ namespace EShop
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private void OnShutdown()
+        {
+            _logger.Dispose();
+            Console.WriteLine("AAAShutDown");
         }
     }
 }
