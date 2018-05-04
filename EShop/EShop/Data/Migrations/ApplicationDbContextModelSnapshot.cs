@@ -196,8 +196,6 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShoppingCartId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Order");
@@ -213,12 +211,12 @@ namespace EShop.Data.Migrations
                     b.Property<int?>("OrderId")
                         .IsRequired();
 
+                    b.Property<int>("Rating");
+
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.HasIndex("UserId");
 
@@ -506,11 +504,6 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.Order", b =>
                 {
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
-                        .WithMany()
-                        .HasForeignKey("ShoppingCartId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -519,11 +512,6 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
                 {
-                    b.HasOne("EShop.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")

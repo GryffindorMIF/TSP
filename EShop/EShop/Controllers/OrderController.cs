@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EShop.Business;
 using EShop.Data;
 using EShop.Models;
+using EShop.Models.PostModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -73,7 +74,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<int> Repurchase([FromBody] Selector s)
         {
-            int returnCode;
+            int returnCode = 1;
 
             try
             {
@@ -102,14 +103,46 @@ namespace EShop.Controllers
 
                     await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, pc.Quantity, HttpContext.Session);
                 }
+
+                returnCode = 0;
             }
             catch (Exception)
             {
                 returnCode = 1;
             }
+            return returnCode;
+        }
 
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        public async Task<int> LeaveReview([FromBody] ReviewPostModel rpm)
+        {
+            int returnCode = 1;
 
-            return 0;
+            try
+            {
+                Order order = await _context.Order.FindAsync(rpm.OrderId);
+
+                OrderReviewModel newReview = new OrderReviewModel();
+
+                var user = await _userManager.GetUserAsync(HttpContext.User);
+
+                newReview.OrderId = order.Id;
+                newReview.Rating = Convert.ToInt16(rpm.Rating);
+                newReview.CustomerComment = rpm.Comment;
+                newReview.User = user;
+
+                _context.OrderReview.Add(newReview);
+                order.StatusCode = 4; //Reviewed
+                _context.Update(order);
+                await _context.SaveChangesAsync();
+                returnCode = 0;
+            }
+            catch (Exception)
+            {
+                returnCode = 1;
+            }
+            return returnCode;
         }
 
         [Authorize(Roles = "Admin")]
@@ -127,7 +160,6 @@ namespace EShop.Controllers
                 await Task.Run(() =>
                 {
                     savedOrders = from o in _context.Order
-                                  where o.StatusCode == 1
                                   select new Order
                                   {
                                       Id = o.Id,

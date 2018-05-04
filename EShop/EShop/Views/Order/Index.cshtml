@@ -15,16 +15,18 @@
             </div>
             <div class="modal-body">
                 <form asp-controller="Order" asp-action="LeaveReview" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="form-group Rating">
-                        <label asp-for="Rating">Order Rating:</label>@Html.DropDownList("Rating", Enumerable.Range(1, 5).Select(x => new SelectListItem { Text = x.ToString() }), "5")
+                        <select id="rating-id">
+                            @for (Int16 i = 1; i < 6; i++)
+                            {
+                            <option value="@i">@i</option>
+                            }
+                        </select>
                     </div>
                     <div class="form-group ExtraComments">
-                        <label asp-for="ExtraComments">Comments</label>
-                        <input asp-for="ExtraComments" class="form-control" />
-                        <span asp-validation-for="ExtraComments" class="text-danger"></span>
+                        <input id="comment-id" type="text" required="required" />
                     </div>
-                    <button type="submit" class="btn btn-success" id="confirm-purchase">Leave Comment</button>
+                    <button type="submit" class="btn btn-success" id="confirm-review-btn">Leave Comment</button>
                 </form>
             </div>
             <div class="modal-footer">
@@ -103,6 +105,10 @@
                         {
                             <p>Order Rejected</p>
                         }
+                        else if (item.Value.StatusCode == 4)
+                        {
+                            <p>Order Complete</p>
+                        }
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.TotalPrice)
@@ -134,9 +140,13 @@
                         {
                             <button type="button" id="review-btn" class="btn btn-info" onclick="reviewOpen(@item.Value.Id)">Review</button>
                         }
+                        else if (item.Value.StatusCode == 4)
+                        {
+                            <p>Order Reviewed</p>
+                        }
                         else
                         {
-                            <p>Confirmation Pending</p>
+                            <p>Awaiting Confirmation</p>
                         }
                     </td>
                 </tr>
@@ -180,6 +190,39 @@
                 success: function (response) {
                     if (response == 0) {
                         $('#repurchase-modal-id').fadeOut();
+                    }
+                    else if (response == 1) {
+                        //TODO: handle failure sent from controller (modify modal box)
+                    }
+                },
+                failure: function (response) {
+                    //TODO: handle AJAX request failure
+                }
+            });
+        });
+
+        $('#confirm-review-btn').click(function (e) {
+
+            e.preventDefault();
+
+            var Rating = $('#rating-id').val();
+            var Comment = $('#comment-id').val();
+
+            var ReviewPostModel = {
+                OrderId: selectedId,
+                Rating: Rating,
+                Comment: Comment
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("LeaveReview", "Order")',
+                data: JSON.stringify(ReviewPostModel),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#review-modal-id').fadeOut();
                     }
                     else if (response == 1) {
                         //TODO: handle failure sent from controller (modify modal box)
