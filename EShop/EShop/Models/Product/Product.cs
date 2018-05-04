@@ -20,5 +20,6 @@ namespace EShop.Models
         public byte[] RowVersion { get; set; }
 
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
+        public virtual ProductDiscount ProductDiscount { get; set; }
     }
 }

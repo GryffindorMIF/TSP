@@ -290,7 +290,8 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("ProductDiscount");
                 });
@@ -542,8 +543,8 @@ namespace EShop.Data.Migrations
             modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
                 {
                     b.HasOne("EShop.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("ProductDiscount")
+                        .HasForeignKey("EShop.Models.ProductDiscount", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

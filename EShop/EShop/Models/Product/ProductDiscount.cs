@@ -13,15 +13,20 @@ namespace EShop.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "The price is required.")]
+        [Range(0.01, 1000000, ErrorMessage = "Price should not be less than 0.01")]
         public decimal DiscountPrice { get; set; }
 
+        [Required(ErrorMessage = "End date of discount is required.")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{yyyy-MM-dd HH:mm:ss}", ApplyFormatInEditMode = true)]
         public DateTime Ends { get; set; }
 
-        public int ProductId { get; set; }
         [Required]
-        [ForeignKey("ProductId")]
+        [ForeignKey("Product")]
+        public int ProductId { get; set; }
         public virtual Product Product { get; set; }
+
     }
 }
 
