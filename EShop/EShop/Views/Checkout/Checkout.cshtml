@@ -1,0 +1,101 @@
+﻿@model OrderViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="sidenav">
+</div>
+
+<h3 style="text-align:center;">Review Purchase</h3>
+@{
+    Decimal totalCost = 0;
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(Model => Model.Products.First().Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(Model => Model.Products.First().Quantity)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(Model => Model.Products.First().TotalPrice)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model.Products.Select((value, index) => new { Value = value, Index = index }))
+                {
+                    totalCost += item.Value.TotalPrice;
+                    <tr>
+                        <td>
+                            <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                                @Html.DisplayFor(currentModelItem => item.Value.Name)
+                            </a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(currentModelItem => item.Value.Quantity)
+                        </td>
+                        <td>
+                            €@Html.DisplayFor(currentModelItem => item.Value.TotalPrice)
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <p style="text-align:center;">Total cost: €@totalCost</p>
+
+    <hr>
+
+    <div class="form-group" style="width:30%; text-align:center; margin: 0 auto">
+        <h3 style="text-align:center;">Checkout</h3>
+        <p>@ViewBag.statusMessage</p>
+        <div class="creditCardForm">
+            <form asp-controller="Checkout" asp-action="MakePurchase"
+                  asp-route-totalCost="@totalCost.ToString()" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group ZipConfirmation">
+                    <label asp-for="ZipConfirmation">Zip Confirmation</label>
+                    <input asp-for="ZipConfirmation" class="form-control" />
+                    <span asp-validation-for="ZipConfirmation" class="text-danger"></span>
+                </div>
+                <div class="form-group FirstName">
+                    <label asp-for="FirstName">First Name</label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div class="form-group LastName">
+                    <label asp-for="LastName">Last Name</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+                <div class="form-group CardNumber">
+                    <label asp-for="CardNumber">Card Number</label>
+                    <input asp-for="CardNumber" class="form-control" />
+                    <span asp-validation-for="CardNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group CVV">
+                    <label asp-for="CVV">Card CVV</label>
+                    <input asp-for="CVV" class="form-control" />
+                    <span asp-validation-for="CVV" class="text-danger"></span>
+                </div>
+                <div class="form-group" id="expiration-date">
+                    @Html.DropDownList("Exp_Year", Enumerable.Range(DateTime.Now.Year, 10).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Year")
+                    @Html.DropDownList("Exp_Month", Enumerable.Range(1, 12).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Month")
+                </div>
+                <div class="form-group" id="credit_cards">
+                    <img src="~/images/Cards.jpg" align="middle" width="256" height="100" id="cards">
+                </div>
+                <button type="submit" class="btn btn-default" id="confirm-purchase">Purchase</button>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

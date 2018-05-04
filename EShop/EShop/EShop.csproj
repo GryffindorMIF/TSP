@@ -2,29 +2,33 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <UserSecretsId>aspnet-EShop-E9402E04-5150-4EEA-9437-EFC446A9A6FF</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
+    <Compile Remove="Data\Migrations\20180503134709_Order_Review.cs" />
+    <Compile Remove="Data\Migrations\20180503134709_Order_Review.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Views\Home\Index.cshtml~RF3cdd78b0.TMP" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.2" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.1" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\Templates\loginform\css\style.css" />
-    <None Include="wwwroot\Templates\loginform\images\1.jpg" />
-    <None Include="wwwroot\Templates\loginform\index.html" />
-    <None Include="wwwroot\Templates\loginform\js\jquery-2.2.3.min.js" />
-    <None Include="wwwroot\Templates\loginform\w3layouts-License.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="Views\User\Register.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

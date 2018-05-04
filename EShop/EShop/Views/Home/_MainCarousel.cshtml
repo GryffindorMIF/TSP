@@ -1,0 +1,102 @@
+﻿@model IEnumerable<EShop.Models.ProductAd>
+<!-- TODO: make this carousel dynamically configurable -->
+
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
+    <ol class="carousel-indicators">
+        @if (Model.Any())
+        {
+            @foreach (var productAd in Model.Select((value, index) => new { Value = value, Index = index }))
+            {
+                if (productAd.Index == 0)
+                {
+                    <li data-target="#myCarousel" data-slide-to="@productAd.Index" class="active"></li>
+                }
+                else
+                {
+                    <li data-target="#myCarousel" data-slide-to="@productAd.Index"></li>
+                }
+
+            }
+        }
+        else
+        {
+            <!-- Placeholder -->
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        }
+    </ol>
+    <div class="carousel-inner" role="listbox">
+        @if (Model.Any())
+        {
+            @foreach (var productAd in Model.Select((value, index) => new { Value = value, Index = index }))
+            {
+                if (productAd.Index == 0)
+                {
+                    <div class="item active">
+                        <a asp-action="ProductPage" asp-route-id="@productAd.Value.ProductId">
+                            <img src="~/images/main carousel/@productAd.Value.AdImageUrl" alt="ASP.NET" class="img-responsive" style="cursor: pointer;" />
+                        </a>
+                        <div class="carousel-caption" role="option">
+                            @if (this.User.IsInRole("Admin"))
+                            {
+                                <p>
+                                    <a asp-action="EditMainCarousel">
+                                        <button type="button" class="btn btn-warning btn-xs">
+                                            <span class="glyphicon glyphicon-pencil"></span> Edit
+                                        </button>
+                                    </a>
+                                </p>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="item">
+                        <a asp-action="ProductPage" asp-route-id="@productAd.Value.ProductId">
+                            <img src="~/images/main carousel/@productAd.Value.AdImageUrl" alt="Visual Studio" class="img-responsive" style="cursor: pointer;" />
+                        </a>
+                        <div class="carousel-caption" role="option">
+                            @if (this.User.IsInRole("Admin"))
+                            {
+                            <p>
+                                <a asp-action="EditMainCarousel">
+                                    <button type="button" class="btn btn-warning btn-xs">
+                                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                                    </button>
+                                </a>
+                            </p>
+                            }
+                        </div>
+                    </div>
+                }
+
+            }
+        }
+        else
+        {
+            <!-- Placeholder -->
+            <div class="item active">
+                <a href="#">
+                    <img src="~/images/main carousel/ad-placeholder.png" alt="ASP.NET" class="img-responsive" style="cursor: pointer;" />
+                </a>
+                <div class="carousel-caption" role="option">
+                    <p>
+                        <a asp-action="EditMainCarousel">
+                            <button type="button" class="btn btn-warning btn-xs">
+                                <span class="glyphicon glyphicon-pencil"></span> Edit
+                            </button>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>

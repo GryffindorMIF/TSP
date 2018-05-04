@@ -1,0 +1,26 @@
+﻿@model EShop.Models.ProductDiscount
+
+@{
+    ViewData["Title"] = "Discount";
+}
+<div class="sidenav"></div>
+<div class="main">
+    <h2>Discount</h2>
+    <form asp-action="Discount" method="post" asp-route-page="@ViewData["page"]">
+        <input asp-for="ProductId" hidden value="@ViewBag.Product.Id" />
+        <ul>
+            <li>
+                <label class="control-label">Discount price</label>
+                <input asp-for="DiscountPrice" type="number" step="0.01" />
+            </li>
+            <li>
+                <label class="control-label">Ends</label>
+                <input asp-for="Ends" type="datetime" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")" min="@DateTime.UtcNow" />
+            </li>
+            <li>
+                <input type="submit" value="Create" class="btn btn-default" />
+            </li>
+        </ul>
+    </form>
+</div>
+

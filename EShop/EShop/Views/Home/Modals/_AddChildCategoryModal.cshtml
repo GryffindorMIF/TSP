@@ -1,0 +1,80 @@
+﻿<div id="add-child-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p align="center">
+                    <img src="~/images/folder.png" width="30" height="26" />
+                    Add new sub-category
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#add-child-modal').hide();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div id="add-child-error-modal" hidden class="alert alert-danger">
+                        <strong>Ooops!</strong><text id="add-child-error-message"></text>
+                    </div>
+
+                    <table align="center">
+                        <tr>
+                            <td>Name &nbsp;</td>
+                            <td>
+                                <input id="add-child-category-name" type="text" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Description &nbsp;</td>
+                            <td>
+                                <textarea id="add-child-category-description" type="text" rows="5" cols="40" style="resize: none;"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="add-child-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $('#add-child-modal-btn').click(function () {
+            if ($.trim($('#add-child-category-name').val()) && $.trim($('#add-child-category-description').val())) {
+                var AddCategoryPostModel = {
+                    CategoryName: $('#add-child-category-name').val(),
+                    ParentCategoryId: "@ViewBag.CurrentCategoryId",
+                    CategoryDescription: $('#add-child-category-description').val()
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("AddCategory", "Category")',
+                    data: JSON.stringify(AddCategoryPostModel),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    success: function (response) {
+                        if (response == 0) {
+                            $('#add-child-modal').hide();
+                            location.reload();// page refresh
+                        }
+                        else if (response == 1) {
+                            $('#add-child-error-modal').attr('hidden', false);
+                            $('#add-child-error-message').text(" Some  value violated the integrity constraints!")
+                        }
+                    },
+                    failure: function (response) {
+                        $('#add-child-error-modal').attr('hidden', false);
+                        $('#add-child-error-message').text(" Some unexpected error occured. Please try again!")
+                    }
+                });
+            }
+            else {
+                $('#add-child-error-modal').attr('hidden', false);
+                $('#add-child-error-message').text(" Illegal input.")
+            }
+        });
+</script>

@@ -1,0 +1,19 @@
+﻿@model EShop.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "RemoveAdminPrivileges";
+}
+
+<div class="sidenav"></div>
+<div class="main">
+    <h2>Remove admin privileges</h2>
+
+    <h3>Are you sure you want to remove users admin privileges?</h3>
+    <div>
+        <form asp-action="ManageAdminPrivileges" asp-route-grantPrivileges="false">
+            <input type="hidden" asp-for="Id" />
+            <input type="submit" value="Remove admin" class="btn btn-default" /> |
+            <a asp-action="Index">Back to List</a>
+        </form>
+    </div>
+</div>

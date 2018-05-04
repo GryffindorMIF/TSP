@@ -1,0 +1,62 @@
+﻿<div id="remove-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p align="center">
+                    <img src="~/images/remove.png" width="30" height="30" /> &nbsp;
+                    Remove "@ViewBag.CurrentCategoryName" category
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#remove-modal').hide();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+            </div>
+            <div class="modal-body">
+                <div id="remove-error-modal" hidden class="alert alert-danger">
+                    <strong>Ooops!</strong><text id="remove-error-message"></text>
+                </div>
+                <div class="alert alert-danger" role="alert">
+                    <strong>Warning!</strong> This will also delete all sub-categories!
+                </div>
+                <p align="center">
+                    Are you sure you want to perform this action?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="remove-category-modal-btn" type="button" class="btn btn-danger" data-dismiss="modal">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $('#remove-category-modal-btn').click(function () {
+
+        var CategoryPostModel = {
+            CategoryId: "@ViewBag.CurrentCategoryId"
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DeleteCategory", "Category")',
+            data: JSON.stringify(CategoryPostModel),
+            dataType: 'json',
+            contentType: "application/json",
+            success: function (response) {
+                if (response == 0) {
+                    $('#remove-modal').hide();
+                    window.location = '@Url.Action("Index", "Home")'// TODO: return to parent category instead of home/index
+                }
+                else if (response == 1) {
+                    $('#remove-error-modal').attr('hidden', false);
+                    $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
+                }
+            },
+            failure: function (response) {
+                $('#remove-error-modal').attr('hidden', false);
+                $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
+            }
+        });
+    });
+</script>
