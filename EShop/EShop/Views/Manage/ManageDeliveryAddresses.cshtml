@@ -41,7 +41,6 @@
             </form>
         </div>
 
-        <!--Order model contains an Address object type. If this gets deleted things will break badly-->
         <div class="col-md-6">
             <form asp-controller="Manage" asp-action="RemoveSavedAddress" method="post">
                 <select asp-for="RemovalZipcode" asp-items="Model.savedAddresses"></select>

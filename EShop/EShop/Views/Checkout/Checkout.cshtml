@@ -58,10 +58,9 @@
             <form asp-controller="Checkout" asp-action="MakePurchase"
                   asp-route-totalCost="@totalCost.ToString()" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group ZipConfirmation">
-                    <label asp-for="ZipConfirmation">Zip Confirmation</label>
-                    <input asp-for="ZipConfirmation" class="form-control" />
-                    <span asp-validation-for="ZipConfirmation" class="text-danger"></span>
+                <div class="form-group" id="zip_confirmation">
+                    <label asp-for="ZipConfirmation">Confirm Address:</label>
+                    @Html.DropDownList("ZipConfirmation", Model.savedAddresses)
                 </div>
                 <div class="form-group FirstName">
                     <label asp-for="FirstName">First Name</label>

@@ -5,8 +5,10 @@ using EShop.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -45,10 +47,23 @@ namespace EShop.Controllers
         public async Task<IActionResult> Checkout()
         {
             var model = new OrderViewModel { StatusMessage = StatusMessage };
-            
+            var user = await _userManager.GetUserAsync(User);
+            var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
+
             ShoppingCart shoppingCart = await GetCartAsync();
 
             model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+
+            model.savedAddresses = new List<SelectListItem>();
+
+            foreach (DeliveryAddress da in savedAddresses)
+            {
+                model.savedAddresses.Add(new SelectListItem
+                {
+                    Text = da.Zipcode,
+                    Value = da.Zipcode
+                });
+            }
 
             return View(model);
         }
@@ -62,6 +77,7 @@ namespace EShop.Controllers
                 return View(model);
             }
 
+            Debug.WriteLine("ZipConf is: " + model.ZipConfirmation);
             //This crap definitely needs to be reworked
             string[] costSplit = totalCost.Split(Convert.ToChar(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
             int costOut = 0;
@@ -128,7 +144,7 @@ namespace EShop.Controllers
             }
 
             //Todo something on checkout page if transaction fails etc.
-            return View(nameof(Checkout));
+            return RedirectToAction("Index", "Order");
         }
 
         private async Task<ShoppingCart> GetCartAsync()

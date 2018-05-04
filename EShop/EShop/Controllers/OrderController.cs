@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
@@ -58,6 +59,55 @@ namespace EShop.Controllers
                                   };
                 });
             return savedOrders;
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminView()
+        {
+            var orders = await QueryUnconfirmedOrders();
+
+            return View(orders);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IQueryable<Order>> QueryUnconfirmedOrders()
+        {
+            IQueryable<Order> savedOrders = null;
+                await Task.Run(() =>
+                {
+                    savedOrders = from o in _context.Order
+                                  where o.StatusCode == 1
+                                  select new Order
+                                  {
+                                      Id = o.Id,
+                                      ShoppingCart = o.ShoppingCart,
+                                      TotalPrice = o.TotalPrice,
+                                      Address = o.Address,
+                                      User = o.User,
+                                      CardNumber = o.CardNumber,
+                                      PurchaseDate = o.PurchaseDate,
+                                      ConfirmationDate = o.ConfirmationDate,
+                                      StatusCode = o.StatusCode
+                                  };
+                });
+            return savedOrders;
+        }
+
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> ConfirmOrder(int orderId)
+        {
+            Order order = null;
+
+            order = await _context.Order.FindAsync(orderId);
+
+            order.StatusCode = 2;
+            order.ConfirmationDate = DateTime.Now;
+
+            _context.Update(order);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("AdminView", "Order");
         }
     }
 }

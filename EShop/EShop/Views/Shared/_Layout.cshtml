@@ -43,6 +43,10 @@
                     }
                     @if (this.User.IsInRole("Admin"))
                     {
+                        <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Confirm Orders</a></li>
+                    }
+                    @if (this.User.IsInRole("Admin"))
+                    {
                         //<li><a asp-area="" asp-controller="Product" asp-action="Index">Manage products</a></li>
                         <li><a asp-area="" asp-controller="User" asp-action="Index">Manage users</a></li>
                     }

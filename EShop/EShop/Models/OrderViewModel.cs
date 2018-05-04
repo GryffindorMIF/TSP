@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EShop.Models
@@ -6,11 +7,11 @@ namespace EShop.Models
     public class OrderViewModel
     {
         public IEnumerable<ProductInCartViewModel> Products { get; set; }
-        public IEnumerable<CardInfo> Cards { get; set; }
+        public List<SelectListItem> savedAddresses;
 
         //Add custom error messages
 
-        [StringLength(10, MinimumLength = 4), Required]
+        [Required]
         public string ZipConfirmation { get; set; }
 
         [CreditCard, Required]
