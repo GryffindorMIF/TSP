@@ -25,17 +25,19 @@ namespace EShop.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INavigationService _navigationService;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly IProductService _productService;
         private readonly int uploadMaxByteSize;
         private readonly int productsPerPage;
 
         private const int startingPageNumber = 0;
 
-        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService)
         {
             _context = context;
             _userManager = userManager;
             _navigationService = navigationService;
             _appEnvironment = appEnvironment;
+            _productService = productService;
 
             if (!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
             {
@@ -207,36 +209,8 @@ namespace EShop.Controllers
 
             ViewBag.TopLevelCategories = selectableCategories;
 
-            String[] allPrimaryImageLinks = new String[0];
+            String[] allPrimaryImageLinks = await _productService.GetAllImages(productsToView);
 
-            try //In case there is no products
-            {
-                allPrimaryImageLinks = new String[productsToView.Count];
-
-                await Task.Run(() =>
-                {
-                    var listProducts = productsToView.ToList();
-                    for (int i = 0; i < listProducts.Count; i++)
-                    {
-                        List<ProductImage> primaryImage = (from pi in _context.ProductImage
-                                                           where pi.IsPrimary
-                                                           where pi.Product == listProducts[i]
-                                                           select pi).ToList();
-                        if (primaryImage.Count > 0)
-                        {
-                            allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
-                        }
-                        else
-                        {
-                            allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
-                        }
-                    }
-                });
-            }
-            catch (NullReferenceException) //In case there is no products
-            {
-
-            }
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
@@ -316,7 +290,7 @@ namespace EShop.Controllers
                     ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
                     ViewBag.CurrentCategoryName = category.Name;
                 }
-                
+
                 products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
             }
             else //If it's search state
@@ -331,26 +305,7 @@ namespace EShop.Controllers
             }
             var listProducts = products.ToList();
 
-            String[] allPrimaryImageLinks = new String[products.Count];
-
-            await Task.Run(() =>
-            {
-                for (int i = 0; i < listProducts.Count; i++)
-                {
-                    List<ProductImage> primaryImage = (from pi in _context.ProductImage
-                                                       where pi.IsPrimary
-                                                       where pi.Product == listProducts[i]
-                                                       select pi).ToList();
-                    if (primaryImage.Count > 0)
-                    {
-                        allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
-                    }
-                    else
-                    {
-                        allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
-                    }
-                }
-            });
+            String[] allPrimaryImageLinks = await _productService.GetAllImages(products); //Retrieve all image links
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
@@ -400,29 +355,23 @@ namespace EShop.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ProductPage(int id)
         {
-            Product temp = _context.Product.Single(p => p.Id == id);
+            //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
+            Product temp = await _productService.GetProductById(id);
+            List<Product> products = new List<Product>();
+            products.Add(temp);
             ViewBag.Product = temp;
-            await Task.Run(() => //Loading primary image and in future should start loading all images
-            {
-                try //If product has an image
-                {
-                    ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
-                    ViewData["primary_image"] = primaryImage.ImageUrl;
-                    //ViewBag.PrimaryImage = primaryImage.ImageUrl;
-                    List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
-                    ViewBag.SecondaryImages = secondaryImages;
-                }
-                catch (Exception) //Could appear if product doesn't have any photos
-                {
-                    ViewData["primary_image"] = "product-image-placeholder.jpg"; //Then just set placeholder
-                    ViewBag.SecondaryImages = new List<ProductImage>();
-                }
-            });
+
+            ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
+            ViewData["primary_image"] = primaryImage.ImageUrl;
+
+            String[] secondaryImages = await _productService.GetAllImages(products, false);
+            //List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
+            ViewBag.SecondaryImages = secondaryImages;
+
 
             ProductDiscount discount = await (from pd in _context.ProductDiscount
                                               where pd.ProductId == id
                                               select pd).FirstOrDefaultAsync();
-
             if (discount != null)
             {
                 if (discount.Ends > DateTime.Now)
@@ -531,5 +480,5 @@ namespace EShop.Controllers
         {
             return RedirectToAction("Index", "Home", new { isSearch = true, searchText = searchInput });
         }
-    }   
+    }
 }
