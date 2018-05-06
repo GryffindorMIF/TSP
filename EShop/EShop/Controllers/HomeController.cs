@@ -49,14 +49,17 @@ namespace EShop.Controllers
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
+        public async Task<IActionResult> Index(bool isSearch = false, string searchText = "", int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
         {
             ViewBag.CurrentPageNumber = startingPageNumber;
             ViewBag.PreviousPageNumber = null;
             ViewBag.NextPageNumber = 1;
+            ViewBag.SearchText = searchText; //Used for search pagination :(
+            ViewBag.IsSearch = isSearch; //Used for search pagination :(
 
             Category currentCategory = null;
-            ICollection<Product> productsToView = null;// products to return
+            ICollection<Product> productsToView = null;// products to return in current page
+            ICollection<Product> filteredProducts = await _context.Product.Where(p => p.Name.StartsWith(searchText)).ToListAsync(); //Filtered products
             ICollection<Category> selectableCategories = null;// navigation menu
 
             if (categoryId == null)
@@ -70,7 +73,9 @@ namespace EShop.Controllers
                     //ViewBag.AbsoluteNavigationPath = null;
                     ViewBag.CurrentCategoryId = categoryId;
 
-                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                    if (!isSearch)
+                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                    else productsToView = filteredProducts.Skip(startingPageNumber * productsPerPage).Take(productsPerPage).ToList();
                 }
                 else// (POST) specific path segment selected ([segment]/.../...)
                 {
@@ -184,7 +189,17 @@ namespace EShop.Controllers
                 }
             }
 
-            int pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            int pageCount = 0;
+            if (!isSearch)
+                pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            else //If search
+            {
+                pageCount = filteredProducts.Count / productsPerPage;
+                if (filteredProducts.Count % productsPerPage != 0)
+                {
+                    pageCount++;
+                }
+            }
             ViewBag.PageCount = pageCount;
 
             if (startingPageNumber + 1 < pageCount) ViewBag.NextPageNumber = startingPageNumber + 1;
@@ -192,27 +207,36 @@ namespace EShop.Controllers
 
             ViewBag.TopLevelCategories = selectableCategories;
 
-            String[] allPrimaryImageLinks = new String[productsToView.Count];
+            String[] allPrimaryImageLinks = new String[0];
 
-            await Task.Run(() =>
+            try //In case there is no products
             {
-                var listProducts = productsToView.ToList();
-                for (int i = 0; i < listProducts.Count; i++)
+                allPrimaryImageLinks = new String[productsToView.Count];
+
+                await Task.Run(() =>
                 {
-                    List<ProductImage> primaryImage = (from pi in _context.ProductImage
-                                                       where pi.IsPrimary
-                                                       where pi.Product == listProducts[i]
-                                                       select pi).ToList();
-                    if (primaryImage.Count > 0)
+                    var listProducts = productsToView.ToList();
+                    for (int i = 0; i < listProducts.Count; i++)
                     {
-                        allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
+                        List<ProductImage> primaryImage = (from pi in _context.ProductImage
+                                                           where pi.IsPrimary
+                                                           where pi.Product == listProducts[i]
+                                                           select pi).ToList();
+                        if (primaryImage.Count > 0)
+                        {
+                            allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
+                        }
+                        else
+                        {
+                            allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
+                        }
                     }
-                    else
-                    {
-                        allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
-                    }
-                }
-            });
+                });
+            }
+            catch (NullReferenceException) //In case there is no products
+            {
+
+            }
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
@@ -256,14 +280,19 @@ namespace EShop.Controllers
             return View(productsToView);
         }
 
+
+
+
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber, bool isSearch = false, string searchText = "")
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
             ViewBag.CurrentCategoryId = categoryId;
             ViewBag.CurrentPageNumber = pageNumber;
             ViewBag.PageCount = pageCount;
+            ViewBag.IsSearch = isSearch; //Used for search pagination
+            ViewBag.SearchText = searchText; //Used for search pagination
 
             if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
             else ViewBag.NextPageNumber = null;
@@ -273,19 +302,33 @@ namespace EShop.Controllers
             Category category = null;
             if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
 
-            if (category == null)
+            ICollection<Product> products = new List<Product>();
+            if (!isSearch)
             {
+                if (category == null)
+                {
+                    ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+                    ViewBag.CurrentCategoryName = null;
+                    ViewBag.AbsoluteNavigationPath = null;
+                }
+                else
+                {
+                    ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
+                    ViewBag.CurrentCategoryName = category.Name;
+                }
+                
+                products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+            }
+            else //If it's search state
+            {
+                //To prevent null reference
                 ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
                 ViewBag.CurrentCategoryName = null;
                 ViewBag.AbsoluteNavigationPath = null;
-            }
-            else
-            {
-                ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
-                ViewBag.CurrentCategoryName = category.Name;
-            }
 
-            ICollection<Product> products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+                products = await _context.Product.Where(p => p.Name.Contains(searchText)).ToListAsync();
+                products = products.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+            }
             var listProducts = products.ToList();
 
             String[] allPrimaryImageLinks = new String[products.Count];
@@ -480,5 +523,13 @@ namespace EShop.Controllers
 
             return await EditMainCarousel();
         }
-    }
+
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Search(string searchInput)
+        {
+            return RedirectToAction("Index", "Home", new { isSearch = true, searchText = searchInput });
+        }
+    }   
 }
