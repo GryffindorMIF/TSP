@@ -25,17 +25,19 @@ namespace EShop.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INavigationService _navigationService;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly IProductService _productService;
         private readonly int uploadMaxByteSize;
         private readonly int productsPerPage;
 
         private const int startingPageNumber = 0;
 
-        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService)
         {
             _context = context;
             _userManager = userManager;
             _navigationService = navigationService;
             _appEnvironment = appEnvironment;
+            _productService = productService;
 
             if (!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
             {
@@ -49,14 +51,17 @@ namespace EShop.Controllers
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
+        public async Task<IActionResult> Index(bool isSearch = false, string searchText = "", int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
         {
             ViewBag.CurrentPageNumber = startingPageNumber;
             ViewBag.PreviousPageNumber = null;
             ViewBag.NextPageNumber = 1;
+            ViewBag.SearchText = searchText; //Used for search pagination :(
+            ViewBag.IsSearch = isSearch; //Used for search pagination :(
 
             Category currentCategory = null;
-            ICollection<Product> productsToView = null;// products to return
+            ICollection<Product> productsToView = null;// products to return in current page
+            ICollection<Product> filteredProducts = await _context.Product.Where(p => p.Name.StartsWith(searchText)).ToListAsync(); //Filtered products
             ICollection<Category> selectableCategories = null;// navigation menu
 
             if (categoryId == null)
@@ -70,7 +75,9 @@ namespace EShop.Controllers
                     //ViewBag.AbsoluteNavigationPath = null;
                     ViewBag.CurrentCategoryId = categoryId;
 
-                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                    if (!isSearch)
+                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                    else productsToView = filteredProducts.Skip(startingPageNumber * productsPerPage).Take(productsPerPage).ToList();
                 }
                 else// (POST) specific path segment selected ([segment]/.../...)
                 {
@@ -184,7 +191,17 @@ namespace EShop.Controllers
                 }
             }
 
-            int pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            int pageCount = 0;
+            if (!isSearch)
+                pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            else //If search
+            {
+                pageCount = filteredProducts.Count / productsPerPage;
+                if (filteredProducts.Count % productsPerPage != 0)
+                {
+                    pageCount++;
+                }
+            }
             ViewBag.PageCount = pageCount;
 
             if (startingPageNumber + 1 < pageCount) ViewBag.NextPageNumber = startingPageNumber + 1;
@@ -192,10 +209,10 @@ namespace EShop.Controllers
 
             ViewBag.TopLevelCategories = selectableCategories;
 
-            //--------- images --------------//
-            ViewBag.AllPrimaryImageLinks = await GetProductImages(productsToView.ToList());
+            String[] allPrimaryImageLinks = await _productService.GetAllImages(productsToView);
 
-            //---------- ads ----------------//
+            ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
+            // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
 
@@ -213,14 +230,19 @@ namespace EShop.Controllers
             return View(productsToView);
         }
 
+
+
+
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber, string attributeName = null)
+        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
             ViewBag.CurrentCategoryId = categoryId;
             ViewBag.CurrentPageNumber = pageNumber;
             ViewBag.PageCount = pageCount;
+            ViewBag.IsSearch = isSearch; //Used for search pagination
+            ViewBag.SearchText = searchText; //Used for search pagination
 
             if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
             else ViewBag.NextPageNumber = null;
@@ -230,26 +252,39 @@ namespace EShop.Controllers
             Category category = null;
             if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
 
-            if (category == null)
+            ICollection<Product> products = new List<Product>();
+            if (!isSearch)
             {
+                if (category == null)
+                {
+                    ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+                    ViewBag.CurrentCategoryName = null;
+                    ViewBag.AbsoluteNavigationPath = null;
+                }
+                else
+                {
+                    ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
+                    ViewBag.CurrentCategoryName = category.Name;
+                }
+
+                products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+            }
+            else //If it's search state
+            {
+                //To prevent null reference
                 ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
                 ViewBag.CurrentCategoryName = null;
                 ViewBag.AbsoluteNavigationPath = null;
+
+                products = await _context.Product.Where(p => p.Name.Contains(searchText)).ToListAsync();
+                products = products.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
             }
-            else
-            {
-                ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
-                ViewBag.CurrentCategoryName = category.Name;
-            }
-            ICollection<Product> products = null;
-            if (attributeName == null) products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
-            else products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage, attributeName);
             var listProducts = products.ToList();
 
-            //--------- images --------------//
-            ViewBag.AllPrimaryImageLinks = await GetProductImages(listProducts);
+            String[] allPrimaryImageLinks = await _productService.GetAllImages(products); //Retrieve all image links
 
-            //---------- ads ----------------//
+            ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
+            // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
 
@@ -272,29 +307,23 @@ namespace EShop.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ProductPage(int id)
         {
-            Product temp = _context.Product.Single(p => p.Id == id);
+            //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
+            Product temp = await _productService.GetProductById(id);
+            List<Product> products = new List<Product>();
+            products.Add(temp);
             ViewBag.Product = temp;
-            await Task.Run(() => //Loading primary image and in future should start loading all images
-            {
-                try //If product has an image
-                {
-                    ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
-                    ViewData["primary_image"] = primaryImage.ImageUrl;
-                    //ViewBag.PrimaryImage = primaryImage.ImageUrl;
-                    List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
-                    ViewBag.SecondaryImages = secondaryImages;
-                }
-                catch (Exception) //Could appear if product doesn't have any photos
-                {
-                    ViewData["primary_image"] = "product-image-placeholder.jpg"; //Then just set placeholder
-                    ViewBag.SecondaryImages = new List<ProductImage>();
-                }
-            });
+
+            ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
+            ViewData["primary_image"] = primaryImage.ImageUrl;
+
+            String[] secondaryImages = await _productService.GetAllImages(products, false);
+            //List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
+            ViewBag.SecondaryImages = secondaryImages;
+
 
             ProductDiscount discount = await (from pd in _context.ProductDiscount
                                               where pd.ProductId == id
                                               select pd).FirstOrDefaultAsync();
-
             if (discount != null)
             {
                 if (discount.Ends > DateTime.Now)
