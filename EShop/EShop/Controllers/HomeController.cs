@@ -234,7 +234,7 @@ namespace EShop.Controllers
 
 
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
@@ -338,22 +338,22 @@ namespace EShop.Controllers
             }
 
             var attributes = await (from a in _context.AttributeValue
-                                          join pa in _context.ProductAttributeValue on id equals pa.ProductId
-                                          where a.Id == pa.AttributeValueId
-                                            select a).ToListAsync();
+                                    join pa in _context.ProductAttributeValue on id equals pa.ProductId
+                                    where a.Id == pa.AttributeValueId
+                                    select a).ToListAsync();
 
             ICollection<Models.Attribute> attributeCategories = new List<Models.Attribute>();
-            foreach(var attr in attributes)
+            foreach (var attr in attributes)
             {
                 var attrCategory = await _context.Attribute.FindAsync(attr.AttributeId);
-                if(!attributeCategories.Contains(attrCategory))
+                if (!attributeCategories.Contains(attrCategory))
                 {
                     attributeCategories.Add(attrCategory);
                 }
             }
             ViewBag.Attributes = attributes;
             ViewBag.AttributeCategories = attributeCategories;
-            
+
 
             return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
         }
@@ -443,12 +443,15 @@ namespace EShop.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> FilterByAttributes(string attributeName, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
-        {          
+        public async Task<IActionResult> FilterByAttributes(bool isSearch, string searchText, string attributeName, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
             ViewBag.CurrentCategoryId = categoryId;
             ViewBag.CurrentPageNumber = pageNumber;
+
+            ViewBag.IsSearch = isSearch; //Used for search pagination
+            ViewBag.SearchText = searchText; //Used for search pagination
 
             Category category = null;
             if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
@@ -603,6 +606,13 @@ namespace EShop.Controllers
                 }
             });
             return allPrimaryImageLinks;
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Search(string searchInput)
+        {
+            return RedirectToAction("Index", "Home", new { isSearch = true, searchText = searchInput });
         }
     }
 }
