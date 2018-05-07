@@ -6,6 +6,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -42,6 +43,7 @@
             {
                 <li class="page-item">
                     <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                       asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                        asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                        asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                        asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -57,6 +59,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"

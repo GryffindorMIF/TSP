@@ -40,6 +40,27 @@
 <!--Overall page view-->
 <div class="sidenav">
     <h3>Perfect<br /> place for your<br /> advertisements!</h3>
+    <br />
+    <h3>Attributes</h3>
+    <ul>
+        @foreach (var attrCategory in ViewBag.AttributeCategories)
+        {
+            <text>
+                <li>
+                    <h4>@attrCategory.Name</h4>
+                </li>
+            </text>
+            @foreach (var attr in ViewBag.Attributes)
+            {
+                if (attr.AttributeId == attrCategory.Id)
+                {
+                    <text>
+                        <li>@attr.Name</li>
+                    </text>
+                }
+            }
+        }
+    </ul>
 </div>
 
 <div class="main">

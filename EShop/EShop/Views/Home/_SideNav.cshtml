@@ -35,7 +35,7 @@ else
             <ul>
                 <li>
                     <button type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
-                        <span class="glyphicon glyphicon-plus"></span> Child
+                        <span class="glyphicon glyphicon-plus"></span> Child category
                     </button>
                 </li>
             </ul>
@@ -50,18 +50,25 @@ else
             <ul>
                 <li>
                     <button id="add-child-btn" type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
-                        <span class="glyphicon glyphicon-plus"></span> Child
+                        <span class="glyphicon glyphicon-plus"></span> Child category
                     </button>
                 </li>
                 <li>
                     <button id="rename-parent" type="button" class="btn btn-warning btn-xs" onclick="$('#edit-modal').fadeIn();">
-                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                        <span class="glyphicon glyphicon-pencil"></span> Edit category
                     </button>
                 </li>
                 <li>
                     <button id="remove-categort-btn" type="button" class="btn btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
-                        <span class="glyphicon glyphicon-trash"></span> Remove
+                        <span class="glyphicon glyphicon-trash"></span> Remove category
                     </button>
+                </li>
+                <li>
+                    <a asp-controller="Attribute" asp-action="Index">
+                        <button type="button" class="btn btn-warning btn-xs">
+                            <span class="glyphicon glyphicon-pencil"></span> Manage attributes
+                        </button>
+                    </a>
                 </li>
             </ul>
         }
@@ -72,8 +79,56 @@ else
     @foreach (Category cat in ViewBag.TopLevelCategories)
     {
         <li>
-            <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">@cat.Name &nbsp;</a>
+            <a id="navigation-link-id" asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-backToParentCategory="false" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">
+                @cat.Name &nbsp;
+            </a>
         </li>
     }
 </ul>
+
+@if (ViewBag.CurrentCategoryName != null)
+{
+    <br />
+    <h3>Attributes</h3>
+    <ul>
+        @foreach (var attribute in ViewBag.Attributes)
+        {
+            <text>
+                <li>
+                    <h4>@attribute.Name</h4>
+                </li>
+            </text>
+
+            @foreach (var attrVal in ViewBag.AttributeValues)
+            {
+                if (attrVal.AttributeId == attribute.Id)
+                {
+
+                    <text>
+                        <li>
+                            <a asp-action="FilterByAttributes" 
+                               asp-route-attributeName="@attrVal.Name"
+                               asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                               asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
+                               asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
+                               asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
+                               asp-route-pageNumber="@ViewBag.PageNumber"
+                               asp-route-pageCount="@ViewBag.PageCount">
+
+                                @if(attrVal.Name == ViewBag.SelectedAttributeValueName)
+                                {
+                                    <font color="red">@attrVal.Name</font>
+                                }
+                                else
+                                {
+                                    @attrVal.Name
+                                }                               
+                            </a>
+                        </li>
+                    </text>
+                }
+            }
+        }
+    </ul>
+}
 

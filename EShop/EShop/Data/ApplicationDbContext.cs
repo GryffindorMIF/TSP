@@ -30,6 +30,9 @@ namespace EShop.Data
         public DbSet<ProductDiscount> ProductDiscount { get; set; }
         public DbSet<ProductAd> ProductAd { get; set; }
         public DbSet<OrderReviewModel> OrderReview { get; set; }
+        public DbSet<Models.AttributeValue> AttributeValue { get; set; }
+        public DbSet<Models.Attribute> Attribute { get; set; }
+        public DbSet<ProductAttributeValue> ProductAttributeValue { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -66,8 +69,15 @@ namespace EShop.Data
                 .HasForeignKey(pc => pc.ProductId);
 
             builder.Entity<ProductDiscount>()
-            .HasAlternateKey(c => c.ProductId)
-            .HasName("AlternateKey_ProductId");
+                .HasAlternateKey(c => c.ProductId)
+                .HasName("AlternateKey_ProductId");          
+
+            /*
+            builder.Entity<ProductAttributeValue>()
+                .HasAlternateKey(c => new { c.ProductId, c.AttributeValueId })
+                .HasName("AlternateKey_ProductId_AttributeValueId");
+
+            */
 
             /*builder.Entity<ProductDiscount>()
                 .HasIndex(pd => pd.ProductId)

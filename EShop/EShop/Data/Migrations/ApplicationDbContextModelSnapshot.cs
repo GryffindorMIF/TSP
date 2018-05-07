@@ -77,6 +77,34 @@ namespace EShop.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("EShop.Models.Attribute", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Attribute");
+                });
+
+            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeId");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeId");
+
+                    b.ToTable("AttributeValue");
+                });
+
             modelBuilder.Entity("EShop.Models.CardInfo", b =>
                 {
                     b.Property<int>("Id")
@@ -257,6 +285,24 @@ namespace EShop.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductAd");
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeValueId");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeValueId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAttributeValue");
                 });
 
             modelBuilder.Entity("EShop.Models.ProductCategory", b =>
@@ -475,6 +521,14 @@ namespace EShop.Data.Migrations
                     b.ToTable("UserTokens");
                 });
 
+            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
+                {
+                    b.HasOne("EShop.Models.Attribute", "Attribute")
+                        .WithMany()
+                        .HasForeignKey("AttributeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("EShop.Models.CardInfo", b =>
                 {
                     b.HasOne("EShop.Models.ApplicationUser", "User")
@@ -521,6 +575,19 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.ProductAd", b =>
                 {
+                    b.HasOne("EShop.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
+                {
+                    b.HasOne("EShop.Models.AttributeValue", "AttributeValue")
+                        .WithMany()
+                        .HasForeignKey("AttributeValueId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("EShop.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
