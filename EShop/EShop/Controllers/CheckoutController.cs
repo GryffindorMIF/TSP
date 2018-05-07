@@ -46,26 +46,30 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Checkout()
         {
-            var model = new OrderViewModel { StatusMessage = StatusMessage };
-            var user = await _userManager.GetUserAsync(User);
-            var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
-
-            ShoppingCart shoppingCart = await GetCartAsync();
-
-            model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
-
-            model.savedAddresses = new List<SelectListItem>();
-
-            foreach (DeliveryAddress da in savedAddresses)
+            if (User.IsInRole("Customer"))
             {
-                model.savedAddresses.Add(new SelectListItem
-                {
-                    Text = da.Zipcode,
-                    Value = da.Zipcode
-                });
-            }
+                var model = new OrderViewModel { StatusMessage = StatusMessage };
+                var user = await _userManager.GetUserAsync(User);
+                var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
 
-            return View(model);
+                ShoppingCart shoppingCart = await GetCartAsync();
+
+                model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+
+                model.savedAddresses = new List<SelectListItem>();
+
+                foreach (DeliveryAddress da in savedAddresses)
+                {
+                    model.savedAddresses.Add(new SelectListItem
+                    {
+                        Text = da.Zipcode,
+                        Value = da.Zipcode
+                    });
+                }
+
+                return View(model);
+            }
+            else return RedirectToAction("Login", "Account");
         }
 
         [EnableCors("EShopCorsPolicy")]

@@ -61,7 +61,8 @@
                 <div class="form-group" id="zip_confirmation">
                     <label asp-for="ZipConfirmation">Confirm Address:</label>
                     @Html.DropDownList("ZipConfirmation", Model.savedAddresses)
-                </div>
+                    <a asp-controller="Manage" asp-action="ManageDeliveryAddresses"><font color="blue">Add new</font></a>
+                </div>             
                 <div class="form-group FirstName">
                     <label asp-for="FirstName">First Name</label>
                     <input asp-for="FirstName" class="form-control" />
@@ -74,12 +75,12 @@
                 </div>
                 <div class="form-group CardNumber">
                     <label asp-for="CardNumber">Card Number</label>
-                    <input asp-for="CardNumber" class="form-control" />
+                    <input asp-for="CardNumber" class="form-control" placeholder="0000111122223333"/>
                     <span asp-validation-for="CardNumber" class="text-danger"></span>
                 </div>
                 <div class="form-group CVV">
                     <label asp-for="CVV">Card CVV</label>
-                    <input asp-for="CVV" class="form-control" />
+                    <input asp-for="CVV" class="form-control" placeholder="000" />
                     <span asp-validation-for="CVV" class="text-danger"></span>
                 </div>
                 <div class="form-group" id="expiration-date">
