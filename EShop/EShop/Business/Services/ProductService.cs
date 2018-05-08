@@ -121,6 +121,10 @@ namespace EShop.Business.Services
                 for (int i = filteredProducts.Count - 1; i > -1; i--)
                 {
                     bool remove = true;
+
+                    if (filteredProducts[i].Name.ToLower().StartsWith(searchText.ToLower()))
+                        remove = false;
+
                     string[] nameArray = filteredProducts[i].Name.Split(' ');
                     foreach (string part in nameArray)
                     {
