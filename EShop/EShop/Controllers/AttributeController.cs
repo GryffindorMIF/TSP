@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
 using EShop.Models;
+using EShop.Util;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using static System.Net.WebRequestMethods;
 
 namespace EShop.Controllers
 {
     public class AttributeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHostingEnvironment _appEnvironment;
 
-        public AttributeController(ApplicationDbContext context)
+        public AttributeController(ApplicationDbContext context, IHostingEnvironment appEnvironment)
         {
             _context = context;
+            _appEnvironment = appEnvironment;
         }
 
         [HttpGet]
@@ -210,6 +217,25 @@ namespace EShop.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddIcon(int attributeId, IFormFile file)
+        {
+            Debug.WriteLine("$$$ " + attributeId);
+            string iconImagePath = await _appEnvironment.UploadImageAsync(file, "attribute-icons", 2097152);
+
+            
+                Models.Attribute attr = await _context.Attribute.FindAsync(attributeId);
+                if(attr.IconUrl != null)
+                {
+                    await _appEnvironment.DeleteImageAsync(attr.IconUrl, "attribute-icons");
+                }
+                attr.IconUrl = iconImagePath;
+                _context.Update(attr);
+                await _context.SaveChangesAsync();
+    
+            return RedirectToAction("Index", "Home");
         }
     }
 }

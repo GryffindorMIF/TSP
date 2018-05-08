@@ -230,9 +230,6 @@ namespace EShop.Controllers
             return View(productsToView);
         }
 
-
-
-
         [AllowAnonymous]
         public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
         {

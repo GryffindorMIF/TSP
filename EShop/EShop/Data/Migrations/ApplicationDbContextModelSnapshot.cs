@@ -82,6 +82,8 @@ namespace EShop.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("IconUrl");
+
                     b.Property<string>("Name");
 
                     b.HasKey("Id");
