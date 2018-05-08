@@ -116,7 +116,20 @@ namespace EShop.Business.Services
 
             await Task.Run(() =>
             {
-                filteredProducts = _context.Product.Where(p => p.Name.StartsWith(searchText)).ToList();
+                //filteredProducts = _context.Product.Where(p => p.Name.StartsWith(searchText)).ToList();
+                filteredProducts = _context.Product.ToList();
+                for (int i = filteredProducts.Count - 1; i > -1; i--)
+                {
+                    bool remove = true;
+                    string[] nameArray = filteredProducts[i].Name.Split(' ');
+                    foreach (string part in nameArray)
+                    {
+                        if (part.ToLower().StartsWith(searchText.ToLower()))
+                            remove = false;
+                    }
+                    if (remove)
+                        filteredProducts.RemoveAt(i);
+                }
             });
             return filteredProducts;
         }

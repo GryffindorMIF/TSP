@@ -61,7 +61,10 @@ namespace EShop.Controllers
 
             Category currentCategory = null;
             ICollection<Product> productsToView = null;// products to return in current page
-            ICollection<Product> filteredProducts = await _productService.SearchForProducts(searchText);
+            ICollection<Product> filteredProducts = null; //Used for search
+
+            if (isSearch)
+                filteredProducts = await _productService.SearchForProducts(searchText);
             ICollection<Category> selectableCategories = null;// navigation menu
 
             if (categoryId == null)
