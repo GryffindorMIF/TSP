@@ -16,7 +16,7 @@ namespace EShop.Business.Services
             _context = context;
         }
 
-        public async Task<Product> GetProductById(int id)
+        public async Task<Product> FindProductByIdAsync(int id)
         {
             Product product = null;
             await Task.Run(() =>
@@ -68,6 +68,28 @@ namespace EShop.Business.Services
                 });
             }
             return allImageLinks;
+        }
+
+        public async Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id)
+        {
+            ICollection<ProductProperty> properties = new List<ProductProperty>();
+
+            await Task.Run(() =>
+            {
+                properties = _context.ProductProperty.Where(p => p.ProductId == id).ToList();
+            });
+
+            return properties;
+        }
+
+        public async Task<ProductProperty> FindProductPropertyByIdAsync(int id)
+        {
+            ProductProperty property = null;
+            await Task.Run(() =>
+            {
+                property = _context.ProductProperty.FirstOrDefault(p => p.Id == id);
+            });
+            return property;
         }
     }
 }

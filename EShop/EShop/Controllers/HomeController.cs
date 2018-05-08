@@ -353,10 +353,10 @@ namespace EShop.Controllers
 
         //ProductPage index
         [AllowAnonymous]
-        public async Task<IActionResult> ProductPage(int id)
+        public async Task<IActionResult> ProductPage(int id) //Argument is product id
         {
             //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
-            Product temp = await _productService.GetProductById(id);
+            Product temp = await _productService.FindProductByIdAsync(id);
             List<Product> products = new List<Product>();
             products.Add(temp);
             ViewBag.Product = temp;
@@ -385,7 +385,7 @@ namespace EShop.Controllers
                 }
             }
 
-            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _productService.GetAllPropertiesByProductIdAsync(id));
         }
 
 

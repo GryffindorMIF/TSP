@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business;
 using EShop.Data;
 using EShop.Models;
 using EShop.Util;
@@ -20,12 +21,14 @@ namespace EShop.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly IProductService _productService;
         private readonly int uploadMaxByteSize;
 
-        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration)
+        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration, IProductService productService)
         {
             _context = context;
             _appEnvironment = appEnvironment;
+            _productService = productService;
             if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
             {
                 throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
@@ -401,7 +404,7 @@ namespace EShop.Controllers
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = id;
             //ViewData["show_alert"] = showAlert;
-            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
+            return View(await _productService.GetAllPropertiesByProductIdAsync(id));
         }
 
         //Page with add property form
@@ -438,16 +441,14 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
-            ProductProperty property = _context.ProductProperty.FirstOrDefault(pd => pd.Id == id);
+            ProductProperty property = await _productService.FindProductPropertyByIdAsync(id);
             int productId = property.ProductId;
 
             await Task.Run(() =>
             {
                 try
                 {
-                    Product product = _context.Product.FirstOrDefault(p => p.Id == property.ProductId);
                     _context.Remove(property);
-                    //_context.Update(product);
 
                     var t2 = Task.Run(
                         async () =>
