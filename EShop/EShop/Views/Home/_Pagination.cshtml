@@ -2,7 +2,7 @@
     <ul class="pagination">
 
         <!-- Previous btn -->
-        @if (ViewBag.IsSearch != null && ViewBag.PreviousPageNumber != null) //In case it's search situation
+        @if (ViewBag.IsSearch == true && ViewBag.PreviousPageNumber != null) //In case it's search situation
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage"
@@ -21,6 +21,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -69,6 +70,7 @@
             {
                 <li class="page-item">
                     <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                       asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                        asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                        asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                        asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -99,6 +101,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"

@@ -10,7 +10,9 @@ namespace EShop.Business
     {
         Task<ICollection<Product>> GetProductsInCategoryAsync(Category category);
         Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage);
+        Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage, string attributeName);
         Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage);
+        Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage, string attributeName);
         Task<List<Category>> GetTopLevelCategoriesAsync();
         Task<List<Category>> GetChildCategoriesAsync(Category parentCategory);
         Task<ICollection<CategoryViewModel>> BuildRecursiveMenuAsync();

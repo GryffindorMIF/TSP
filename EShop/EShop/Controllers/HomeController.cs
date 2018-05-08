@@ -215,50 +215,23 @@ namespace EShop.Controllers
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
-            // -----------------------------------------
-            ICollection<ProductDiscount> discountList = await _context.ProductDiscount.ToListAsync();
 
-            IList<bool> hasDiscountList = new List<bool>();
-            IList<Decimal?> discountPriceList = new List<Decimal?>();
-            IList<DateTime?> dicountEndDateList = new List<DateTime?>();
+            //------- discountai ------------//
+            DiscountListViewModel dlvm = await GetDiscountList(productsToView);
+            ViewBag.HasDiscountList = dlvm.HasDiscountList;
+            ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
+            ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
 
-            foreach (var product in productsToView.Select((value, index) => new { Value = value, Index = index }))
-            {
-                hasDiscountList.Add(false);
-                discountPriceList.Add(null);
-                dicountEndDateList.Add(null);
-
-                foreach (var discount in discountList)
-                {
-                    if (product.Value.Id == discount.ProductId)
-                    {
-                        if (discount.Ends > DateTime.Now)
-                        {
-                            hasDiscountList[product.Index] = true;
-                            discountPriceList[product.Index] = discount.DiscountPrice;
-                            dicountEndDateList[product.Index] = discount.Ends;
-                        }
-                        else
-                        {
-                            _context.Remove(discount);
-                            await _context.SaveChangesAsync();
-                        }
-                        break;
-                    }
-                }
-            }
-            ViewBag.HasDiscountList = hasDiscountList;
-            ViewBag.DiscountPriceList = discountPriceList;
-            ViewBag.DiscountEndDateList = dicountEndDateList;
+            //------- atributai ------------//
+            AttributeListViewModel alvm = await GetAttributeListInCategory(currentCategory);
+            ViewBag.AttributeValues = alvm.AttributeValues;
+            ViewBag.Attributes = alvm.Attributes;
 
             return View(productsToView);
         }
 
-
-
-
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber, bool isSearch = false, string searchText = "")
+        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
@@ -311,52 +284,28 @@ namespace EShop.Controllers
             // -----------------------------------------
             ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
             ViewBag.ProductAds = productAds;
-            // -----------------------------------------
-            ICollection<ProductDiscount> discountList = await _context.ProductDiscount.ToListAsync();
 
-            IList<bool> hasDiscountList = new List<bool>();
-            IList<Decimal?> discountPriceList = new List<Decimal?>();
-            IList<DateTime?> dicountEndDateList = new List<DateTime?>();
+            //------- discountai ------------//
+            DiscountListViewModel dlvm = await GetDiscountList(listProducts);
+            ViewBag.HasDiscountList = dlvm.HasDiscountList;
+            ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
+            ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
 
-            foreach (var product in listProducts.Select((value, index) => new { Value = value, Index = index }))
-            {
-                hasDiscountList.Add(false);
-                discountPriceList.Add(null);
-                dicountEndDateList.Add(null);
-
-                foreach (var discount in discountList)
-                {
-                    if (product.Value.Id == discount.ProductId)
-                    {
-                        if (discount.Ends > DateTime.Now)
-                        {
-                            hasDiscountList[product.Index] = true;
-                            discountPriceList[product.Index] = discount.DiscountPrice;
-                            dicountEndDateList[product.Index] = discount.Ends;
-                        }
-                        else
-                        {
-                            _context.Remove(discount);
-                            await _context.SaveChangesAsync();
-                        }
-                        break;
-                    }
-                }
-            }
-            ViewBag.HasDiscountList = hasDiscountList;
-            ViewBag.DiscountPriceList = discountPriceList;
-            ViewBag.DiscountEndDateList = dicountEndDateList;
+            //------- atributai ------------//
+            AttributeListViewModel alvm = await GetAttributeListInCategory(category);
+            ViewBag.AttributeValues = alvm.AttributeValues;
+            ViewBag.Attributes = alvm.Attributes;
+            ViewBag.SelectedAttributeValueName = attributeName;
 
             return View("Index", products);
         }
 
-
-        //ProductPage index
+        // ProductPage index
         [AllowAnonymous]
-        public async Task<IActionResult> ProductPage(int id) //Argument is product id
+        public async Task<IActionResult> ProductPage(int id)
         {
             //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
-            Product temp = await _productService.FindProductByIdAsync(id);
+            Product temp = await _productService.GetProductById(id);
             List<Product> products = new List<Product>();
             products.Add(temp);
             ViewBag.Product = temp;
@@ -385,9 +334,26 @@ namespace EShop.Controllers
                 }
             }
 
-            return View(await _productService.GetAllPropertiesByProductIdAsync(id));
-        }
+            var attributes = await (from a in _context.AttributeValue
+                                    join pa in _context.ProductAttributeValue on id equals pa.ProductId
+                                    where a.Id == pa.AttributeValueId
+                                    select a).ToListAsync();
 
+            ICollection<Models.Attribute> attributeCategories = new List<Models.Attribute>();
+            foreach (var attr in attributes)
+            {
+                var attrCategory = await _context.Attribute.FindAsync(attr.AttributeId);
+                if (!attributeCategories.Contains(attrCategory))
+                {
+                    attributeCategories.Add(attrCategory);
+                }
+            }
+            ViewBag.Attributes = attributes;
+            ViewBag.AttributeCategories = attributeCategories;
+
+
+            return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
+        }
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditMainCarousel()
@@ -415,7 +381,6 @@ namespace EShop.Controllers
 
             return View("EditMainCarousel", productAdViewModel);
         }
-
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -458,7 +423,7 @@ namespace EShop.Controllers
             return await EditMainCarousel();
         }
 
-
+        [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAds(ProductAdViewModel productAdViewModel)
         {
@@ -473,6 +438,172 @@ namespace EShop.Controllers
             return await EditMainCarousel();
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> FilterByAttributes(bool isSearch, string searchText, string attributeName, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        {
+            ViewBag.ParentCategoryId = parentCategoryId;
+            ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
+            ViewBag.CurrentCategoryId = categoryId;
+            ViewBag.CurrentPageNumber = pageNumber;
+
+            ViewBag.IsSearch = isSearch; //Used for search pagination
+            ViewBag.SearchText = searchText; //Used for search pagination
+
+            Category category = null;
+            if (parentCategoryId != null) category = await _context.Category.FindAsync(parentCategoryId);
+
+            pageCount = await _navigationService.GetProductsInCategoryPageCount(category, productsPerPage, attributeName);
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            if (category == null)
+            {
+                ViewBag.TopLevelCategories = await _navigationService.GetTopLevelCategoriesAsync();
+                ViewBag.CurrentCategoryName = null;
+                ViewBag.AbsoluteNavigationPath = null;
+            }
+            else
+            {
+                ViewBag.TopLevelCategories = await _navigationService.GetChildCategoriesAsync(category);
+                ViewBag.CurrentCategoryName = category.Name;
+            }
+
+            ICollection<Product> products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage, attributeName);
+            var listProducts = products.ToList();
+
+            //--------- images --------------//
+            ViewBag.AllPrimaryImageLinks = await GetProductImages(listProducts);
+
+            //---------- ads ----------------//
+            ICollection<ProductAd> productAds = await _context.ProductAd.ToListAsync();
+            ViewBag.ProductAds = productAds;
+
+            //------- discountai ------------//
+            DiscountListViewModel dlvm = await GetDiscountList(listProducts);
+            ViewBag.HasDiscountList = dlvm.HasDiscountList;
+            ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
+            ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
+
+            //------- atributai ------------//
+            AttributeListViewModel alvm = await GetAttributeListInCategory(category);
+            ViewBag.AttributeValues = alvm.AttributeValues;
+            ViewBag.Attributes = alvm.Attributes;
+            ViewBag.SelectedAttributeValueName = attributeName;
+
+            return View("Index", products);
+        }
+
+        // Private methods
+        private async Task<AttributeListViewModel> GetAttributeListInCategory(Category category)
+        {
+            AttributeListViewModel alvm = new AttributeListViewModel()
+            {
+                Attributes = null,
+                AttributeValues = null
+            };
+
+            if (category != null)
+            {
+                IList<AttributeValue> attributeValues = null;
+                ICollection<Models.Attribute> attributes = new List<Models.Attribute>();
+
+                await Task.Run(async () =>
+                {
+                    attributeValues = await (from a in _context.AttributeValue
+                                             join pc in _context.ProductCategory on category.Id equals pc.CategoryId
+                                             join p in _context.Product on pc.ProductId equals p.Id
+                                             join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
+                                             join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
+                                             where a.Id == av.Id
+                                             select a).Distinct().ToListAsync();
+
+                    foreach (var attrVal in attributeValues)
+                    {
+                        var attr = await _context.Attribute.FindAsync(attrVal.AttributeId);
+                        if (!attributes.Contains(attr))
+                        {
+                            attributes.Add(attr);
+                        }
+                    }
+                });
+
+                alvm.Attributes = attributes;
+                alvm.AttributeValues = attributeValues;
+            }
+            return alvm;
+        }
+
+        private async Task<DiscountListViewModel> GetDiscountList(ICollection<Product> products)
+        {
+            ICollection<ProductDiscount> discountList = await _context.ProductDiscount.ToListAsync();
+
+            IList<bool> hasDiscountList = new List<bool>();
+            IList<Decimal?> discountPriceList = new List<Decimal?>();
+            IList<DateTime?> dicountEndDateList = new List<DateTime?>();
+
+            foreach (var product in products.Select((value, index) => new { Value = value, Index = index }))
+            {
+                hasDiscountList.Add(false);
+                discountPriceList.Add(null);
+                dicountEndDateList.Add(null);
+
+                foreach (var discount in discountList)
+                {
+                    if (product.Value.Id == discount.ProductId)
+                    {
+                        if (discount.Ends > DateTime.Now)
+                        {
+                            hasDiscountList[product.Index] = true;
+                            discountPriceList[product.Index] = discount.DiscountPrice;
+                            dicountEndDateList[product.Index] = discount.Ends;
+                        }
+                        else
+                        {
+                            _context.Remove(discount);
+                            await _context.SaveChangesAsync();
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return new DiscountListViewModel()
+            {
+                HasDiscountList = hasDiscountList,
+                DiscountPriceList = discountPriceList,
+                DiscountEndDateList = dicountEndDateList
+            };
+        }
+
+        private async Task<ICollection<string>> GetProductImages(IList<Product> products)
+        {
+            String[] allPrimaryImageLinks = new String[products.Count];
+
+            await Task.Run(() =>
+            {
+                for (int i = 0; i < products.Count; i++)
+                {
+                    List<ProductImage> primaryImage = (from pi in _context.ProductImage
+                                                       where pi.IsPrimary
+                                                       where pi.Product == products[i]
+                                                       select pi).ToList();
+                    if (primaryImage.Count > 0)
+                    {
+                        allPrimaryImageLinks[i] = primaryImage[0].ImageUrl;
+                    }
+                    else
+                    {
+                        allPrimaryImageLinks[i] = "product-image-placeholder.jpg";
+                    }
+                }
+            });
+            return allPrimaryImageLinks;
+        }
 
         [AllowAnonymous]
         [HttpGet]

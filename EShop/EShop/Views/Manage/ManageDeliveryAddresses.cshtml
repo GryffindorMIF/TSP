@@ -8,10 +8,10 @@
 <div class="main">
     <h4>@ViewData["Title"]</h4>
     @Html.Partial("_StatusMessage", Model.StatusMessage)
+    <div asp-validation-summary="All" class="text-danger"></div>
     <div class="row">
         <div class="col-md-6">
             <form method="post">
-                <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Country"></label>
                     <input asp-for="Country" class="form-control" />
@@ -42,9 +42,10 @@
         </div>
 
         <div class="col-md-6">
+            <label asp-for="Zipcode"></label>
             <form asp-controller="Manage" asp-action="RemoveSavedAddress" method="post">
-                <select asp-for="RemovalZipcode" asp-items="Model.savedAddresses"></select>
-                <br /><button type="submit">Remove Selected Address</button>
+                <select class="form-control" asp-for="RemovalZipcode" asp-items="Model.savedAddresses"></select>
+                <br /><button type="submit" class="btn btn-danger">Remove Selected Address</button>
             </form>
         </div>
     </div>

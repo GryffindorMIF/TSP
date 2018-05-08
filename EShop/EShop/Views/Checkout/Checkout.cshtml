@@ -3,6 +3,25 @@
 @{
     ViewData["Title"] = "Checkout";
 }
+<!-- CVV modal -->
+<div id="cvv-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                What is CVV number?
+                <button id="modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#cvv-modal').hide()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p align="center"><img src="~/images/ccv.png" /></p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-continue-btn" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#cvv-modal').hide()">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="sidenav">
 </div>
@@ -55,12 +74,13 @@
         <h3 style="text-align:center;">Checkout</h3>
         <p>@ViewBag.statusMessage</p>
         <div class="creditCardForm">
-            <form asp-controller="Checkout" asp-action="MakePurchase"
+            <form id="checkout-form" asp-controller="Checkout" asp-action="MakePurchase"
                   asp-route-totalCost="@totalCost.ToString()" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group" id="zip_confirmation">
                     <label asp-for="ZipConfirmation">Confirm Address:</label>
-                    @Html.DropDownList("ZipConfirmation", Model.savedAddresses)
+                    @Html.DropDownList("ZipConfirmation", Model.savedAddresses, new { @class = "form-control" })
+                    <a asp-controller="Manage" asp-action="ManageDeliveryAddresses"><font color="blue">Add new address</font></a>
                 </div>
                 <div class="form-group FirstName">
                     <label asp-for="FirstName">First Name</label>
@@ -74,22 +94,29 @@
                 </div>
                 <div class="form-group CardNumber">
                     <label asp-for="CardNumber">Card Number</label>
-                    <input asp-for="CardNumber" class="form-control" />
+                    <input id="card-number-input" asp-for="CardNumber" class="form-control" placeholder="____-____-____-____" />
                     <span asp-validation-for="CardNumber" class="text-danger"></span>
                 </div>
                 <div class="form-group CVV">
                     <label asp-for="CVV">Card CVV</label>
-                    <input asp-for="CVV" class="form-control" />
+                    <input asp-for="CVV" class="form-control" placeholder="000" maxlength="3" type="number" />
                     <span asp-validation-for="CVV" class="text-danger"></span>
+                    <a href="#" onclick="$('#cvv-modal').fadeIn()"><font color="blue">What is CVV?</font></a>
                 </div>
                 <div class="form-group" id="expiration-date">
-                    @Html.DropDownList("Exp_Year", Enumerable.Range(DateTime.Now.Year, 10).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Year")
-                    @Html.DropDownList("Exp_Month", Enumerable.Range(1, 12).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Month")
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @Html.DropDownList("Exp_Year", Enumerable.Range(DateTime.Now.Year, 10).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Year", new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-6">
+                            @Html.DropDownList("Exp_Month", Enumerable.Range(1, 12).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Month", new { @class = "form-control" })
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group" id="credit_cards">
-                    <img src="~/images/Cards.jpg" align="middle" width="256" height="100" id="cards">
+                    <img src="~/images/Cards.jpg" align="middle" width="128" height="42" id="cards">
                 </div>
-                <button type="submit" class="btn btn-default" id="confirm-purchase">Purchase</button>
+                <button class="btn btn-success" id="confirm-purchase">Purchase</button>
             </form>
         </div>
     </div>
@@ -98,3 +125,65 @@
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $("#confirm-purchase").click(function () {
+        $("#card-number-input").val($("#card-number-input").val().replace(new RegExp('-', 'g'), ""));
+        $("#checkout-form").submit();
+    });
+
+    /*
+     * charCode [48,57] 	Numbers 0 to 9
+     * keyCode 46  			"delete"
+     * keyCode 9  			"tab"
+     * keyCode 13  			"enter"
+     * keyCode 116 			"F5"
+     * keyCode 8  			"backscape"
+     * keyCode 37,38,39,40	Arrows
+     * keyCode 10			(LF)
+     */
+    function validate_int(myEvento) {
+        if ((myEvento.charCode >= 48 && myEvento.charCode <= 57) || myEvento.keyCode == 9 || myEvento.keyCode == 10 || myEvento.keyCode == 13 || myEvento.keyCode == 8 || myEvento.keyCode == 116 || myEvento.keyCode == 46 || (myEvento.keyCode <= 40 && myEvento.keyCode >= 37)) {
+            dato = true;
+        } else {
+            dato = false;
+        }
+        return dato;
+    }
+
+    function number_mask() {
+        var myMask = "____-____-____-____";
+        var myCaja = document.getElementById("card-number-input");
+        var myText = "";
+        var myNumbers = [];
+        var myOutPut = ""
+        var theLastPos = 1;
+        myText = myCaja.value;
+        //get numbers
+        for (var i = 0; i < myText.length; i++) {
+            if (!isNaN(myText.charAt(i)) && myText.charAt(i) != " ") {
+                myNumbers.push(myText.charAt(i));
+            }
+        }
+        //write over mask
+        for (var j = 0; j < myMask.length; j++) {
+            if (myMask.charAt(j) == "_") { //replace "_" by a number 
+                if (myNumbers.length == 0)
+                    myOutPut = myOutPut + myMask.charAt(j);
+                else {
+                    myOutPut = myOutPut + myNumbers.shift();
+                    theLastPos = j + 1; //set caret position
+                }
+            } else {
+                myOutPut = myOutPut + myMask.charAt(j);
+            }
+        }
+        document.getElementById("card-number-input").value = myOutPut;
+        document.getElementById("card-number-input").setSelectionRange(theLastPos, theLastPos);
+    }
+
+    document.getElementById("card-number-input").onkeypress = validate_int;
+    document.getElementById("card-number-input").onkeyup = number_mask;
+</script>

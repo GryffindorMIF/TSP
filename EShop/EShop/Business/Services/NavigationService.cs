@@ -17,7 +17,6 @@ namespace EShop.Business
         {
             _context = context;
         }
-
         
         public async Task<ICollection<Product>> GetProductsInCategoryAsync(Category category)
         {
@@ -36,20 +35,40 @@ namespace EShop.Business
         {
             ICollection<Product> productsInCategory = null;
 
+                await Task.Run(() =>
+                {
+                    if (category != null)
+                    {
+                        productsInCategory = (from p in _context.Product
+                                              join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                                              where pc.CategoryId == category.Id
+                                              select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                    }
+                    else
+                    {
+                        productsInCategory = _context.Product.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                    }
+                });
+            
+            return productsInCategory;
+        }
+
+        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage, string attributeName)
+        {
+            ICollection<Product> productsInCategory = null;
+
             await Task.Run(() =>
             {
-                if (category != null)
-                {
-                    productsInCategory = (from p in _context.Product
-                                            join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                            where pc.CategoryId == category.Id
-                                            select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
-                }
-                else
-                {
-                    productsInCategory = _context.Product.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
-                }
+                productsInCategory = (from p in _context.Product
+                                      from a in _context.AttributeValue
+                                      join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                                      join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
+                                      where pc.CategoryId == category.Id
+                                      where pa.AttributeValueId == a.Id
+                                      where a.Name == attributeName
+                                      select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
             });
+
             return productsInCategory;
         }
 
@@ -65,6 +84,40 @@ namespace EShop.Business
                     productsTotalCount = (from p in _context.Product
                                           join pc in _context.ProductCategory on p.Id equals pc.ProductId
                                           where pc.CategoryId == category.Id
+                                          select p).Count();
+                }
+                else
+                {
+                    productsTotalCount = _context.Product.Count();
+                }
+
+                pageCount = productsTotalCount / productsPerPage;
+
+                if (productsTotalCount % productsPerPage != 0)
+                {
+                    pageCount++;
+                }
+
+            });
+            return pageCount;
+        }
+
+        public async Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage, string attributeName)
+        {
+            int productsTotalCount;
+            int pageCount = 0;
+
+            await Task.Run(() =>
+            {
+                if (category != null)
+                {
+                    productsTotalCount = (from p in _context.Product
+                                          from a in _context.AttributeValue
+                                          join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                                          join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
+                                          where pc.CategoryId == category.Id
+                                          where pa.AttributeValueId == a.Id
+                                          where a.Name == attributeName
                                           select p).Count();
                 }
                 else
@@ -180,5 +233,6 @@ namespace EShop.Business
             });
             return uri;
         }
+
     }
 }

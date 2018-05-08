@@ -81,7 +81,7 @@
         <p>Total cost: €@totalCost</p>
     }
     <form asp-controller="Checkout" asp-action="Checkout">
-        @if (totalCost > 0 && this.User.IsInRole("Customer"))
+        @if (totalCost > 0)
         {
             <button id="checkout-btn" type="submit" class="btn btn-success">
                 <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Proceed To Checkout
