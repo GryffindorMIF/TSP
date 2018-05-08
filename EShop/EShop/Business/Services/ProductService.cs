@@ -44,25 +44,42 @@ namespace EShop.Business.Services
         //Retrieve primary image link for every product in passed collection
         public async Task<String[]> GetAllImages(ICollection<Product> products, bool isPrimary = true)
         {
-            String[] allImageLinks = new String[products.Count];
-            if (products.Count > 0)
-            { //To avoid null reference exception
+            //If it is primary images request, then links count should be products amount, otherwise - unknown yet 
+            String[] allImageLinks = isPrimary ? new String[products.Count] : new String[0];
+
+            if (isPrimary)
+                allImageLinks = new String[products.Count];
+            else allImageLinks = new String[0];
+
+            if (products.Count > 0) //To avoid null reference exception
+            { 
                 await Task.Run(() =>
                 {
                     var listProducts = products.ToList();
                     for (int i = 0; i < listProducts.Count; i++)
                     {
-                        List<ProductImage> image = (from pi in _context.ProductImage
-                                                           where pi.IsPrimary == isPrimary
-                                                           where pi.Product == listProducts[i]
-                                                           select pi).ToList();
-                        if (image.Count > 0)
+                        List<ProductImage> images = (from pi in _context.ProductImage
+                                                     where pi.IsPrimary == isPrimary
+                                                     where pi.Product == listProducts[i]
+                                                     select pi).ToList();
+                        if (isPrimary) //If request was made to get primary image(-s)
                         {
-                            allImageLinks[i] = image[0].ImageUrl;
+                            if (images.Count > 0)
+                            {
+                                allImageLinks[i] = images[0].ImageUrl;
+                            }
+                            else
+                            {
+                                allImageLinks[i] = "product-image-placeholder.jpg";
+                            }
                         }
-                        else
+                        else if (!isPrimary && images.Count > 0) //In case request was made to get all secondary images links
                         {
-                            allImageLinks[i] = "product-image-placeholder.jpg";
+                            allImageLinks = new String[images.Count];
+                            for (int j = 0; j < images.Count; j++)
+                            {
+                                allImageLinks[j] = images[j].ImageUrl;
+                            }
                         }
                     }
                 });
@@ -70,6 +87,7 @@ namespace EShop.Business.Services
             return allImageLinks;
         }
 
+        //Retrieve all properties for given product by id asynchronous
         public async Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id)
         {
             ICollection<ProductProperty> properties = new List<ProductProperty>();

@@ -18,7 +18,11 @@
     }
     @Html.Partial("_MainCarousel", productAds)
 
-    @if (@ViewBag.CurrentCategoryName == null)
+    @if (ViewBag.IsSearch) //If this page is shown on product search search
+    {
+        <h4><strong>Search results for:</strong> @ViewBag.SearchText</h4>
+    }
+    else if (ViewBag.CurrentCategoryName == null)
     {
         <h4>All</h4>
     }

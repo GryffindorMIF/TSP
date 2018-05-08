@@ -305,7 +305,7 @@ namespace EShop.Controllers
         public async Task<IActionResult> ProductPage(int id)
         {
             //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
-            Product temp = await _productService.GetProductById(id);
+            Product temp = await _productService.FindProductByIdAsync(id);
             List<Product> products = new List<Product>();
             products.Add(temp);
             ViewBag.Product = temp;
