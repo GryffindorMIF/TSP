@@ -52,7 +52,7 @@ namespace EShop.Business.Services
             else allImageLinks = new String[0];
 
             if (products.Count > 0) //To avoid null reference exception
-            { 
+            {
                 await Task.Run(() =>
                 {
                     var listProducts = products.ToList();
@@ -108,6 +108,17 @@ namespace EShop.Business.Services
                 property = _context.ProductProperty.FirstOrDefault(p => p.Id == id);
             });
             return property;
+        }
+
+        public async Task<ICollection<Product>> SearchForProducts(string searchText)
+        {
+            List<Product> filteredProducts = null;
+
+            await Task.Run(() =>
+            {
+                filteredProducts = _context.Product.Where(p => p.Name.StartsWith(searchText)).ToList();
+            });
+            return filteredProducts;
         }
     }
 }

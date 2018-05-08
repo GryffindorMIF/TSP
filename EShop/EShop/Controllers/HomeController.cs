@@ -61,7 +61,7 @@ namespace EShop.Controllers
 
             Category currentCategory = null;
             ICollection<Product> productsToView = null;// products to return in current page
-            ICollection<Product> filteredProducts = await _context.Product.Where(p => p.Name.StartsWith(searchText)).ToListAsync(); //Filtered products
+            ICollection<Product> filteredProducts = await _productService.SearchForProducts(searchText);
             ICollection<Category> selectableCategories = null;// navigation menu
 
             if (categoryId == null)

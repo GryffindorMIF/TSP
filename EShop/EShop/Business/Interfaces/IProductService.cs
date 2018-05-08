@@ -13,5 +13,8 @@ namespace EShop.Business
         Task<Product> FindProductByIdAsync(int id);
         Task<ProductProperty> FindProductPropertyByIdAsync(int id);
         Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id);
+
+        //Returning products that satisfy search algorithm by given text 
+        Task<ICollection<Product>> SearchForProducts(string searchText);
     }
 }
