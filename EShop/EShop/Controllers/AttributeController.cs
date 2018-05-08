@@ -78,6 +78,7 @@ namespace EShop.Controllers
             foreach(var id in model.IdsOfSelectedAttributesToRemove)
             {
                 Models.Attribute attribute = await _context.Attribute.FindAsync(id);
+                if(attribute.IconUrl != null) await _appEnvironment.DeleteImageAsync(attribute.IconUrl, "attribute-icons");
                 _context.Remove(attribute);
             }
             await _context.SaveChangesAsync();
@@ -122,33 +123,6 @@ namespace EShop.Controllers
             {
                 foreach (var productId in model.IdsOfSelectedProducts)
                 {
-                    /*
-                    Product product = await _context.Product.FindAsync(productId);
-                    ICollection<Category> productCategories = (from c in _context.Category
-                                                                join pc in _context.ProductCategory on product.Id equals pc.ProductId
-                                                                where pc.CategoryId == c.Id
-                                                                select c).ToList();
-
-                    AttributeValue attrVal = await _context.AttributeValue.FindAsync(attrValId);
-                    foreach (var productCategory in productCategories)
-                    {
-                        CategoryAttribute ca = new CategoryAttribute();
-                        ca.AttributeValueId = attrVal.Id;
-                        ca.CategoryId = productCategory.Id;
-
-                        try
-                        {
-                            _context.Add(ca);
-                            await _context.SaveChangesAsync();
-                        }
-                        catch
-                        {
-                            _context.Remove(ca);
-                            await _context.SaveChangesAsync();
-                        }
-                    }
-                    */
-
                     ProductAttributeValue pav = new ProductAttributeValue()
                     {
                         AttributeValueId = attrValId,
@@ -170,49 +144,6 @@ namespace EShop.Controllers
             {
                 ProductAttributeValue pav = await _context.ProductAttributeValue.FindAsync(productAttributeValueId);
                 _context.Remove(pav);
-
-                /*
-                AttributeValue attrVal = await _context.AttributeValue.FindAsync(pav.AttributeValueId);
-                Product product = await _context.Product.FindAsync(pav.ProductId);
-
-                IList<Category> productCategories = (from c in _context.Category
-                                                      join pc in _context.ProductCategory on product.Id equals pc.ProductId
-                                                      select c).ToList();
-
-                int productAttributeValuesCount = (from paval in _context.ProductAttributeValue
-                                                    where paval.AttributeValueId == productAttributeValueId
-                                                    select paval).Count();
-
-                if(productAttributeValuesCount == 1)
-                {
-                    foreach (var productCategory in productCategories)
-                    {
-                        CategoryAttribute categoryAttribute = (from cac in _context.CategoryAttribute
-                                                               where cac.CategoryId == productCategory.Id
-                                                               where cac.AttributeValueId == attrVal.Id
-                                                               select cac).FirstOrDefault();
-
-                        if (categoryAttribute != null)
-                        {
-                            _context.Remove(categoryAttribute);
-                        }
-                    }
-                }
-                */
-                /*
-                foreach (var productCategory in productCategories)
-                {
-                    CategoryAttribute categoryAttribute = (from cac in _context.CategoryAttribute
-                                                                      where cac.CategoryId == productCategory.Id
-                                                                      where cac.AttributeValueId == attrVal.Id
-                                                                      select cac).FirstOrDefault();
-                
-                    if(categoryAttribute != null) 
-                    {
-                        _context.Remove(categoryAttribute);// trinam jei tai paskutine atribute reiksme, susieta su kategorija
-                    }
-                }
-                */
             }
             await _context.SaveChangesAsync();
 
@@ -220,6 +151,7 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddIcon(int attributeId, IFormFile file)
         {
             Debug.WriteLine("$$$ " + attributeId);
