@@ -12,9 +12,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using EShop.Util;
+using EShop.Extensions;
 
 namespace EShop.Controllers
 {
+    [AllowAnonymous]
+    [DenyAccess(Roles = "Admin")]
     public class ShoppingCartController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -27,7 +30,7 @@ namespace EShop.Controllers
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
         }
-
+       
         public async Task<IActionResult> Index()
         {
             ShoppingCart shoppingCart = await GetCartAsync();
