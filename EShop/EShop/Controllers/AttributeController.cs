@@ -15,6 +15,7 @@ using static System.Net.WebRequestMethods;
 
 namespace EShop.Controllers
 {
+    [Authorize(Roles = "Admin, SuperAdmin")]
     public class AttributeController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -27,7 +28,6 @@ namespace EShop.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public IActionResult Index()
         {
             ViewBag.AttributeCategories = _context.Attribute.ToList();
@@ -61,7 +61,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAttribute(string name)
         {
             Models.Attribute attribute = new Models.Attribute(){ Name = name };
@@ -72,7 +71,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAttributes(ManageAttributesViewModel model)
         {
             foreach(var id in model.IdsOfSelectedAttributesToRemove)
@@ -87,7 +85,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAttributeValue(string name, ManageAttributesViewModel model)
         {
             AttributeValue attrVal = new AttributeValue()
@@ -102,7 +99,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAttributeValues(ManageAttributesViewModel model)
         {
             foreach (var id in model.IdsOfSelectedAttributeValues)
@@ -116,7 +112,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> LinkAttributeValuesToProducts(ManageAttributesViewModel model)
         {         
             foreach (var attrValId in model.IdsOfSelectedAttributeValues)
@@ -137,7 +132,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UnlinkAttributeValues(ManageAttributesViewModel model)
         {
             foreach(var productAttributeValueId in model.IdsOfSelectedLinks)
@@ -151,21 +145,18 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddIcon(int attributeId, IFormFile file)
         {
-            Debug.WriteLine("$$$ " + attributeId);
             string iconImagePath = await _appEnvironment.UploadImageAsync(file, "attribute-icons", 2097152);
-
-            
-                Models.Attribute attr = await _context.Attribute.FindAsync(attributeId);
-                if(attr.IconUrl != null)
-                {
-                    await _appEnvironment.DeleteImageAsync(attr.IconUrl, "attribute-icons");
-                }
-                attr.IconUrl = iconImagePath;
-                _context.Update(attr);
-                await _context.SaveChangesAsync();
+           
+            Models.Attribute attr = await _context.Attribute.FindAsync(attributeId);
+            if(attr.IconUrl != null)
+            {
+                await _appEnvironment.DeleteImageAsync(attr.IconUrl, "attribute-icons");
+            }
+            attr.IconUrl = iconImagePath;
+            _context.Update(attr);
+            await _context.SaveChangesAsync();
     
             return RedirectToAction("Index", "Home");
         }

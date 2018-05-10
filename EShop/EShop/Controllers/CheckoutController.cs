@@ -1,7 +1,9 @@
 ﻿using EShop.Business;
 using EShop.Business.Interfaces;
 using EShop.Data;
+using EShop.Extensions;
 using EShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,9 +21,9 @@ using System.Threading.Tasks;
 
 namespace EShop.Controllers
 {
+    [Authorize(Roles = "Customer")]
     public class CheckoutController : Controller
     {
-
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IShoppingCartService _shoppingCartService;
@@ -46,30 +48,26 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Checkout()
         {
-            if (User.IsInRole("Customer"))
+            var model = new OrderViewModel { StatusMessage = StatusMessage };
+            var user = await _userManager.GetUserAsync(User);
+            var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
+
+            ShoppingCart shoppingCart = await GetCartAsync();
+
+            model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+
+            model.savedAddresses = new List<SelectListItem>();
+
+            foreach (DeliveryAddress da in savedAddresses)
             {
-                var model = new OrderViewModel { StatusMessage = StatusMessage };
-                var user = await _userManager.GetUserAsync(User);
-                var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
-
-                ShoppingCart shoppingCart = await GetCartAsync();
-
-                model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
-
-                model.savedAddresses = new List<SelectListItem>();
-
-                foreach (DeliveryAddress da in savedAddresses)
+                model.savedAddresses.Add(new SelectListItem
                 {
-                    model.savedAddresses.Add(new SelectListItem
-                    {
-                        Text = da.Zipcode,
-                        Value = da.Zipcode
-                    });
-                }
-
-                return View(model);
+                    Text = da.Zipcode,
+                    Value = da.Zipcode
+                });
             }
-            else return RedirectToAction("Login", "Account");
+
+            return View(model);
         }
 
         [EnableCors("EShopCorsPolicy")]

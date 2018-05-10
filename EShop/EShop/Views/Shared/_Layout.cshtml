@@ -32,7 +32,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @if (!this.User.IsInRole("Admin"))
+                    @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
     {
                 <li>
                     <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
@@ -45,7 +45,7 @@
     {
                 <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
 }
-                    @if (this.User.IsInRole("Admin"))
+                    @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
     {
                 <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Confirm Orders</a></li>
                 <li><a asp-area="" asp-controller="User" asp-action="Index">Manage users</a></li>

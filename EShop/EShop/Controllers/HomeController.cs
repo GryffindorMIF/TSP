@@ -358,7 +358,7 @@ namespace EShop.Controllers
             return View(await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync());
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> EditMainCarousel()
         {
             ProductAdViewModel productAdViewModel = new ProductAdViewModel();
@@ -386,7 +386,7 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> CreateAd(ProductAdViewModel productAdViewModel)
         {
             IList<ProductAd> possibleAdImages = null;
@@ -427,7 +427,7 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteAds(ProductAdViewModel productAdViewModel)
         {
             foreach (var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
@@ -610,7 +610,7 @@ namespace EShop.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Search(string searchInput)
+        public IActionResult Search(string searchInput)
         {
             return RedirectToAction("Index", "Home", new { isSearch = true, searchText = searchInput });
         }
