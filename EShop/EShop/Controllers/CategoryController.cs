@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EShop.Views
 {
+    [Authorize(Roles = "Admin, SuperAdmin")]
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,7 +25,6 @@ namespace EShop.Views
         }
 
         // GET: Categories
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             ICollection<CategoryViewModel> recursiveMenu = await _navigationService.BuildRecursiveMenuAsync();
@@ -35,7 +35,6 @@ namespace EShop.Views
 
         // AJAX
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RenameCategory([FromBody] CategoryNewNamePostModel postModel)
         {
             try
@@ -65,7 +64,6 @@ namespace EShop.Views
 
         // AJAX
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory([FromBody] CategoryPostModel postModel)
         {
             try
@@ -121,7 +119,6 @@ namespace EShop.Views
 
         // AJAX
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCategory([FromBody] AddCategoryPostModel postModel)
         {
             int? parentCategoryId = postModel.ParentCategoryId;
@@ -152,7 +149,6 @@ namespace EShop.Views
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddTopLevelCategory(string name, string description)
         {
             Category newCategory = new Category();

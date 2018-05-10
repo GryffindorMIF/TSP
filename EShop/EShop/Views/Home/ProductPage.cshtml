@@ -66,7 +66,7 @@
     <div class="img_row">
         <p>
             <h2><strong>@ViewBag.Product.Name</strong></h2>
-            @if (this.User.IsInRole("Admin"))
+            @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
             {
                 <ul>
                     <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a></li>
@@ -111,7 +111,7 @@
                     </ul>
                 </h3>
             }
-            @if (!this.User.IsInRole("Admin"))
+            @if (!this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
             {
                 <div>
                     <form id="add-btn-form" style="margin-left: 200px;">

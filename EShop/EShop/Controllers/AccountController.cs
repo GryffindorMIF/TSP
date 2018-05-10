@@ -248,7 +248,6 @@ namespace EShop.Controllers
 
                     // Default role for each new user
                     await _userManager.AddToRoleAsync(user, "Customer");
-
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation("User created a new account with password.");
                     return RedirectToLocal(returnUrl);

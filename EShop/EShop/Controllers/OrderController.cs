@@ -145,7 +145,7 @@ namespace EShop.Controllers
             return returnCode;
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AdminView()
         {
             var orders = await QueryUnconfirmedOrders();
@@ -153,7 +153,7 @@ namespace EShop.Controllers
             return View(orders);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IQueryable<Order>> QueryUnconfirmedOrders()
         {
             IQueryable<Order> savedOrders = null;
@@ -176,7 +176,7 @@ namespace EShop.Controllers
             return savedOrders;
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> ConfirmOrder(int orderId)
         {
             Order order = null;
@@ -193,7 +193,7 @@ namespace EShop.Controllers
         }
 
         //Does nothing except rejects the order. Would do a return funds, but the mock payment does not support that function, so maybe unnecessary?
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> RejectOrder(int orderId)
         {
             Order order = null;

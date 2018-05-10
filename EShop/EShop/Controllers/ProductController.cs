@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
+    [Authorize(Roles = "Admin, SuperAdmin")]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -36,14 +37,12 @@ namespace EShop.Controllers
 
         }
 
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index(bool showAlert = false) //By default don't show alert about delete success
         {
             ViewData["show_alert"] = showAlert;
             return View(await _context.Product.ToListAsync());
         }
 
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var model = new ProductCategoryViewModel();
@@ -57,7 +56,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductCategoryViewModel model)
         {
@@ -140,7 +138,6 @@ namespace EShop.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             var model = new ProductCategoryViewModel();
@@ -162,7 +159,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductCategoryViewModel model)
         {
@@ -341,7 +337,6 @@ namespace EShop.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -360,7 +355,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -392,11 +386,8 @@ namespace EShop.Controllers
             return _context.Product.Any(e => e.Id == id);
         }
 
-
-
         //Product properties management below
         //Page with all product properties with "delete" button
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
             Product temp = _context.Product.First(p => p.Id == id);
@@ -408,7 +399,6 @@ namespace EShop.Controllers
         }
 
         //Page with add property form
-        [Authorize(Roles = "Admin")]
         public IActionResult AddProperty(int productId) //Add Property view
         {
             Product temp = _context.Product.First(p => p.Id == productId);
@@ -419,7 +409,6 @@ namespace EShop.Controllers
 
         //Add property action
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Name,Description,ProductId")] ProductProperty ProductProperty)
         {
@@ -438,7 +427,6 @@ namespace EShop.Controllers
         }
 
         //Product property delete button action
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveProductProperty(int id)
         {
             ProductProperty property = await _productService.FindProductPropertyByIdAsync(id);
@@ -513,7 +501,6 @@ namespace EShop.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Discount(string page, int productId)
         {
             ViewBag.Product = await _context.Product.FindAsync(productId);
@@ -522,7 +509,6 @@ namespace EShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
         {
             ViewBag.Product = await _context.Product.FindAsync(productDiscount.ProductId);
@@ -545,7 +531,6 @@ namespace EShop.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveDiscount(string page, int productId)
         {
             var productDiscount = await (from pd in _context.ProductDiscount

@@ -17,7 +17,7 @@ using EShop.Extensions;
 namespace EShop.Controllers
 {
     [AllowAnonymous]
-    [DenyAccess(Roles = "Admin")]
+    [DenyAccess(Roles = "Admin, SuperAdmin")]
     public class ShoppingCartController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -49,20 +49,16 @@ namespace EShop.Controllers
 
             if (user != null)
             {
-                //if (User.Identity.IsAuthenticated)
-                //{
-                    if (user.ShoppingCartId != null)
-                        shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
-                    if (shoppingCart == null)
-                    {
-                        shoppingCart = new ShoppingCart();
-                        _context.ShoppingCart.Add(shoppingCart);
-                        await _context.SaveChangesAsync();
-                        user.ShoppingCartId = shoppingCart.Id;
-                        await _context.SaveChangesAsync();
-                    }
-                //}
-                //else return null;
+                if (user.ShoppingCartId != null)
+                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                if (shoppingCart == null)
+                {
+                    shoppingCart = new ShoppingCart();
+                    _context.ShoppingCart.Add(shoppingCart);
+                    await _context.SaveChangesAsync();
+                    user.ShoppingCartId = shoppingCart.Id;
+                    await _context.SaveChangesAsync();
+                }
             }
             return shoppingCart;
         }

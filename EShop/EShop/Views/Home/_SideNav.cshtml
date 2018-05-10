@@ -34,7 +34,7 @@ else
                     <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
                 </button>
 
-                if (this.User.IsInRole("Admin"))
+                if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                 {
                     <ul>
                         <li>
@@ -56,7 +56,7 @@ else
                     </button>
                 </form>
 
-                if (this.User.IsInRole("Admin"))
+                if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                 {
                     <ul>
                         <li>
@@ -129,7 +129,7 @@ else
                                                     <img src="~/images/category-icon.png" width="20" height="20" /><text> </text>
                                                 }
                                                 @attribute.Name
-                                                @if (User.IsInRole("Admin"))
+                                                @if (User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                                                 {
                                                     <form asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
                                                         <input name="attributeId" value="@attribute.Id" hidden />
