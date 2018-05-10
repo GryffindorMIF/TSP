@@ -22,17 +22,20 @@ namespace EShop.Extensions
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var user = context.HttpContext.User;
-
-            string [] roles = Roles.Split(',');
-
-            for(int i=0; i<roles.Length; i++)
+            if (context != null)
             {
-                if(user.IsInRole(roles[i].Trim()))
+                var user = context.HttpContext.User;
+                string[] roles = Roles.Split(',');
+
+                foreach (var role in roles)
                 {
-                    context.Result = new NotFoundResult();
+                    if (user.IsInRole(role.Trim()))
+                    {
+                        context.Result = new NotFoundResult();
+                    }
                 }
             }
+            else throw new ArgumentNullException();
         }
     }
 }

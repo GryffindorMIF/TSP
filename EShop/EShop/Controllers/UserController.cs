@@ -61,24 +61,11 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-
-
             var user = await _userManager.FindByIdAsync(id);
 
             if(user.ShoppingCartId != null)// ADMIN neturi shopping-cart
             { 
                 var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
-
-
-                //Removed since with ondelete cascade, this is no longer needed
-                /*var ShoppingCartProducts = from scp in _context.ShoppingCartProduct
-                                           where scp.ShoppingCart.Id == shoppingCart.Id
-                                           select scp;
-
-                foreach (ShoppingCartProduct scp in ShoppingCartProducts)
-                {
-                    _context.ShoppingCartProduct.Remove(scp);
-                }*/
 
                 _context.ShoppingCart.Remove(shoppingCart);
 
@@ -119,25 +106,19 @@ namespace EShop.Controllers
 
             if (isLocked && !suspendAccount)
             {
-                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
-                await _userManager.SetLockoutEnabledAsync(user, false);
-                await _userManager.SetLockoutEndDateAsync(user, null);
-
+                user.LockoutEnd = null;
                 // To check lockout status without using _userManager (in Razor view pages)
                 user.IsSuspended = false;
-                await _userManager.UpdateAsync(user);
             }
             else if(!isLocked && suspendAccount)
             {
-                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
-                await _userManager.SetLockoutEnabledAsync(user, true);
-                await _userManager.SetLockoutEndDateAsync(user, DateTime.Today.AddYears(200)); // forever
-
-                // To check lockout status without using _userManager (in Razor view pages)
+                user.LockoutEnd = DateTime.Today.AddYears(200); // forever
+                // To check lockout status without using _userManager (in Razor views)
                 user.IsSuspended = true;
-                await _userManager.UpdateAsync(user);
-                await _userManager.UpdateSecurityStampAsync(user);
             }
+
+            _context.Update(user);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -182,7 +163,7 @@ namespace EShop.Controllers
             else
             {
                 await _userManager.AddToRoleAsync(user, "Customer");
-                // To check admin status without using _userManager (in Razor view pages)
+                // To check admin status without using _userManager (in Razor views)
                 user.IsAdmin = false;
                 await _userManager.UpdateAsync(user);
                 await _userManager.UpdateSecurityStampAsync(user);
