@@ -1,6 +1,7 @@
 ﻿using EShop.Business.Interfaces;
 using EShop.Data;
 using EShop.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -128,6 +129,13 @@ namespace EShop.Business.Services
                 returnCode = 1;
             }
             return returnCode;
+        }
+
+        public async Task<OrderReviewModel> FindOrderReviewAsync(int OrderId)
+        {
+            OrderReviewModel orderReview = null;
+            orderReview = await _context.OrderReview.Where(or => or.OrderId == OrderId).FirstOrDefaultAsync();
+            return orderReview;
         }
     }
 }

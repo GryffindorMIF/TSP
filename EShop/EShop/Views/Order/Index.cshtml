@@ -62,7 +62,7 @@
         <thead>
             <tr>
                 <th>
-                    <p>Order Status</p>
+                    <p>Status</p>
                 </th>
                 <th>
                     <p>Total Price</p>
@@ -71,7 +71,7 @@
                     <p>Delivery Address</p>
                 </th>
                 <th>
-                    <p>Payment Card Number</p>
+                    <p>Card Number</p>
                 </th>
                 <th>
                     <p>Purchase Time</p>
@@ -95,19 +95,19 @@
                     <td>
                         @if (item.Value.StatusCode == 1)
                         {
-                            <p>Awaiting Confirmation</p>
+                            <p>Pending</p>
                         }
                         else if (item.Value.StatusCode == 2)
                         {
-                            <p>Order Confirmed</p>
+                            <p>Confirmed</p>
                         }
                         else if (item.Value.StatusCode == 3)
                         {
-                            <p>Order Rejected</p>
+                            <p>Rejected</p>
                         }
                         else if (item.Value.StatusCode == 4)
                         {
-                            <p>Order Complete</p>
+                            <p>Complete</p>
                         }
                     </td>
                     <td>
@@ -142,7 +142,7 @@
                         }
                         else if (item.Value.StatusCode == 4)
                         {
-                            <p>Order Reviewed</p>
+                            <p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>
                         }
                         else
                         {
@@ -223,6 +223,7 @@
                 success: function (response) {
                     if (response == 0) {
                         $('#review-modal-id').fadeOut();
+                        location.reload();
                     }
                     else if (response == 1) {
                         //TODO: handle failure sent from controller (modify modal box)

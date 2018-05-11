@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using EShop.Business;
 using EShop.Business.Interfaces;
@@ -38,7 +40,20 @@ namespace EShop.Controllers
 
             var orders = await _orderService.QueryAllOrdersAsync(user);
 
+            List<OrderReviewModel> reviews = new List<OrderReviewModel>();
+
+            foreach (Order o in orders)
+            {
+                OrderReviewModel orm = await _orderService.FindOrderReviewAsync(o.Id);
+                if (orm != null)
+                {
+                    orm.CustomerComment = orm.Rating + ": " + orm.CustomerComment;
+                    reviews.Add(orm);
+                }
+            }
+
             model.Orders = orders;
+            model.Reviews = reviews;
 
             return View(model);
         }
@@ -114,9 +129,26 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AdminView()
         {
+            var model = new OrderHistoryModel();
+
             var orders = await _orderService.QueryAllAdminOrdersAsync();
 
-            return View(orders);
+            List<OrderReviewModel> reviews = new List<OrderReviewModel>();
+
+            foreach (Order o in orders)
+            {
+                OrderReviewModel orm = await _orderService.FindOrderReviewAsync(o.Id);
+                if (orm != null)
+                {
+                    orm.CustomerComment = orm.Rating + ": " + orm.CustomerComment;
+                    reviews.Add(orm);
+                }
+            }
+
+            model.Orders = orders;
+            model.Reviews = reviews;
+
+            return View(model);
         }
 
         [Authorize(Roles = "Admin, SuperAdmin")]

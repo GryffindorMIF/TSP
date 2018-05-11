@@ -11,6 +11,7 @@ namespace EShop.Business.Interfaces
         Task<int> AddOrderReviewAsync(Order order, OrderReviewModel review);
         Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm); //True if confirm, false if reject
         Task<int> CreateOrderAsync(Order order);
+        Task<OrderReviewModel> FindOrderReviewAsync(int OrderId);
         Task<IQueryable<Order>> QueryAllOrdersAsync(ApplicationUser user);
         Task<IQueryable<Order>> QueryAllAdminOrdersAsync();
         Task<Order> FindOrderByIdAsync(int Id);
