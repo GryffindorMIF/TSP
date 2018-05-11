@@ -1,34 +1,32 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using EShop.Business;
+using EShop.Business.Interfaces;
 using EShop.Data;
 using EShop.Models;
 using EShop.Models.PostModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IOrderService _orderService;
 
         public OrderController
             (
-            ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IShoppingCartService shoppingCartService
+            IShoppingCartService shoppingCartService,
+            IOrderService orderService
             )
         {
-            _context = context;
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
+            _orderService = orderService;
         }
 
         [Authorize(Roles = "Customer")]
@@ -38,36 +36,11 @@ namespace EShop.Controllers
 
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            var orders = await QueryAllOrders(user);
+            var orders = await _orderService.QueryAllOrdersAsync(user);
 
             model.Orders = orders;
 
             return View(model);
-        }
-
-        [Authorize(Roles = "Customer")]
-        public async Task<IQueryable<Order>> QueryAllOrders(ApplicationUser user)
-        {
-            IQueryable<Order> savedOrders = null;
-            if (user != null)
-                await Task.Run(() =>
-                {
-                    savedOrders = from o in _context.Order
-                                  where o.User.Id == user.Id
-                                  select new Order
-                                  {
-                                      Id = o.Id,
-                                      ShoppingCartId = o.ShoppingCartId,
-                                      TotalPrice = o.TotalPrice,
-                                      Address = o.Address,
-                                      User = user,
-                                      CardNumber = o.CardNumber,
-                                      PurchaseDate = o.PurchaseDate,
-                                      ConfirmationDate = o.ConfirmationDate,
-                                      StatusCode = o.StatusCode
-                                  };
-                });
-            return savedOrders;
         }
 
         [HttpPost]
@@ -80,28 +53,24 @@ namespace EShop.Controllers
             {
                 var user = await _userManager.GetUserAsync(HttpContext.User);
 
-                ShoppingCart shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
 
-                Order order = await _context.Order.FindAsync(s.SelectedValue);
+                Order order = await _orderService.FindOrderByIdAsync(s.SelectedValue);
 
-                ShoppingCart oldShoppingCart = await _context.ShoppingCart.FindAsync(order.ShoppingCartId);
+                ShoppingCart oldShoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)order.ShoppingCartId);
 
-                var currentProducts = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
-                var oldProducts = await _shoppingCartService.QueryAllShoppingCartProductsAsync(oldShoppingCart, HttpContext.Session);
+                var currentProducts = await _shoppingCartService.QuerySavedProductsAsync(shoppingCart);
+                var oldProducts = await _shoppingCartService.QuerySavedProductsAsync(oldShoppingCart);
 
                 //Can remove this if we also want to keep the already added products instead of repeating the order
-                foreach (ProductInCartViewModel pc in currentProducts)
+                foreach (ShoppingCartProduct scp in currentProducts)
                 {
-                    Product product = await _context.Product.Where(p => p.Name == pc.Name).FirstOrDefaultAsync();
-
-                    await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart, HttpContext.Session);
+                    await _shoppingCartService.RemoveShoppingCartProductAsync(scp.Product, shoppingCart, HttpContext.Session);
                 }
 
-                foreach (ProductInCartViewModel pc in oldProducts)
+                foreach (ShoppingCartProduct scp in oldProducts)
                 {
-                    Product product = await _context.Product.Where(p => p.Name == pc.Name).FirstOrDefaultAsync();
-
-                    await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, pc.Quantity, HttpContext.Session);
+                    await _shoppingCartService.AddProductToShoppingCartAsync(scp.Product, shoppingCart, scp.Quantity, HttpContext.Session);
                 }
 
                 returnCode = 0;
@@ -121,7 +90,7 @@ namespace EShop.Controllers
 
             try
             {
-                Order order = await _context.Order.FindAsync(rpm.OrderId);
+                Order order = await _orderService.FindOrderByIdAsync(rpm.OrderId);
 
                 OrderReviewModel newReview = new OrderReviewModel();
 
@@ -131,11 +100,8 @@ namespace EShop.Controllers
                 newReview.Rating = Convert.ToInt16(rpm.Rating);
                 newReview.CustomerComment = rpm.Comment;
                 newReview.User = user;
+                int reviewResult = await _orderService.AddOrderReviewAsync(order, newReview);
 
-                _context.OrderReview.Add(newReview);
-                order.StatusCode = 4; //Reviewed
-                _context.Update(order);
-                await _context.SaveChangesAsync();
                 returnCode = 0;
             }
             catch (Exception)
@@ -148,46 +114,15 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AdminView()
         {
-            var orders = await QueryUnconfirmedOrders();
+            var orders = await _orderService.QueryAllAdminOrdersAsync();
 
             return View(orders);
         }
 
         [Authorize(Roles = "Admin, SuperAdmin")]
-        public async Task<IQueryable<Order>> QueryUnconfirmedOrders()
-        {
-            IQueryable<Order> savedOrders = null;
-                await Task.Run(() =>
-                {
-                    savedOrders = from o in _context.Order
-                                  select new Order
-                                  {
-                                      Id = o.Id,
-                                      ShoppingCartId = o.ShoppingCartId,
-                                      TotalPrice = o.TotalPrice,
-                                      Address = o.Address,
-                                      User = o.User,
-                                      CardNumber = o.CardNumber,
-                                      PurchaseDate = o.PurchaseDate,
-                                      ConfirmationDate = o.ConfirmationDate,
-                                      StatusCode = o.StatusCode
-                                  };
-                });
-            return savedOrders;
-        }
-
-        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> ConfirmOrder(int orderId)
         {
-            Order order = null;
-
-            order = await _context.Order.FindAsync(orderId);
-
-            order.StatusCode = 2;
-            order.ConfirmationDate = DateTime.Now;
-
-            _context.Update(order);
-            await _context.SaveChangesAsync();
+            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, true);
 
             return RedirectToAction("AdminView", "Order");
         }
@@ -196,15 +131,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> RejectOrder(int orderId)
         {
-            Order order = null;
-
-            order = await _context.Order.FindAsync(orderId);
-
-            order.StatusCode = 3;
-            order.ConfirmationDate = DateTime.Now;
-
-            _context.Update(order);
-            await _context.SaveChangesAsync();
+            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, false);
 
             return RedirectToAction("AdminView", "Order");
         }

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 
 namespace EShop.Models
 {
     public class OrderHistoryModel
     {
-        public IEnumerable<Order> Orders { get; set; }
+        public IQueryable<Order> Orders { get; set; }
     }
 }

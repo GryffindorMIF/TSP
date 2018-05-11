@@ -219,5 +219,34 @@ namespace EShop.Business
                 return await session.DeleteSessionProductAsync(product.Id) ? 0 : 1;
             }
         }
+        public async Task<ShoppingCart> FindShoppingCartByIdAsync(int Id)
+        {
+            ShoppingCart shoppingCart = null;
+            shoppingCart = await _context.ShoppingCart.FindAsync(Id);
+            return shoppingCart;
+        }
+
+        public async Task<IQueryable<ShoppingCartProduct>> QuerySavedProductsAsync(ShoppingCart shoppingCart)
+        {
+            IQueryable<ShoppingCartProduct> products = null;
+            if (shoppingCart != null)
+            {
+                await Task.Run(() =>
+                {
+                    products = from p in _context.Product
+                               join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
+                               join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
+                               where sc.Id == shoppingCart.Id
+                               select new ShoppingCartProduct
+                               {
+                                   Id = scp.Id,
+                                   Product = p,
+                                   ShoppingCart = sc,
+                                   Quantity = scp.Quantity
+                               };
+                });
+            }
+            return (products.ToList().AsQueryable());
+        }
     }
 }

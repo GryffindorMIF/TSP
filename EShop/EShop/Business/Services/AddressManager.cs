@@ -18,6 +18,16 @@ namespace EShop.Business.Services
             _context = context;
         }
 
+        public async Task<DeliveryAddress> FindAddressByZipcodeAsync(string Zipcode)
+        {
+            DeliveryAddress address = null;
+            await Task.Run(() =>
+            {
+                address = _context.DeliveryAddress.Where(da => da.Zipcode == Zipcode).FirstOrDefault();
+            });
+            return address;
+        }
+
         public async Task<IQueryable<DeliveryAddress>> QueryAllSavedDeliveryAddresses(ApplicationUser user)
         {
             IQueryable<DeliveryAddress> savedAddresses = null;

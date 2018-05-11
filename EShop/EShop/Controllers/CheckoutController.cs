@@ -1,14 +1,12 @@
 ﻿using EShop.Business;
 using EShop.Business.Interfaces;
 using EShop.Data;
-using EShop.Extensions;
 using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,23 +22,23 @@ namespace EShop.Controllers
     [Authorize(Roles = "Customer")]
     public class CheckoutController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IAddressManager _addressManager;
+        private readonly IOrderService _orderService;
 
         public CheckoutController
             (
-            ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager, 
             IShoppingCartService shoppingCartService,
-            IAddressManager addressManager
+            IAddressManager addressManager,
+            IOrderService orderService
             )
         {
-            _context = context;
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
             _addressManager = addressManager;
+            _orderService = orderService;
         }
 
         [TempData]
@@ -51,8 +49,7 @@ namespace EShop.Controllers
             var model = new OrderViewModel { StatusMessage = StatusMessage };
             var user = await _userManager.GetUserAsync(User);
             var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
-
-            ShoppingCart shoppingCart = await GetCartAsync();
+            ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
 
             model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
 
@@ -114,7 +111,7 @@ namespace EShop.Controllers
                 Content = jContent,
             };
 
-            DeliveryAddress confirmAddress = await _context.DeliveryAddress.Where(da => da.Zipcode == model.ZipConfirmation).FirstOrDefaultAsync();
+            DeliveryAddress confirmAddress = await _addressManager.FindAddressByZipcodeAsync(model.ZipConfirmation);
             if (confirmAddress != null) //If address exists
             {
                 //Send payment request
@@ -124,9 +121,9 @@ namespace EShop.Controllers
                 {
                     ShoppingCart shoppingCart = null;
 
-                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                    shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
                     user.ShoppingCartId = null;
-                    _context.Update(user);
+                    await _userManager.UpdateAsync(user);
 
                     Order newOrder = new Order();
 
@@ -139,40 +136,13 @@ namespace EShop.Controllers
                     newOrder.PurchaseDate = DateTime.Now;
                     newOrder.StatusCode = 1; //1 - Purchased 2 - Confirmed etc.
 
-                    _context.Order.Add(newOrder);
-                    await _context.SaveChangesAsync();
+                    int addOrderResult = await _orderService.CreateOrderAsync(newOrder);
                     //Todo redirect to some other page or show something
                 }
             }
 
             //Todo something on checkout page if transaction fails etc.
             return RedirectToAction("Index", "Order");
-        }
-
-        private async Task<ShoppingCart> GetCartAsync()
-        {
-            ShoppingCart shoppingCart = null;
-
-            var user = await _userManager.GetUserAsync(HttpContext.User);
-
-            if (user != null)
-            {
-                //if (User.Identity.IsAuthenticated)
-                //{
-                if (user.ShoppingCartId != null)
-                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
-                if (shoppingCart == null)
-                {
-                    shoppingCart = new ShoppingCart();
-                    _context.ShoppingCart.Add(shoppingCart);
-                    await _context.SaveChangesAsync();
-                    user.ShoppingCartId = shoppingCart.Id;
-                    await _context.SaveChangesAsync();
-                }
-                //}
-                //else return null;
-            }
-            return shoppingCart;
         }
     }
 }

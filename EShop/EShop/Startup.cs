@@ -82,6 +82,7 @@ namespace EShop
             // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IShoppingCartService, ShoppingCartService>();
+            services.AddTransient<IOrderService, OrderService>();
             services.AddTransient<IAddressManager, AddressManager>();
             services.AddTransient<INavigationService, NavigationService>();
             services.AddTransient<IProductService, ProductService>();
