@@ -14,10 +14,11 @@ namespace EShop.Models
         public int Id { get; set; }
 
         public int CategoryId { get; set; }
+        public int? ParentCategoryId { get; set; }
+
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
 
-        public int? ParentCategoryId { get; set; }
         [ForeignKey("ParentCategoryId")]
         public virtual Category ParentCategory { get; set; }
     }

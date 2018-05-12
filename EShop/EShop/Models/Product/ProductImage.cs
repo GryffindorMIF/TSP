@@ -12,8 +12,10 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
         public string ImageUrl { get; set; }
         public bool IsPrimary { get; set; }
+        public int ProductId { get; set; }
 
         [Required]
         [ForeignKey("ProductId")]

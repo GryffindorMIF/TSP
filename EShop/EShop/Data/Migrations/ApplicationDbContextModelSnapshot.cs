@@ -353,8 +353,7 @@ namespace EShop.Data.Migrations
 
                     b.Property<bool>("IsPrimary");
 
-                    b.Property<int?>("ProductId")
-                        .IsRequired();
+                    b.Property<int>("ProductId");
 
                     b.HasKey("Id");
 

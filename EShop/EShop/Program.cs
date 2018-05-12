@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Data;
+using EShop.Util;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +27,13 @@ namespace EShop
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
                     context.Database.Migrate();
+                    //ProductDbPorter.Export(context, AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.txt");
                 }
                 catch (Exception)
                 {
                 }
             }
-
+            
             host.Run();
         }
 

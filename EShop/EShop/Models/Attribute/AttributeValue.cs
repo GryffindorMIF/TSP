@@ -12,11 +12,13 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string Name { get; set; }
 
+        public string Name { get; set; }
         public int AttributeId { get; set; }
 
         [ForeignKey("AttributeId")]
-        public virtual Attribute Attribute { get; set; }     
+        public virtual Attribute Attribute { get; set; }    
+        
+        public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; }
     }
 }
