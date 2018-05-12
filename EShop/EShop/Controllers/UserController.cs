@@ -1,27 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using EShop.Data;
+using EShop.Business;
 using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Controllers
 {
     [Authorize(Roles = "Admin, SuperAdmin")]
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
-        public UserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UserController(UserManager<ApplicationUser> userManager, IUserService userService)
         {
-            _context = context;
             _userManager = userManager;
+            _userService = userService;
         }
 
         public async Task<IActionResult> Index()
@@ -30,28 +27,11 @@ namespace EShop.Controllers
 
             if (HttpContext.User.IsInRole("SuperAdmin"))
             {
-                users = from u in _context.Users
-                        join ur in _context.UserRoles on u.Id equals ur.UserId
-                        join r in _context.Roles on ur.RoleId equals r.Id
-                        where u.Id != _userManager.GetUserId(HttpContext.User)
-                        select new UserInRoleViewModel
-                        {
-                            User = u,
-                            Role = r.Name
-                        };
+                users = await _userService.QueryUsersInRoles(new string[]{ "Customer", "Admin" }, new string[] { _userManager.GetUserId(HttpContext.User) });
             }
             else
             {
-                users = from u in _context.Users
-                        join ur in _context.UserRoles on u.Id equals ur.UserId
-                        join r in _context.Roles on ur.RoleId equals r.Id
-                        where u.Id != _userManager.GetUserId(HttpContext.User)
-                        where u.IsAdmin == false
-                        select new UserInRoleViewModel
-                        {
-                            User = u,
-                            Role = r.Name
-                        };
+                users = await _userService.QueryUsersInRoles(new string[] { "Customer" }, new string[] { _userManager.GetUserId(HttpContext.User) });
             }
             ViewBag.CurrentUserRoles = await _userManager.GetRolesAsync(await _userManager.GetUserAsync(HttpContext.User));
             return View(users);
@@ -59,21 +39,27 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Delete(string id)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
-                if (id == null)
+                if ((await _userService.IsInRoleById(id, "Admin") && User.IsInRole("SuperAdmin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("Admin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("SuperAdmin")))
                 {
-                    return NotFound();
-                }
+                    if (id == null)
+                    {
+                        return NotFound();
+                    }
 
-                var applicationUser = await _context.Users
-                    .SingleOrDefaultAsync(m => m.Id == id);
-                if (applicationUser == null)
-                {
-                    return NotFound();
-                }
+                    var applicationUser = await _userManager.FindByIdAsync(id);
 
-                return View(applicationUser);
+                    if (applicationUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return View(applicationUser);
+                }
+                else return new NotFoundResult();
             }
             else return new NotFoundResult();
         }
@@ -82,37 +68,36 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
-                var user = await _userManager.FindByIdAsync(id);
-
-                if (user.ShoppingCartId != null)// ADMIN neturi shopping-cart
+                if ((await _userService.IsInRoleById(id, "Admin") && User.IsInRole("SuperAdmin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("Admin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("SuperAdmin")))
                 {
-                    var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                    var user = await _userManager.FindByIdAsync(id);
 
-                    _context.ShoppingCart.Remove(shoppingCart);
+                    await _userService.DestroyAllCustomerData(user);
 
-                    await _context.SaveChangesAsync();
+                    await _userManager.DeleteAsync(user);
+
+                    return RedirectToAction(nameof(Index));
                 }
-
-                await _userManager.DeleteAsync(user);
-
-                return RedirectToAction(nameof(Index));
+                else return new NotFoundResult();
             }
             else return new NotFoundResult();
         }
 
         public async Task<IActionResult> ManageAccountSuspension(string id, bool suspendAccount)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
                 if (id == null)
                 {
                     return NotFound();
                 }
 
-                var applicationUser = await _context.Users
-                    .SingleOrDefaultAsync(m => m.Id == id);
+                var applicationUser = await _userManager.FindByIdAsync(id);
+                
                 if (applicationUser == null)
                 {
                     return NotFound();
@@ -128,7 +113,7 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ManageAccountSuspensionConfirmed(string id, bool suspendAccount)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
                 var user = await _userManager.FindByIdAsync(id);
                 var isLocked = await _userManager.IsLockedOutAsync(user);
@@ -146,25 +131,25 @@ namespace EShop.Controllers
                     user.IsSuspended = true;
                 }
 
-                _context.Update(user);
-                await _context.SaveChangesAsync();
+                await _userManager.UpdateAsync(user);
 
                 return RedirectToAction(nameof(Index));
             }
             else return new NotFoundResult();
         }
 
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> ManageAdminPrivileges(string id, bool grantPrivileges)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
                 if (id == null)
                 {
                     return NotFound();
                 }
 
-                var applicationUser = await _context.Users
-                    .SingleOrDefaultAsync(m => m.Id == id);
+                var applicationUser = await _userManager.FindByIdAsync(id);
+
                 if (applicationUser == null)
                 {
                     return NotFound();
@@ -175,12 +160,12 @@ namespace EShop.Controllers
             else return new NotFoundResult();
         }
 
-
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost, ActionName("ManageAdminPrivileges")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ManageAdminPrivilegesConfirmed(string id, bool grantPrivileges)
         {
-            if (await IsSuperAdmin(id) == false)
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
             {
                 var user = await _userManager.FindByIdAsync(id);
 
@@ -195,44 +180,7 @@ namespace EShop.Controllers
                     await _userManager.UpdateAsync(user);
                     await _userManager.UpdateSecurityStampAsync(user);
 
-                    //destroy customer data
-                    var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
-                    var shoppingCartProducts = await (from scp in _context.ShoppingCartProduct
-                                                        where scp.ShoppingCart.Id == shoppingCart.Id
-                                                        select scp).ToListAsync();
-                    foreach(var scp in shoppingCartProducts)
-                    {
-                        _context.Remove(scp);
-                    }
-                    
-
-                    var orders = await (from o in _context.Order
-                                        where o.User.Id == user.Id
-                                        select o).ToListAsync();
-
-                    foreach (var o in orders)
-                    {
-                        _context.Remove(o);
-                    }
-
-                    var orderReviews = await (from or in _context.OrderReview
-                                              where or.User.Id == user.Id
-                                              select or).ToListAsync();
-                    foreach (var or in orderReviews)
-                    {
-                        _context.Remove(or);
-                    }
-
-                    var adresses = await (from da in _context.DeliveryAddress
-                                              where da.User.Id == user.Id
-                                              select da).ToListAsync();
-                    foreach (var a in adresses)
-                    {
-                        _context.Remove(a);
-                    }
-
-                    _context.Remove(shoppingCart);
-                    await _context.SaveChangesAsync();
+                    await _userService.DestroyAllCustomerData(user);
                 }
                 else
                 {
@@ -246,22 +194,6 @@ namespace EShop.Controllers
                 return RedirectToAction(nameof(Index));
             }
             else return new NotFoundResult();
-        }
-
-        private bool ApplicationUserExists(string id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
-
-        private async Task<bool> IsSuperAdmin(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("SuperAdmin"))
-            {
-                return true;
-            }
-            else return false;
         }
     }
 }
