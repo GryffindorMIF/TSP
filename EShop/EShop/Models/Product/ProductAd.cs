@@ -22,7 +22,7 @@ namespace EShop.Models
 
         public bool Equals(ProductAd other)
         {
-            return string.Equals(AdImageUrl, other.AdImageUrl, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(AdImageUrl, other.AdImageUrl, StringComparison.OrdinalIgnoreCase) && ProductId == other.ProductId;
         }
     }
 }

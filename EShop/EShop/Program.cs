@@ -27,7 +27,9 @@ namespace EShop
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
                     context.Database.Migrate();
-                    //ProductDbPorter.Export(context, AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.txt");
+                    //ProductDbPorter.Export(context, null);
+                    //ProductDbPorter.WipeDBProducts(context);
+                    //ProductDbPorter.Import(context, null);
                 }
                 catch (Exception)
                 {

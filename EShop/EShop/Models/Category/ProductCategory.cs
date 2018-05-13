@@ -24,7 +24,7 @@ namespace EShop.Models
 
         public bool Equals(ProductCategory other)
         {
-            return CategoryId == other.CategoryId;
+            return ProductId == other.ProductId && CategoryId == other.CategoryId;
         }
     }
 }

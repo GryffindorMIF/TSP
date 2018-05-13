@@ -30,7 +30,7 @@ namespace EShop.Models
 
         public bool Equals(ProductDiscount other)
         {
-            return ProductId == other.Id;
+            return ProductId == other.ProductId;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace EShop.Models
 
         public bool Equals(AttributeValue other)
         {
-            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) && AttributeId == other.AttributeId;
         }
     }
 }

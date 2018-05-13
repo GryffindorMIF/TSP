@@ -25,7 +25,7 @@ namespace EShop.Models
 
         public bool Equals(Category other)
         {
-            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(Description, other.Description, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
