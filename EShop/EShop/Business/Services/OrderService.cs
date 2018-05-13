@@ -61,7 +61,8 @@ namespace EShop.Business.Services
                                       CardNumber = o.CardNumber,
                                       PurchaseDate = o.PurchaseDate,
                                       ConfirmationDate = o.ConfirmationDate,
-                                      StatusCode = o.StatusCode
+                                      StatusCode = o.StatusCode,
+                                      RowVersion = o.RowVersion
                                   };
                 });
             return (savedOrders.ToList().AsQueryable());
@@ -83,13 +84,14 @@ namespace EShop.Business.Services
                                   CardNumber = o.CardNumber,
                                   PurchaseDate = o.PurchaseDate,
                                   ConfirmationDate = o.ConfirmationDate,
-                                  StatusCode = o.StatusCode
+                                  StatusCode = o.StatusCode,
+                                  RowVersion = o.RowVersion
                               };
             });
             return (savedOrders.ToList().AsQueryable());
         }
 
-        public async Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm)
+        public async Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm, byte[] rowVersion)
         {
             int returnCode = 1;
 
@@ -97,6 +99,8 @@ namespace EShop.Business.Services
             {
                 Order order = null;
                 order = await _context.Order.FindAsync(Id);
+
+               _context.Entry(order).Property("RowVersion").OriginalValue = rowVersion;
 
                 if (confirm) { order.StatusCode = 2; }
                 else { order.StatusCode = 3; }
@@ -107,6 +111,10 @@ namespace EShop.Business.Services
                 await _context.SaveChangesAsync();
 
                 returnCode = 0;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                returnCode = -1;
             }
             catch (Exception)
             {

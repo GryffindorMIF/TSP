@@ -214,6 +214,10 @@ namespace EShop.Data.Migrations
 
                     b.Property<DateTime>("PurchaseDate");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.Property<int?>("ShoppingCartId")
                         .IsRequired();
 

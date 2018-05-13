@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using EShop.Business;
@@ -148,23 +149,39 @@ namespace EShop.Controllers
             model.Orders = orders;
             model.Reviews = reviews;
 
+            if (TempData["AdminConfirmOrderConcurrency"] != null)
+            {
+                ModelState.AddModelError(string.Empty, TempData["AdminConfirmOrderConcurrency"].ToString());
+            }
+
             return View(model);
         }
 
         [Authorize(Roles = "Admin, SuperAdmin")]
-        public async Task<IActionResult> ConfirmOrder(int orderId)
+        public async Task<IActionResult> ConfirmOrder(int orderId, string rowVersion)
         {
-            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, true);
+            byte[] actualRowVersion = rowVersion == null ? null : Convert.FromBase64String(rowVersion);
+            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, true, actualRowVersion);
+            if (confirmationResult == -1)
+            {
+                TempData["AdminConfirmOrderConcurrency"] = "This order's status was already modifed after you've loaded the page";
+            }
 
             return RedirectToAction("AdminView", "Order");
         }
 
         //Does nothing except rejects the order. Would do a return funds, but the mock payment does not support that function, so maybe unnecessary?
         [Authorize(Roles = "Admin, SuperAdmin")]
-        public async Task<IActionResult> RejectOrder(int orderId)
+        public async Task<IActionResult> RejectOrder(int orderId, string rowVersion)
         {
-            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, false);
 
+            byte[] actualRowVersion = rowVersion == null ? null : Convert.FromBase64String(rowVersion);
+            int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, false, actualRowVersion);
+            if (confirmationResult == -1)
+            {
+                TempData["AdminConfirmOrderConcurrency"] = "This order's status was already modifed after you've loaded the page";
+            }
+            
             return RedirectToAction("AdminView", "Order");
         }
     }

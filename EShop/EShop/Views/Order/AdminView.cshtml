@@ -5,6 +5,7 @@
 
 <div class="main" style="margin-left:auto">
     <h2>Orders Awaiting Confirmation</h2>
+    <div asp-validation-summary="All" class="text-danger"></div>
     <table class="table">
         <thead>
             <tr>
@@ -56,9 +57,14 @@
                     </td>
                     <td>
                         @switch (item.Value.StatusCode)
-                        {
-                            case 1:
-                                <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id">
+                            {
+                                case 1:
+                                    var rowVersion = "";
+                                    if (item.Value.RowVersion != null)
+                                    {
+                                        rowVersion = Convert.ToBase64String(item.Value.RowVersion);
+                                    }
+                                <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
                                     <button id="checkout-btn" type="submit" class="btn btn-success">
                                         <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
                                     </button>
@@ -79,7 +85,12 @@
                         @switch (item.Value.StatusCode)
                         {
                             case 1:
-                                <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id">
+                                var rowVersion = "";
+                                if (item.Value.RowVersion != null)
+                                {
+                                    rowVersion = Convert.ToBase64String(item.Value.RowVersion);
+                                }
+                                <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
                                     <button id="checkout-btn" type="submit" class="btn btn-danger">
                                         <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
                                     </button>

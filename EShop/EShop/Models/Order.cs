@@ -33,5 +33,8 @@ namespace EShop.Models
 
         [Required]
         public int StatusCode { get; set; }
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
 }
