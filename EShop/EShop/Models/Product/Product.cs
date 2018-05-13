@@ -12,7 +12,6 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         public string Name { get; set; }
         public string Description { get; set; }
         public Decimal Price { get; set; }
@@ -20,12 +19,8 @@ namespace EShop.Models
         [Timestamp]
         public byte[] RowVersion { get; set; }
 
-        public virtual ProductDiscount ProductDiscount { get; set; }
-        public virtual ICollection<ProductAd> ProductAds { get; set; }
-        public virtual ICollection<ProductImage> ProductImages { get; set; }
-        public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; }
-        public virtual ICollection<ProductProperty> ProductProperties { get; set; }
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
+        public virtual ProductDiscount ProductDiscount { get; set; }
 
         public bool Equals(Product other)
         {

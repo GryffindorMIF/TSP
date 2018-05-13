@@ -12,7 +12,6 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         public string Name { get; set; }// unique
         public string Description { get; set; }
 
@@ -20,8 +19,6 @@ namespace EShop.Models
         public byte[] RowVersion { get; set; }
 
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
-        [NotMapped]
-        public virtual ICollection<CategoryCategory> CategoryCategories { get; set; }
 
         public bool Equals(Category other)
         {

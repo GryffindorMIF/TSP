@@ -22,10 +22,9 @@ namespace EShop.Models
         [DisplayFormat(DataFormatString = "{yyyy-MM-dd HH:mm:ss}", ApplyFormatInEditMode = true)]
         public DateTime Ends { get; set; }
 
-        public int ProductId { get; set; }
-
         [Required]
-        [ForeignKey("ProductId")]
+        [ForeignKey("Product")]
+        public int ProductId { get; set; }
         public virtual Product Product { get; set; }
 
         public bool Equals(ProductDiscount other)

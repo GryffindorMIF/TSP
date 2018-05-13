@@ -12,10 +12,8 @@ namespace EShop.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         public string AdImageUrl { get; set; }
         public int ProductId { get; set; }
-
         [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
