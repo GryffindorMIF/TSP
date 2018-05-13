@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class ProductDiscount
+    public class ProductDiscount: IEquatable<ProductDiscount>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -27,6 +27,11 @@ namespace EShop.Models
         [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
+
+        public bool Equals(ProductDiscount other)
+        {
+            return ProductId == other.Id;
+        }
     }
 }
 

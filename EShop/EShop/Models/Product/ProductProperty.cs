@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class ProductProperty
+    public class ProductProperty : IEquatable<ProductProperty>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -26,5 +26,10 @@ namespace EShop.Models
         [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
+
+        public bool Equals(ProductProperty other)
+        {
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(Description, other.Description, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

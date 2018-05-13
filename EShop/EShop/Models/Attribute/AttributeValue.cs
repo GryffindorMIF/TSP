@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class AttributeValue
+    public class AttributeValue : IEquatable<AttributeValue>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -20,5 +20,10 @@ namespace EShop.Models
         public virtual Attribute Attribute { get; set; }    
         
         public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; }
+
+        public bool Equals(AttributeValue other)
+        {
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

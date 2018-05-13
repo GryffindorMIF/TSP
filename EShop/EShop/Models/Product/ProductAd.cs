@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class ProductAd
+    public class ProductAd : IEquatable<ProductAd>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,5 +19,10 @@ namespace EShop.Models
         [Required]
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; }
+
+        public bool Equals(ProductAd other)
+        {
+            return string.Equals(AdImageUrl, other.AdImageUrl, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

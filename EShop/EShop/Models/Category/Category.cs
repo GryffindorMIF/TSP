@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class Category
+    public class Category : IEquatable<Category>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -22,5 +22,10 @@ namespace EShop.Models
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
         [NotMapped]
         public virtual ICollection<CategoryCategory> CategoryCategories { get; set; }
+
+        public bool Equals(Category other)
+        {
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
