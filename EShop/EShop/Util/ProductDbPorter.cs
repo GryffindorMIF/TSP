@@ -1,13 +1,15 @@
 ﻿using EShop.Data;
 using EShop.Models;
+using FastMember;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace EShop.Util
 {
@@ -260,21 +262,16 @@ namespace EShop.Util
             ProductsInfo productsInfo = new ProductsInfo();
             productsInfo.LoadFromDbContext(context);
 
-            // Serializer settings
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.ContractResolver = new CustomResolver();
-            settings.PreserveReferencesHandling = PreserveReferencesHandling.None;
-            settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-            settings.Formatting = Formatting.Indented;
-            settings.NullValueHandling = NullValueHandling.Ignore;
-
-            string serialized = JsonConvert.SerializeObject(productsInfo, settings);
-
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                using (var writer = File.CreateText(filePath))
-                    writer.Write(serialized);
+                using (ExcelPackage package = new ExcelPackage())
+                {
+                    package.ProductsInfoToSheets(productsInfo);
+                    byte[] data = package.GetAsByteArray();
+
+                    string path = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.xlsx";
+                    File.WriteAllBytes(path, data);
+                }
             }
             catch (Exception)
             {
@@ -285,13 +282,20 @@ namespace EShop.Util
 
         public static bool Import(ApplicationDbContext context, string filePath)
         {
-            filePath = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.txt";
+            filePath = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.xlsx";
 
             ProductsInfo productsInfo;
             try
             {
-                string serialized = File.ReadAllText(filePath);
-                productsInfo = JsonConvert.DeserializeObject<ProductsInfo>(serialized);
+                using (var package = new ExcelPackage())
+                {
+                    using (var stream = File.OpenRead(filePath))
+                    {
+                        package.Load(stream);
+                    }
+                    productsInfo = package.SheetsToProductsInfo();
+                }
+
             }
             catch (Exception)
             {
@@ -319,7 +323,114 @@ namespace EShop.Util
             context.SaveChanges();
         }
 
-        class CustomResolver : DefaultContractResolver
+        #region Export methods
+
+        private static void ProductsInfoToSheets(this ExcelPackage package, ProductsInfo data)
+        {
+            package.AddToSheets("Attributes", data.Attributes);
+            package.AddToSheets("AttributeValues", data.AttributeValues);
+            package.AddToSheets("Categories", data.Categories);
+            package.AddToSheets("CategoryCategories", data.CategoryCategories);
+            package.AddToSheets("Products", data.Products);
+            package.AddToSheets("ProductAds", data.ProductAds);
+            package.AddToSheets("ProductAttributeValues", data.ProductAttributeValues);
+            package.AddToSheets("ProductCategories", data.ProductCategories);
+            package.AddToSheets("ProductDiscounts", data.ProductDiscounts);
+            package.AddToSheets("ProductImages", data.ProductImages);
+            package.AddToSheets("ProductProperties", data.ProductProperties);
+        }
+
+        private static void AddToSheets<T>(this ExcelPackage package, string sheetName, List<T> data)
+        {
+            DataTable table = new DataTable();
+            using (var reader = ObjectReader.Create(data))
+            {
+                table.Load(reader);
+            }
+            ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(sheetName);
+            worksheet.Cells["A1"].LoadFromDataTable(table, true);
+        }
+
+        #endregion
+
+        #region Import methods
+
+        private static ProductsInfo SheetsToProductsInfo(this ExcelPackage package)
+        {
+            ProductsInfo info = new ProductsInfo();
+            info.Attributes = package.Workbook.Worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>();
+            info.AttributeValues = package.Workbook.Worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>();
+            info.Categories = package.Workbook.Worksheets["Categories"].GetListFromWorksheet<Category>();
+            info.CategoryCategories = package.Workbook.Worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>();
+            info.Products = package.Workbook.Worksheets["Products"].GetListFromWorksheet<Product>();
+            info.ProductAds = package.Workbook.Worksheets["ProductAds"].GetListFromWorksheet<ProductAd>();
+            info.ProductAttributeValues = package.Workbook.Worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>();
+            info.ProductCategories = package.Workbook.Worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>();
+            info.ProductDiscounts = package.Workbook.Worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>();
+            info.ProductImages = package.Workbook.Worksheets["ProductImages"].GetListFromWorksheet<ProductImage>();
+            info.ProductProperties = package.Workbook.Worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>();
+            return info;
+        }
+
+        private static List<T> GetListFromWorksheet<T>(this ExcelWorksheet worksheet) where T : class, new()
+        {
+            DataTable table = new DataTable();
+            foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
+            {
+                table.Columns.Add(firstRowCell.Text);
+            }
+
+            for (int rowNum = 2; rowNum <= worksheet.Dimension.End.Row; rowNum++)
+            {
+                var worksheetRow = worksheet.Cells[rowNum, 1, rowNum, worksheet.Dimension.End.Column];
+                DataRow row = table.Rows.Add();
+                foreach (var cell in worksheetRow)
+                {
+                    row[cell.Start.Column - 1] = cell.Text;
+                }
+            }
+
+            return table.ToList<T>();
+        }
+
+
+        private static List<T> ToList<T>(this DataTable table) where T : class, new()
+        {
+            List<T> list = new List<T>();
+
+            foreach (DataRow row in table.Rows)
+            {
+                T entity = new T();
+
+                foreach (var prop in entity.GetType().GetProperties())
+                {
+                    try
+                    {
+                        PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
+                        propertyInfo.SetValue(entity, Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType), null);
+                        
+                    }
+                    catch (Exception)
+                    {
+                        //Hacky bypass of the parent cateogry bug (for some reason interpreted as string and thus cast fails)
+                        try
+                        {
+                            PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
+                            propertyInfo.SetValue(entity, int.Parse(row[prop.Name].ToString()), null);
+                        }
+                        catch { }
+                        continue;
+                    }
+                }
+
+                list.Add(entity);
+            }
+            return list;
+        }
+
+    #endregion
+
+    class CustomResolver : DefaultContractResolver
         {
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {
