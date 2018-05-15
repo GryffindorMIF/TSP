@@ -52,6 +52,8 @@ namespace EShop.Util
                 }
             }
 
+
+
             public List<Models.Attribute> Attributes { get; set; }
             public List<AttributeValue> AttributeValues { get; set; }
             public List<Category> Categories { get; set; }
@@ -347,8 +349,38 @@ namespace EShop.Util
             {
                 table.Load(reader);
             }
+
+            // Stripping redundant columns (commented out line that would include RowVersion in the serialization)
+            Stack<DataColumn> columnsToRemove = new Stack<DataColumn>();
+            foreach(DataColumn column in table.Columns)
+            {
+                MethodInfo methodInfo = column.DataType.GetMethod("ToString", new Type[0]);
+                if ( (methodInfo == null || methodInfo.DeclaringType == typeof(object)) /*&& column.DataType != typeof(byte[])*/)
+                {
+                    columnsToRemove.Push(column);
+                }
+            }
+            while(columnsToRemove.Count > 0)
+            {
+                var column = columnsToRemove.Pop();
+                table.Columns.Remove(column);
+            }
+
+
             ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(sheetName);
             worksheet.Cells["A1"].LoadFromDataTable(table, true);
+
+            // Fix for date time vars
+            int colNumber = 1;
+            foreach (DataColumn column in table.Columns)
+            {
+                if (column.DataType == typeof(DateTime))
+                {
+                    worksheet.Column(colNumber).Style.Numberformat.Format = "yyyy-MM-dd hh:mm:ss";
+                }
+                colNumber++;
+            }
+            worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
         }
 
         #endregion
@@ -357,18 +389,20 @@ namespace EShop.Util
 
         private static ProductsInfo SheetsToProductsInfo(this ExcelPackage package)
         {
-            ProductsInfo info = new ProductsInfo();
-            info.Attributes = package.Workbook.Worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>();
-            info.AttributeValues = package.Workbook.Worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>();
-            info.Categories = package.Workbook.Worksheets["Categories"].GetListFromWorksheet<Category>();
-            info.CategoryCategories = package.Workbook.Worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>();
-            info.Products = package.Workbook.Worksheets["Products"].GetListFromWorksheet<Product>();
-            info.ProductAds = package.Workbook.Worksheets["ProductAds"].GetListFromWorksheet<ProductAd>();
-            info.ProductAttributeValues = package.Workbook.Worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>();
-            info.ProductCategories = package.Workbook.Worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>();
-            info.ProductDiscounts = package.Workbook.Worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>();
-            info.ProductImages = package.Workbook.Worksheets["ProductImages"].GetListFromWorksheet<ProductImage>();
-            info.ProductProperties = package.Workbook.Worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>();
+            ProductsInfo info = new ProductsInfo
+            {
+                Attributes = package.Workbook.Worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>(),
+                AttributeValues = package.Workbook.Worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>(),
+                Categories = package.Workbook.Worksheets["Categories"].GetListFromWorksheet<Category>(),
+                CategoryCategories = package.Workbook.Worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>(),
+                Products = package.Workbook.Worksheets["Products"].GetListFromWorksheet<Product>(),
+                ProductAds = package.Workbook.Worksheets["ProductAds"].GetListFromWorksheet<ProductAd>(),
+                ProductAttributeValues = package.Workbook.Worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>(),
+                ProductCategories = package.Workbook.Worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>(),
+                ProductDiscounts = package.Workbook.Worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>(),
+                ProductImages = package.Workbook.Worksheets["ProductImages"].GetListFromWorksheet<ProductImage>(),
+                ProductProperties = package.Workbook.Worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>()
+            };
             return info;
         }
 
@@ -412,13 +446,9 @@ namespace EShop.Util
                     }
                     catch (Exception)
                     {
-                        //Hacky bypass of the parent cateogry bug (for some reason interpreted as string and thus cast fails)
-                        try
-                        {
-                            PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
-                            propertyInfo.SetValue(entity, int.Parse(row[prop.Name].ToString()), null);
-                        }
-                        catch { }
+                        //Hacky bypass non string and int bugs
+                        PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
+                        try { propertyInfo.SetValue(entity, int.Parse(row[prop.Name].ToString()), null);} catch {}
                         continue;
                     }
                 }
