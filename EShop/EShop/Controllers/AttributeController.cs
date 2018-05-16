@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business;
+using EShop.Business.Services;
 using EShop.Data;
 using EShop.Models;
 using EShop.Util;
@@ -18,44 +20,46 @@ namespace EShop.Controllers
     [Authorize(Roles = "Admin, SuperAdmin")]
     public class AttributeController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly IProductService _productService;
+        private readonly IAttributeService _attributeService;
 
-        public AttributeController(ApplicationDbContext context, IHostingEnvironment appEnvironment)
+        public AttributeController(IHostingEnvironment appEnvironment, IAttributeService attributeService, IProductService productService)
         {
-            _context = context;
             _appEnvironment = appEnvironment;
+            _attributeService = attributeService;
+            _productService = productService;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            ViewBag.AttributeCategories = _context.Attribute.ToList();
+            ViewBag.AttributeCategories = _attributeService.GetAllAttributes();
 
             ManageAttributesViewModel mavm = new ManageAttributesViewModel()
             {
-                AttributeSelectList = new SelectList(_context.Attribute.ToList(), "Id", "Name"),
-                AttributeyMultiSelectList = new MultiSelectList(_context.Attribute.ToList(), "Id", "Name"),
-                AttributeValuesMultiSelectList = new MultiSelectList((from a in _context.AttributeValue.ToList()
-                                                                select new
-                                                                {
-                                                                    a.Id,
-                                                                    AttributeInCategory = _context.Attribute.Find(a.AttributeId).Name + "/" + a.Name
-                                                                }),
-                                                                "Id",
-                                                                "AttributeInCategory"
-                                                                ),
-                ProductMultiSelectList = new MultiSelectList(_context.Product.ToList(), "Id", "Name"),
-                LinksMultiList = new MultiSelectList((from pc in _context.ProductAttributeValue.ToList()
-                                                                     select new
-                                                                     {
-                                                                         pc.Id,
-                                                                         Association = _context.AttributeValue.Find(pc.AttributeValueId).Name + " -> " +
-                                                                                       _context.Product.Find(pc.ProductId).Name
-                                                                     }),
-                                                                     "Id",
-                                                                     "Association"
-                                                                     )                                                                    
+                AttributeSelectList = new SelectList(_attributeService.GetAllAttributes(), "Id", "Name"),
+                AttributeyMultiSelectList = new MultiSelectList(_attributeService.GetAllAttributes(), "Id", "Name"),
+                AttributeValuesMultiSelectList = new MultiSelectList((from av in _attributeService.GetAllAttributeValues()
+                                                                        select new
+                                                                        {
+                                                                            av.Id,
+                                                                            AttributeInCategory = _attributeService.FindAttributeById(av.AttributeId).Name + "/" + av.Name
+                                                                        }),
+                                                                        "Id",
+                                                                        "AttributeInCategory"
+                                                                        ),
+                ProductMultiSelectList = new MultiSelectList(_productService.GetAllProducts(), "Id", "Name"),
+                LinksMultiList = new MultiSelectList((from pav in _attributeService.GetAllProductAttributeValues()
+                                                        select new
+                                                        {
+                                                            pav.Id,
+                                                            Association = _attributeService.FindAttributeValueById(pav.AttributeValueId).Name + " -> " +
+                                                                        _productService.FindProductById(pav.ProductId).Name
+                                                        }),
+                                                        "Id",
+                                                        "Association"
+                                                        )                                                                    
             };
             return View(mavm);
         }
@@ -64,8 +68,7 @@ namespace EShop.Controllers
         public async Task<IActionResult> CreateAttribute(string name)
         {
             Models.Attribute attribute = new Models.Attribute(){ Name = name };
-            _context.Attribute.Add(attribute);
-            await _context.SaveChangesAsync();
+            await _attributeService.AddAttribute(attribute);
 
             return RedirectToAction("Index");
         }
@@ -73,13 +76,15 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAttributes(ManageAttributesViewModel model)
         {
+            ICollection<Models.Attribute> attributesToRemove = new List<Models.Attribute>();
+
             foreach(var id in model.IdsOfSelectedAttributesToRemove)
             {
-                Models.Attribute attribute = await _context.Attribute.FindAsync(id);
+                Models.Attribute attribute = _attributeService.FindAttributeById(id);
                 if(attribute.IconUrl != null) await _appEnvironment.DeleteImageAsync(attribute.IconUrl, "attribute-icons");
-                _context.Remove(attribute);
+                attributesToRemove.Add(attribute);
             }
-            await _context.SaveChangesAsync();
+            await _attributeService.RemoveAttributeRange(attributesToRemove);
 
             return RedirectToAction("Index");
         }
@@ -92,8 +97,7 @@ namespace EShop.Controllers
                 Name = name,
                 AttributeId = model.SelectedAttributeId
             };
-            _context.Add(attrVal);
-            await _context.SaveChangesAsync();
+            await _attributeService.AddAttributeValue(attrVal);
 
             return RedirectToAction("Index");
         }
@@ -101,19 +105,23 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAttributeValues(ManageAttributesViewModel model)
         {
+            ICollection<AttributeValue> attributeValuesToRemove = new List<AttributeValue>();
+
             foreach (var id in model.IdsOfSelectedAttributeValues)
             {
-                AttributeValue attrVal = await _context.AttributeValue.FindAsync(id);
-                _context.Remove(attrVal);
+                AttributeValue attrVal = _attributeService.FindAttributeValueById(id);
+                attributeValuesToRemove.Add(attrVal);
             }
-            await _context.SaveChangesAsync();
+            await _attributeService.RemoveAttributeValueRange(attributeValuesToRemove);
 
             return RedirectToAction("Index");
         }
 
         [HttpPost]
         public async Task<IActionResult> LinkAttributeValuesToProducts(ManageAttributesViewModel model)
-        {         
+        {
+            ICollection<ProductAttributeValue> pavs = new List<ProductAttributeValue>();
+
             foreach (var attrValId in model.IdsOfSelectedAttributeValues)
             {
                 foreach (var productId in model.IdsOfSelectedProducts)
@@ -123,23 +131,25 @@ namespace EShop.Controllers
                         AttributeValueId = attrValId,
                         ProductId = productId
                     };
-                    _context.Add(pav);
-                    await _context.SaveChangesAsync();
+                    pavs.Add(pav);
                 }
             }
 
+            await _attributeService.AddProductAttributeValueRange(pavs);
             return RedirectToAction("Index");
         }
 
         [HttpPost]
         public async Task<IActionResult> UnlinkAttributeValues(ManageAttributesViewModel model)
         {
-            foreach(var productAttributeValueId in model.IdsOfSelectedLinks)
+            ICollection<ProductAttributeValue> pavsToRemove = new List<ProductAttributeValue>();
+
+            foreach (var productAttributeValueId in model.IdsOfSelectedLinks)
             {
-                ProductAttributeValue pav = await _context.ProductAttributeValue.FindAsync(productAttributeValueId);
-                _context.Remove(pav);
+                ProductAttributeValue pav = _attributeService.FindProductAttributeValueById(productAttributeValueId);
+                pavsToRemove.Add(pav);
             }
-            await _context.SaveChangesAsync();
+            await _attributeService.RemoveProductAttributeValueRange(pavsToRemove);
 
             return RedirectToAction("Index");
         }
@@ -149,14 +159,13 @@ namespace EShop.Controllers
         {
             string iconImagePath = await _appEnvironment.UploadImageAsync(file, "attribute-icons", 2097152);
            
-            Models.Attribute attr = await _context.Attribute.FindAsync(attributeId);
+            Models.Attribute attr = _attributeService.FindAttributeById(attributeId);
             if(attr.IconUrl != null)
             {
                 await _appEnvironment.DeleteImageAsync(attr.IconUrl, "attribute-icons");
             }
             attr.IconUrl = iconImagePath;
-            _context.Update(attr);
-            await _context.SaveChangesAsync();
+            await _attributeService.UpdateAttribute(attr);
     
             return RedirectToAction("Index", "Home");
         }

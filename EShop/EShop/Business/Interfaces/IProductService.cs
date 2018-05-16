@@ -10,7 +10,9 @@ namespace EShop.Business
     {
         Task<Decimal?> GetDiscountPrice(Product product);
         Task<String[]> GetAllImages(ICollection<Product> products, bool isPrimary = true);
+        ICollection<Product> GetAllProducts();
         Task<Product> FindProductByIdAsync(int id);
+        Product FindProductById(int id);
         Task<ProductProperty> FindProductPropertyByIdAsync(int id);
         Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id);
 

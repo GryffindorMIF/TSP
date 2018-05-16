@@ -87,6 +87,7 @@ namespace EShop
             services.AddTransient<INavigationService, NavigationService>();
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IAttributeService, AttributeService>();
             services.AddSingleton(Configuration);
             services.AddMvc();
 

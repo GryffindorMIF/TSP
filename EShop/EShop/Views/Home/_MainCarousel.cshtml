@@ -81,11 +81,14 @@
                 </a>
                 <div class="carousel-caption" role="option">
                     <p>
-                        <a asp-action="EditMainCarousel">
-                            <button type="button" class="btn btn-warning btn-xs">
-                                <span class="glyphicon glyphicon-pencil"></span> Edit
-                            </button>
-                        </a>
+                        @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                        {
+                            <a asp-action="EditMainCarousel">
+                                <button type="button" class="btn btn-warning btn-xs">
+                                    <span class="glyphicon glyphicon-pencil"></span> Edit
+                                </button>
+                            </a>
+                        }
                     </p>
                 </div>
             </div>

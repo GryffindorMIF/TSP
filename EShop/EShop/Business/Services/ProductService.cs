@@ -16,6 +16,10 @@ namespace EShop.Business.Services
             _context = context;
         }
 
+        public ICollection<Product> GetAllProducts()
+        {
+            return _context.Product.ToList();
+        }
         public async Task<Product> FindProductByIdAsync(int id)
         {
             Product product = null;
@@ -24,6 +28,11 @@ namespace EShop.Business.Services
                 product = _context.Product.FirstOrDefault(p => p.Id == id);
             });
             return product;
+        }
+
+        public Product FindProductById(int id)
+        {
+            return _context.Product.Find(id);
         }
 
         public async Task<Decimal?> GetDiscountPrice(Product product)
