@@ -5,7 +5,7 @@ namespace EShop.Models
 {
     public class OrderHistoryModel
     {
-        public IQueryable<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; }
         public List<OrderReviewModel> Reviews { get; set; }
     }
 }

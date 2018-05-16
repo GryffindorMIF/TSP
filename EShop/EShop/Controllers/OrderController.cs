@@ -11,6 +11,7 @@ using EShop.Models.PostModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -20,26 +21,40 @@ namespace EShop.Controllers
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IOrderService _orderService;
 
+        private readonly int orderHistoryOrdersPerPage;
+        private readonly int orderConfirmationOrdersPerPage;
+
         public OrderController
             (
             UserManager<ApplicationUser> userManager,
             IShoppingCartService shoppingCartService,
-            IOrderService orderService
+            IOrderService orderService,
+            IConfiguration configuration
             )
         {
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
             _orderService = orderService;
+
+            if (!int.TryParse(configuration["PaginationConfig:OrderHistoryOrdersPerPage"], out orderHistoryOrdersPerPage))
+            {
+                throw new InvalidOperationException("Invalid PaginationConfig:OrderHistoryOrdersPerPage in appsettings.json. Not an int value.");
+            }
+            if (!int.TryParse(configuration["PaginationConfig:OrderConfirmationOrdersPerPage"], out orderConfirmationOrdersPerPage))
+            {
+                throw new InvalidOperationException("Invalid PaginationConfig:OrderConfirmationOrdersPerPage in appsettings.json. Not an int value.");
+            }
         }
 
         [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 0)
         {
             var model = new OrderHistoryModel();
 
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            var orders = await _orderService.QueryAllOrdersAsync(user);
+            //var orders = await _orderService.QueryAllOrdersAsync(user);
+            var orders = _orderService.GetAllOrdersByPage(user, pageNumber, orderHistoryOrdersPerPage);
 
             List<OrderReviewModel> reviews = new List<OrderReviewModel>();
 
@@ -55,6 +70,17 @@ namespace EShop.Controllers
 
             model.Orders = orders;
             model.Reviews = reviews;
+
+            // pagination
+            int pageCount = _orderService.GetOrdersPageCount(user, orderHistoryOrdersPerPage);
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            ViewBag.CurrentPageNumber = pageNumber;
 
             return View(model);
         }
@@ -128,11 +154,12 @@ namespace EShop.Controllers
         }
 
         [Authorize(Roles = "Admin, SuperAdmin")]
-        public async Task<IActionResult> AdminView()
+        public async Task<IActionResult> AdminView(int pageNumber = 0)
         {
             var model = new OrderHistoryModel();
 
-            var orders = await _orderService.QueryAllAdminOrdersAsync();
+            //var orders = await _orderService.QueryAllAdminOrdersAsync();
+            var orders = _orderService.GetAllAdminOrdersByPage(pageNumber, orderConfirmationOrdersPerPage);
 
             List<OrderReviewModel> reviews = new List<OrderReviewModel>();
 
@@ -153,6 +180,17 @@ namespace EShop.Controllers
             {
                 ModelState.AddModelError(string.Empty, TempData["AdminConfirmOrderConcurrency"].ToString());
             }
+
+            // pagination
+            int pageCount = _orderService.GetAdminOrdersPageCount(orderConfirmationOrdersPerPage);
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            ViewBag.CurrentPageNumber = pageNumber;
 
             return View(model);
         }

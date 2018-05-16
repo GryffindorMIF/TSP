@@ -233,6 +233,5 @@ namespace EShop.Business
             });
             return uri;
         }
-
     }
 }

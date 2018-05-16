@@ -131,5 +131,36 @@ namespace EShop.Business
             }
             else return false;
         }
+
+        public async Task<Tuple<int,IQueryable<UserInRoleViewModel>>> QueryUsersInRolesByPageAsync(int pageNumber, int usersPerPage)
+        {
+            ICollection<UserInRoleViewModel> usersInRoles = await (from u in _context.Users
+                                                                    join ur in _context.UserRoles on u.Id equals ur.UserId
+                                                                    join r in _context.Roles on ur.RoleId equals r.Id
+                                                                    select new UserInRoleViewModel()
+                                                                    {
+                                                                        User = u,
+                                                                        Role = r.Name
+                                                                    }
+                                                                    ).Skip(pageNumber * usersPerPage).Take(usersPerPage).ToListAsync();
+            int pageCount = 0;
+            int totalUserCount = await (from u in _context.Users
+                                        join ur in _context.UserRoles on u.Id equals ur.UserId
+                                        join r in _context.Roles on ur.RoleId equals r.Id
+                                        select new UserInRoleViewModel()
+                                        {
+                                            User = u,
+                                            Role = r.Name
+                                        }).CountAsync();
+
+            pageCount = totalUserCount / usersPerPage;
+
+            if (totalUserCount % usersPerPage != 0)
+            {
+                pageCount++;
+            }
+
+            return new Tuple<int, IQueryable<UserInRoleViewModel>>(pageCount, usersInRoles.AsQueryable());
+        }
     }
 }

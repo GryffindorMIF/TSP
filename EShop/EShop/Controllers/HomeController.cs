@@ -39,9 +39,9 @@ namespace EShop.Controllers
             _appEnvironment = appEnvironment;
             _productService = productService;
 
-            if (!int.TryParse(configuration["ProductsConfig:ProductsPerPage"], out productsPerPage))
+            if (!int.TryParse(configuration["PaginationConfig:ProductsPerPage"], out productsPerPage))
             {
-                throw new InvalidOperationException("Invalid ProductsConfig:ProductsPerPage in appsettings.json. Not an int value.");
+                throw new InvalidOperationException("Invalid PaginationConfig:ProductsPerPage in appsettings.json. Not an int value.");
             }
             if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
             {
@@ -234,7 +234,7 @@ namespace EShop.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, /* redundant --> */int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;

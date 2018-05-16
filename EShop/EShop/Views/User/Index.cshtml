@@ -34,41 +34,59 @@
             @foreach (var item in Model)
             {
                 <tr>
+                    @if (item.User.UserName != this.User.Identity.Name)
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.User.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Role)
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <font color="red">@Html.DisplayFor(modelItem => item.User.Email)</font>
+                        </td>
+                        <td>
+                            <font color="red">@Html.DisplayFor(modelItem => item.Role)</font>
+                        </td>
+                    }
                     <td>
-                        @Html.DisplayFor(modelItem => item.User.Email)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Role)
-                    </td>
-                    <td>
-                        @if (item.Role != "SuperAdmin")
+                        @if (item.User.UserName != this.User.Identity.Name)
                         {
-                            @Html.DisplayFor(modelItem => item.User.IsSuspended)
+                            @if (item.Role != "SuperAdmin")
+                            {
+                                @Html.DisplayFor(modelItem => item.User.IsSuspended)
+                            }
                         }
                     </td>
                     <td>
-                        @if(item.Role != "SuperAdmin")
-                        { 
-                            <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> <text>|</text>
-
-                            if (ViewBag.CurrentUserRoles.Contains("SuperAdmin"))
+                        @if (item.User.UserName != this.User.Identity.Name)
+                        {
+                            @if (item.Role != "SuperAdmin")
                             {
-                                if (!item.User.IsAdmin)
+                                <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> <text>|</text>
+
+                                if (ViewBag.CurrentUserRoles.Contains("SuperAdmin"))
                                 {
-                                <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
+                                    if (!item.User.IsAdmin)
+                                    {
+                                    <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
+                                    }
+                                    else
+                                    {
+                                    <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
+                                    } <text>|</text>
+                                }
+                                if (!item.User.IsSuspended)
+                                {
+                                    <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
                                 }
                                 else
                                 {
-                                <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
-                                } <text>|</text>
-                            }
-                            if (!item.User.IsSuspended)
-                            {
-                                <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
-                            }
-                            else
-                            {
-                                <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
+                                    <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
+                                }
                             }
                         }
                     </td>
@@ -76,4 +94,6 @@
             }
         </tbody>
     </table>
+
+    @Html.Partial("_Pagination")
 </div>

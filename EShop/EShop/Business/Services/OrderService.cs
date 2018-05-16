@@ -3,6 +3,7 @@ using EShop.Data;
 using EShop.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -68,6 +69,36 @@ namespace EShop.Business.Services
             return (savedOrders.ToList().AsQueryable());
         }
 
+        public ICollection<Order> GetAllOrdersByPage(ApplicationUser user, int pageNumber, int ordersPerPage)
+        {
+            if (user != null)
+            {
+                ICollection<Order> orders = null;
+                    orders = (from o in _context.Order
+                              where o.User.Id == user.Id
+                              select o).Skip(pageNumber * ordersPerPage).Take(ordersPerPage).ToList();
+                return orders;
+            }
+            else throw new ArgumentException();
+        }
+
+        public int GetOrdersPageCount(ApplicationUser user, int ordersPerPage)
+        {
+            int ordersTotalCount;
+            int pageCount = 0;
+
+            ordersTotalCount =  _context.Order.Where(o => o.User.Id == user.Id).Count();
+
+            pageCount = ordersTotalCount / ordersPerPage;
+
+            if (ordersTotalCount % ordersPerPage != 0)
+            {
+                pageCount++;
+            }
+
+            return pageCount;
+        }
+
         public async Task<IQueryable<Order>> QueryAllAdminOrdersAsync()
         {
             IQueryable<Order> savedOrders = null;
@@ -89,6 +120,27 @@ namespace EShop.Business.Services
                               };
             });
             return (savedOrders.ToList().AsQueryable());
+        }
+
+        public ICollection<Order> GetAllAdminOrdersByPage(int pageNumber, int ordersPerPage)
+        {
+            return _context.Order.Skip(pageNumber * ordersPerPage).Take(ordersPerPage).ToList();
+        }
+
+        public int GetAdminOrdersPageCount(int ordersPerPage)
+        {
+            int ordersTotalCount;
+            int pageCount = 0;
+
+            ordersTotalCount = _context.Order.Count();
+
+            pageCount = ordersTotalCount / ordersPerPage;
+
+            if (ordersTotalCount % ordersPerPage != 0)
+            {
+                pageCount++;
+            }
+            return pageCount;
         }
 
         public async Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm, byte[] rowVersion)
