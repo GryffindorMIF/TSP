@@ -33,24 +33,25 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
-    {
-                <li>
-                    <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
-                        <img src="~/images/shopping-cart.png" width="24" height="24" /> Shopping cart
-                    </a>
-                </li>
-}
+                    {
+                        <li>
+                            <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
+                                <img src="~/images/shopping-cart.png" width="24" height="24" /> Shopping cart
+                            </a>
+                        </li>
+                    }
                     <!--Make order only appear to non-anonymous customers-->
                     @if (this.User.IsInRole("Customer"))
-    {
-                <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
-}
+                    {
+                        <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
+                    }
                     @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-    {
-                <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Confirm Orders</a></li>
-                <li><a asp-area="" asp-controller="User" asp-action="Index">Manage users</a></li>
-                <li><a asp-area="" asp-controller="Attribute" asp-action="Index">Manage attributes</a></li>
-}
+                    {
+                        <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Orders</a></li>
+                        <li><a asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
+                        <li><a asp-area="" asp-controller="Attribute" asp-action="Index">Attributes</a></li>
+                        <li><a asp-area="" asp-controller="DataPorting" asp-action="Index">Product data</a></li>
+                    }
                 </ul>
                 <div class="col-sm-3 col-md-3 pull-right">
                     @await Html.PartialAsync("_SearchPartial")
