@@ -406,7 +406,7 @@ namespace EShop.Controllers
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
                 await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                   $"Please confirm your account by clicking this link or copying it to browser address field: {callbackUrl}");
+                   $"Please reset your account password by clicking this link or copying it to browser address field: {callbackUrl}");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
