@@ -77,7 +77,7 @@ namespace EShop.Controllers
 
             return View(model);
         }
-
+        /*
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(IndexViewModel model)
@@ -139,7 +139,7 @@ namespace EShop.Controllers
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToAction(nameof(Index));
-        }
+        }*/
 
         // ¯\_(ツ)_/¯
         [Authorize(Roles = "Customer")]
