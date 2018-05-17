@@ -414,7 +414,6 @@ namespace EShop.Controllers
         {
             if (ModelState.IsValid)
             {
-                //ProductProperty.ProductId = productId;
                 _context.Add(ProductProperty);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProperties), new { id = productId });

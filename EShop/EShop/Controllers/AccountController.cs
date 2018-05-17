@@ -35,7 +35,7 @@ namespace EShop.Controllers
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             IShoppingCartService shoppingCartService)
         {
             _userManager = userManager;
@@ -59,7 +59,7 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
-    
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -82,7 +82,7 @@ namespace EShop.Controllers
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning("User account locked out. Check if you did not confirm your email.");
                     return RedirectToAction(nameof(Lockout));
                 }
                 else
@@ -242,13 +242,20 @@ namespace EShop.Controllers
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    string ctoken = _userManager.GenerateEmailConfirmationTokenAsync(user).Result;
+                    //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    string ctokenLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = ctoken }, protocol: HttpContext.Request.Scheme);
+                    await _emailSender.SendEmailConfirmationAsync(model.Email, ctokenLink);
 
                     // Default role for each new user
                     await _userManager.AddToRoleAsync(user, "Customer");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    //Lockout until email confirmation
+                    user.LockoutEnabled = true;
+                    user.LockoutEnd = DateTime.Today.AddYears(200);
+                    await _userManager.UpdateAsync(user);
+
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation("User created a new account with password.");
                     return RedirectToLocal(returnUrl);
                 }
@@ -349,19 +356,28 @@ namespace EShop.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            if (userId == null || code == null)
+            if (userId == null || token == null)
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                //throw new ApplicationException("WAS IST DAS OMAGAD user id: " + userId + " CODE: " + token);
+                return View("Error");//, new { ShowRequestId = true, RequestId = 1 });
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+                //throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+                return View("Error");
             }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            if (!user.EmailConfirmed)
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                user.LockoutEnabled = false;
+                await _userManager.UpdateAsync(user);
+                return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            }
+            //If email already confirmed
+            return View("Error");
         }
 
         [HttpGet]
