@@ -398,7 +398,7 @@ namespace EShop.Controllers
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToAction("Index", "Home");//RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
 
                 // For more information on how to enable account confirmation and password reset please
