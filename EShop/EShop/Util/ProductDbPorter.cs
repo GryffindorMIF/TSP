@@ -453,7 +453,7 @@ namespace EShop.Util
         private static async Task<List<T>> GetListFromWorksheetAsync<T>(this ExcelWorksheet worksheet) where T : class, new()
         {
             //Hacky way to be non blocking
-            await Task.Delay(150);
+            await Task.Delay(100);
             DataTable table = new DataTable();
             foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
             {
@@ -462,6 +462,10 @@ namespace EShop.Util
 
             for (int rowNum = 2; rowNum <= worksheet.Dimension.End.Row; rowNum++)
             {
+                if (rowNum % 5 == 0)
+                {
+                    await Task.Delay(20);
+                }
                 var worksheetRow = worksheet.Cells[rowNum, 1, rowNum, worksheet.Dimension.End.Column];
                 DataRow row = table.Rows.Add();
                 foreach (var cell in worksheetRow)
@@ -477,7 +481,7 @@ namespace EShop.Util
         private static async Task<List<T>> ToListAsync<T>(this DataTable table) where T : class, new()
         {
             //Hacky way to be non blocking
-            await Task.Delay(150);
+            await Task.Delay(100);
 
             T[] array = new T[table.Rows.Count];
 
@@ -487,6 +491,10 @@ namespace EShop.Util
 
             for(int v = 0; v < table.Rows.Count; v++)
             {
+                if (v % 5 == 0)
+                {
+                    await Task.Delay(20);
+                }
                 DataRow row = table.Rows[v];
                 T entity = new T();
 
