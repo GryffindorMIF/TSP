@@ -85,7 +85,7 @@ namespace EShop.Util
                 ProductProperties = context.ProductProperty.ToList();
             }
 
-            public void SaveToDbContext(ApplicationDbContext context)
+            public async Task SaveToDbContextAsync(ApplicationDbContext context)
             {
                 ProductsInfo currentDbState = new ProductsInfo();
                 currentDbState.LoadFromDbContext(context);
@@ -127,7 +127,7 @@ namespace EShop.Util
                         context.Category.Add(importCategory);
                     }
                 }
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 //Update every entity's ProductId value
                 foreach (var updatedProduct in wrappedProductsInfo.Products)
@@ -167,7 +167,7 @@ namespace EShop.Util
                         context.ProductDiscount.Add(importProductDiscount);
                     }
                 }
-                context.SaveChanges();//testavimui
+                await context.SaveChangesAsync();//testavimui
 
                 //Add missing product ads
                 foreach (var importProductAd in ProductAds)
@@ -234,7 +234,7 @@ namespace EShop.Util
                         context.ProductCategory.Add(importProductCategory);
                     }
                 }
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 //Update every entity's AttributeValueId
                 foreach (var updatedAttributeValue in wrappedProductsInfo.AttributeValues)
@@ -257,7 +257,7 @@ namespace EShop.Util
                 }
 
 
-                context.SaveChanges(); ;
+                await context.SaveChangesAsync();
             }
         }
 
@@ -284,30 +284,30 @@ namespace EShop.Util
             }
         }
 
-        public static bool Import(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        public static async Task<bool> ImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
             ProductsInfo productsInfo;
-            /*try
-            {*/
+            try
+            {
                 using (var package = new ExcelPackage())
                 {
                     using (var stream = file.OpenReadStream())
                     {
                         package.Load(stream);
                     }
-                    productsInfo = package.SheetsToProductsInfo();
+                    productsInfo = await package.SheetsToProductsInfoAsync();
                     package.SheetToImages("Product image files", productImageFilePath);
                     package.SheetToImages("Attribute icon files", attributeImageFilePath);
                     package.SheetToImages("Carousel image files", carouselImagePath);
 
                 }
-                productsInfo.SaveToDbContext(context);
+                await productsInfo.SaveToDbContextAsync(context);
 
-            /*}
+            }
             catch (Exception)
             {
                 return false;
-            }*/
+            }
             return true;
         }
 
@@ -425,27 +425,25 @@ namespace EShop.Util
 
         #region Import methods
 
-        private static ProductsInfo SheetsToProductsInfo(this ExcelPackage package)
+        private static async Task<ProductsInfo> SheetsToProductsInfoAsync(this ExcelPackage package)
         {
             ProductsInfo info = new ProductsInfo();
-            //Task[] tasks = new Task[11];
             ExcelWorksheets worksheets = package.Workbook.Worksheets;
-            /*tasks[0]=(Task.Run(() => { */info.Attributes = worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>(); //}));
-            /*tasks[1]=(Task.Run(() => { */info.AttributeValues = worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>(); //}));
-            /*tasks[2]=(Task.Run(() => { */info.Categories = worksheets["Categories"].GetListFromWorksheet<Category>(); //}));
-            /*tasks[3]=(Task.Run(() => { */info.CategoryCategories = worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>(); //}));
-            /*tasks[4]=(Task.Run(() => { */info.Products = worksheets["Products"].GetListFromWorksheet<Product>(); //}));
-            /*tasks[5]=(Task.Run(() => { */info.ProductAds = worksheets["ProductAds"].GetListFromWorksheet<ProductAd>(); //}));
-            /*tasks[6]=(Task.Run(() => { */info.ProductAttributeValues = worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>(); //}));
-            /*tasks[7]=(Task.Run(() => { */info.ProductCategories = worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>(); //}));
-            /*tasks[8]=(Task.Run(() => { */info.ProductDiscounts = worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>(); //}));
-            /*tasks[9]=(Task.Run(() => { */info.ProductImages = worksheets["ProductImages"].GetListFromWorksheet<ProductImage>(); //}));
-            /*tasks[10]=(Task.Run(() => { */info.ProductProperties = worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>(); //}));
-            //Task.WaitAll(tasks);
+            info.Attributes = await worksheets["Attributes"].GetListFromWorksheetAsync<Models.Attribute>();
+            info.AttributeValues = await worksheets["AttributeValues"].GetListFromWorksheetAsync<AttributeValue>(); 
+            info.Categories = await worksheets["Categories"].GetListFromWorksheetAsync<Category>(); 
+            info.CategoryCategories = await worksheets["CategoryCategories"].GetListFromWorksheetAsync<CategoryCategory>(); 
+            info.Products = await worksheets["Products"].GetListFromWorksheetAsync<Product>(); 
+            info.ProductAds = await worksheets["ProductAds"].GetListFromWorksheetAsync<ProductAd>(); 
+            info.ProductAttributeValues = await worksheets["ProductAttributeValues"].GetListFromWorksheetAsync<ProductAttributeValue>(); 
+            info.ProductCategories = await worksheets["ProductCategories"].GetListFromWorksheetAsync<ProductCategory>(); 
+            info.ProductDiscounts = await worksheets["ProductDiscounts"].GetListFromWorksheetAsync<ProductDiscount>(); 
+            info.ProductImages = await worksheets["ProductImages"].GetListFromWorksheetAsync<ProductImage>(); 
+            info.ProductProperties = await worksheets["ProductProperties"].GetListFromWorksheetAsync<ProductProperty>();
             return info;
         }
 
-        private static List<T> GetListFromWorksheet<T>(this ExcelWorksheet worksheet) where T : class, new()
+        private static async Task<List<T>> GetListFromWorksheetAsync<T>(this ExcelWorksheet worksheet) where T : class, new()
         {
             DataTable table = new DataTable();
             foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
@@ -463,12 +461,15 @@ namespace EShop.Util
                 }
             }
 
-            return table.ToList<T>();
+            return await table.ToListAsync<T>();
         }
 
 
-        private static List<T> ToList<T>(this DataTable table) where T : class, new()
+        private static async Task<List<T>> ToListAsync<T>(this DataTable table) where T : class, new()
         {
+            //Hacky way to be non blocking
+            await Task.Delay(300);
+
             T[] array = new T[table.Rows.Count];
 
             Type type = typeof(T);

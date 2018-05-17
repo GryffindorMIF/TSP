@@ -40,11 +40,7 @@ namespace EShop.Business.Services
 
         public async Task<bool> ImportProductData(IFormFile file)
         {
-            bool importSuccessful = false;
-            await Task.Run(() =>
-            {
-                importSuccessful = ProductDbPorter.Import(_context, file, _productsImagePath, _attributeImagePath, _carouselImagePath);
-            });
+            bool importSuccessful = await ProductDbPorter.ImportAsync(_context, file, _productsImagePath, _attributeImagePath, _carouselImagePath);
             return importSuccessful;
         }
 
