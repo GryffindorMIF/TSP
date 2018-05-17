@@ -1,15 +1,19 @@
 ﻿using EShop.Data;
 using EShop.Models;
 using FastMember;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace EShop.Util
 {
@@ -66,25 +70,28 @@ namespace EShop.Util
             public List<ProductImage> ProductImages { get; set; }
             public List<ProductProperty> ProductProperties { get; set; }
 
-            public void LoadFromDbContext(ApplicationDbContext context)
+            public async Task LoadFromDbContextAsync(ApplicationDbContext context)
             {
-                Attributes = context.Attribute.ToList();
-                AttributeValues = context.AttributeValue.ToList();
-                Categories = context.Category.ToList();
-                CategoryCategories = context.CategoryCategory.ToList();
-                Products = context.Product.ToList();
-                ProductAds = context.ProductAd.ToList();
-                ProductAttributeValues = context.ProductAttributeValue.ToList();
-                ProductCategories = context.ProductCategory.ToList();
-                ProductDiscounts = context.ProductDiscount.ToList();
-                ProductImages = context.ProductImage.ToList();
-                ProductProperties = context.ProductProperty.ToList();
+                await Task.Run(() => 
+                {
+                    Attributes = context.Attribute.ToList();
+                    AttributeValues = context.AttributeValue.ToList();
+                    Categories = context.Category.ToList();
+                    CategoryCategories = context.CategoryCategory.ToList();
+                    Products = context.Product.ToList();
+                    ProductAds = context.ProductAd.ToList();
+                    ProductAttributeValues = context.ProductAttributeValue.ToList();
+                    ProductCategories = context.ProductCategory.ToList();
+                    ProductDiscounts = context.ProductDiscount.ToList();
+                    ProductImages = context.ProductImage.ToList();
+                    ProductProperties = context.ProductProperty.ToList();
+                });
             }
 
-            public void SaveToDbContext(ApplicationDbContext context)
+            public async Task SaveToDbContextAsync(ApplicationDbContext context)
             {
                 ProductsInfo currentDbState = new ProductsInfo();
-                currentDbState.LoadFromDbContext(context);
+                await currentDbState.LoadFromDbContextAsync(context);
 
                 WrappedProductsInfo wrappedProductsInfo = new WrappedProductsInfo(this);
 
@@ -123,7 +130,7 @@ namespace EShop.Util
                         context.Category.Add(importCategory);
                     }
                 }
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 //Update every entity's ProductId value
                 foreach (var updatedProduct in wrappedProductsInfo.Products)
@@ -163,7 +170,6 @@ namespace EShop.Util
                         context.ProductDiscount.Add(importProductDiscount);
                     }
                 }
-                context.SaveChanges();//testavimui
 
                 //Add missing product ads
                 foreach (var importProductAd in ProductAds)
@@ -230,7 +236,7 @@ namespace EShop.Util
                         context.ProductCategory.Add(importProductCategory);
                     }
                 }
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 //Update every entity's AttributeValueId
                 foreach (var updatedAttributeValue in wrappedProductsInfo.AttributeValues)
@@ -253,76 +259,104 @@ namespace EShop.Util
                 }
 
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
 
-        public static bool Export(ApplicationDbContext context, string filePath)
+        public static async Task<byte[]> ExportAsync(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
-            filePath = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.txt";
-
             ProductsInfo productsInfo = new ProductsInfo();
-            productsInfo.LoadFromDbContext(context);
+            await productsInfo.LoadFromDbContextAsync(context);
 
             try
             {
                 using (ExcelPackage package = new ExcelPackage())
                 {
                     package.ProductsInfoToSheets(productsInfo);
-                    byte[] data = package.GetAsByteArray();
+                    package.ImagesToSheet("Product image files", productImageFilePath);
+                    package.ImagesToSheet("Attribute icon files", attributeImageFilePath);
+                    package.ImagesToSheet("Carousel image files", carouselImagePath);
 
-                    string path = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.xlsx";
-                    File.WriteAllBytes(path, data);
+                    return package.GetAsByteArray();
                 }
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
-            return true;
         }
 
-        public static bool Import(ApplicationDbContext context, string filePath)
+        public static async Task<bool> ImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
-            filePath = AppDomain.CurrentDomain.BaseDirectory + '\\' + "serialized.xlsx";
-
             ProductsInfo productsInfo;
             try
             {
                 using (var package = new ExcelPackage())
                 {
-                    using (var stream = File.OpenRead(filePath))
+                    using (var stream = file.OpenReadStream())
                     {
                         package.Load(stream);
                     }
-                    productsInfo = package.SheetsToProductsInfo();
+                    productsInfo = await package.SheetsToProductsInfoAsync();
+
+                    package.SheetToImages("Product image files", productImageFilePath);
+                    package.SheetToImages("Attribute icon files", attributeImageFilePath);
+                    package.SheetToImages("Carousel image files", carouselImagePath);
                 }
+                await productsInfo.SaveToDbContextAsync(context);
 
             }
             catch (Exception)
             {
                 return false;
             }
-            
-            productsInfo.SaveToDbContext(context);
-
             return true;
         }
 
-        public static void WipeDBProducts(ApplicationDbContext context)
+        public static async Task WipeDBProductsAsync(ApplicationDbContext context)
         {
-            context.Attribute.RemoveRange(context.Attribute.ToList());
-            context.AttributeValue.RemoveRange(context.AttributeValue.ToList());
-            context.Category.RemoveRange(context.Category.ToList());
-            context.CategoryCategory.RemoveRange(context.CategoryCategory.ToList());
-            context.Product.RemoveRange(context.Product.ToList());
-            context.ProductAd.RemoveRange(context.ProductAd.ToList());
-            context.ProductAttributeValue.RemoveRange(context.ProductAttributeValue.ToList());
-            context.ProductCategory.RemoveRange(context.ProductCategory.ToList());
-            context.ProductDiscount.RemoveRange(context.ProductDiscount.ToList());
-            context.ProductImage.RemoveRange(context.ProductImage.ToList());
-            context.ProductProperty.RemoveRange(context.ProductProperty.ToList());
-            context.SaveChanges();
+            await Task.Run(() => 
+            {
+                context.Attribute.RemoveRange(context.Attribute.ToList());
+                context.AttributeValue.RemoveRange(context.AttributeValue.ToList());
+                context.Category.RemoveRange(context.Category.ToList());
+                context.CategoryCategory.RemoveRange(context.CategoryCategory.ToList());
+                context.Product.RemoveRange(context.Product.ToList());
+                context.ProductAd.RemoveRange(context.ProductAd.ToList());
+                context.ProductAttributeValue.RemoveRange(context.ProductAttributeValue.ToList());
+                context.ProductCategory.RemoveRange(context.ProductCategory.ToList());
+                context.ProductDiscount.RemoveRange(context.ProductDiscount.ToList());
+                context.ProductImage.RemoveRange(context.ProductImage.ToList());
+                context.ProductProperty.RemoveRange(context.ProductProperty.ToList());
+                context.SaveChanges();
+            });
+        }
+
+        public static void WipeImages(string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        {
+            DirectoryInfo productPath = new DirectoryInfo(productImageFilePath);
+            DirectoryInfo attributePath = new DirectoryInfo(attributeImageFilePath);
+            DirectoryInfo carouselPath = new DirectoryInfo(carouselImagePath);
+
+            foreach (FileInfo file in productPath.GetFiles())
+            {
+                if (file.Name != "product-image-placeholder.jpg")
+                {
+                    file.Delete();
+                }
+            }
+            foreach (FileInfo file in attributePath.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (FileInfo file in carouselPath.GetFiles())
+            {
+                if (file.Name != "ad-placeholder.png")
+                {
+                    file.Delete();
+                }
+            }
+
         }
 
         #region Export methods
@@ -383,27 +417,44 @@ namespace EShop.Util
             worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
         }
 
+        private static void ImagesToSheet(this ExcelPackage package, string sheetName, string imagesDirectory)
+        {
+            ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+            string[] imagePaths = Directory.GetFiles(imagesDirectory);
+
+            for (int i = 0; i < imagePaths.Length; i++)
+            {
+                Image image = Image.FromFile(imagePaths[i]);
+                var picture = worksheet.Drawings.AddPicture(Path.GetFileName(imagePaths[i]), image);
+                picture.SetPosition(i, 0, 0, 0);
+                worksheet.Row(i + 1).Height = image.Height * 0.76d; // Tweaked to match pixel to excel measurements
+            }
+        }
+
         #endregion
 
         #region Import methods
 
-        private static ProductsInfo SheetsToProductsInfo(this ExcelPackage package)
+        private static async Task<ProductsInfo> SheetsToProductsInfoAsync(this ExcelPackage package)
         {
-            ProductsInfo info = new ProductsInfo
+            return await Task.Run<ProductsInfo>(() =>
             {
-                Attributes = package.Workbook.Worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>(),
-                AttributeValues = package.Workbook.Worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>(),
-                Categories = package.Workbook.Worksheets["Categories"].GetListFromWorksheet<Category>(),
-                CategoryCategories = package.Workbook.Worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>(),
-                Products = package.Workbook.Worksheets["Products"].GetListFromWorksheet<Product>(),
-                ProductAds = package.Workbook.Worksheets["ProductAds"].GetListFromWorksheet<ProductAd>(),
-                ProductAttributeValues = package.Workbook.Worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>(),
-                ProductCategories = package.Workbook.Worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>(),
-                ProductDiscounts = package.Workbook.Worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>(),
-                ProductImages = package.Workbook.Worksheets["ProductImages"].GetListFromWorksheet<ProductImage>(),
-                ProductProperties = package.Workbook.Worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>()
-            };
-            return info;
+                ProductsInfo info = new ProductsInfo();
+                ExcelWorksheets worksheets = package.Workbook.Worksheets;
+                info.Attributes = worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>();
+                info.AttributeValues = worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>();
+                info.Categories = worksheets["Categories"].GetListFromWorksheet<Category>();
+                info.CategoryCategories = worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>();
+                info.Products = worksheets["Products"].GetListFromWorksheet<Product>();
+                info.ProductAds = worksheets["ProductAds"].GetListFromWorksheet<ProductAd>();
+                info.ProductAttributeValues = worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>();
+                info.ProductCategories = worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>();
+                info.ProductDiscounts = worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>();
+                info.ProductImages = worksheets["ProductImages"].GetListFromWorksheet<ProductImage>();
+                info.ProductProperties = worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>();
+                return info;
+            });
         }
 
         private static List<T> GetListFromWorksheet<T>(this ExcelWorksheet worksheet) where T : class, new()
@@ -430,37 +481,62 @@ namespace EShop.Util
 
         private static List<T> ToList<T>(this DataTable table) where T : class, new()
         {
-            List<T> list = new List<T>();
+            T[] array = new T[table.Rows.Count];
 
-            foreach (DataRow row in table.Rows)
+            Type type = typeof(T);
+            PropertyInfo[] propInfo = type.GetProperties();
+            var accessor = TypeAccessor.Create(type);
+
+            for(int v = 0; v < table.Rows.Count; v++)
             {
+                DataRow row = table.Rows[v];
                 T entity = new T();
 
-                foreach (var prop in entity.GetType().GetProperties())
+                for(int i = 0; i < propInfo.Length; i++)
                 {
+                    PropertyInfo prop = propInfo[i];
                     try
                     {
-                        PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
-                        propertyInfo.SetValue(entity, Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType), null);
-                        
+                        accessor[entity, prop.Name] = Convert.ChangeType(row[prop.Name], prop.PropertyType);
                     }
-                    catch (Exception)
+                    catch
                     {
                         //Hacky bypass non string and int bugs
-                        PropertyInfo propertyInfo = entity.GetType().GetProperty(prop.Name);
-                        try { propertyInfo.SetValue(entity, int.Parse(row[prop.Name].ToString()), null);} catch {}
-                        continue;
+                        try
+                        {
+                            if (prop.PropertyType == typeof(bool))
+                            {
+                                accessor[entity, prop.Name] = row[prop.Name].ToString() == "1" ? true : false;
+
+                            }
+                            else
+                            {
+                                accessor[entity, prop.Name] = int.Parse(row[prop.Name].ToString());
+                            }
+
+                        } catch { }
                     }
                 }
-
-                list.Add(entity);
+                array[v] = entity;
             }
-            return list;
+            return array.ToList();
         }
 
-    #endregion
+        private static void SheetToImages(this ExcelPackage package, string sheetName, string imagesDirectory)
+        {
+            ExcelDrawings drawings = package.Workbook.Worksheets[sheetName].Drawings;
 
-    class CustomResolver : DefaultContractResolver
+            Parallel.For(0, drawings.Count, (i) =>
+             {
+                 ExcelPicture image = drawings[i] as ExcelPicture;
+                 string newPath = Path.Combine(imagesDirectory, image.Name);
+                 image.Image.Save(newPath);
+             });
+        }
+
+        #endregion
+
+        class CustomResolver : DefaultContractResolver
         {
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using EShop.Util;
 using EShop.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -95,10 +96,10 @@ namespace EShop.Controllers
         }
         
         [HttpGet]
-        public async Task AddSessionProductsToCartAsync()
+        public async Task<int> AddSessionProductsToCartAsync()
         {
             var shoppingCart = await GetCartAsync();
-            await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
+            return await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
         }
 
         [HttpGet]

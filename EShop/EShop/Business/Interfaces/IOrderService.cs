@@ -13,7 +13,11 @@ namespace EShop.Business.Interfaces
         Task<int> CreateOrderAsync(Order order);
         Task<OrderReviewModel> FindOrderReviewAsync(int OrderId);
         Task<IQueryable<Order>> QueryAllOrdersAsync(ApplicationUser user);
+        ICollection<Order> GetAllOrdersByPage(ApplicationUser user, int pageNumber, int ordersPerPage);
+        int GetOrdersPageCount(ApplicationUser user, int ordersPerPage);
         Task<IQueryable<Order>> QueryAllAdminOrdersAsync();
+        ICollection<Order> GetAllAdminOrdersByPage(int pageNumber, int ordersPerPage);
+        int GetAdminOrdersPageCount(int ordersPerPage);
         Task<Order> FindOrderByIdAsync(int Id);
     }
 }

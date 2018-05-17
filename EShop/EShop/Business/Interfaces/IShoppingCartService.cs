@@ -17,5 +17,6 @@ namespace EShop.Business
         Task<ShoppingCart> FindShoppingCartByIdAsync(int Id);
         // 0 - success
         // 1 - error
+        Task<int> CountProductsInShoppingCart(ShoppingCart shoppingCart);
     }
 }

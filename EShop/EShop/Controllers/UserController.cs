@@ -6,6 +6,7 @@ using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -14,27 +15,50 @@ namespace EShop.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserService _userService;
+        private readonly int usersPerPage;
 
-        public UserController(UserManager<ApplicationUser> userManager, IUserService userService)
+        public UserController(UserManager<ApplicationUser> userManager, IUserService userService, IConfiguration configuration)
         {
             _userManager = userManager;
             _userService = userService;
+
+            if (!int.TryParse(configuration["PaginationConfig:UsersPerPage"], out usersPerPage))
+            {
+                throw new InvalidOperationException("Invalid PaginationConfig:UsersPerPage in appsettings.json. Not an int value.");
+            }
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 0)
         {
-            IQueryable<UserInRoleViewModel> users = null;
+            //IQueryable<UserInRoleViewModel> users = null;
+
+            // Tuple<pageCount, usersInRoles>
+            Tuple<int, IQueryable<UserInRoleViewModel>> tuple;
 
             if (HttpContext.User.IsInRole("SuperAdmin"))
             {
-                users = await _userService.QueryUsersInRoles(new string[]{ "Customer", "Admin" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                //users = await _userService.QueryUsersInRoles(new string[]{ "Customer", "Admin" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                tuple = await _userService.QueryUsersInRolesByPageAsync(pageNumber, usersPerPage);
             }
             else
             {
-                users = await _userService.QueryUsersInRoles(new string[] { "Customer" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                //users = await _userService.QueryUsersInRoles(new string[] { "Customer" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                tuple = await _userService.QueryUsersInRolesByPageAsync(pageNumber, usersPerPage);
             }
             ViewBag.CurrentUserRoles = await _userManager.GetRolesAsync(await _userManager.GetUserAsync(HttpContext.User));
-            return View(users);
+
+            // pagination
+            int pageCount = tuple.Item1;
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            ViewBag.CurrentPageNumber = pageNumber;
+
+            return View(tuple.Item2);
         }
 
         public async Task<IActionResult> Delete(string id)
