@@ -119,7 +119,7 @@
                         }
                     </td>
                     <td>
-                        @if (!this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                        @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
                         {
                             <div>
                                 <form id="add-btn-form-@item.Index">
