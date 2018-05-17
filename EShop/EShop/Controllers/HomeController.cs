@@ -313,8 +313,8 @@ namespace EShop.Controllers
             products.Add(temp);
             ViewBag.Product = temp;
 
-            ProductImage primaryImage = _context.ProductImage.First(pi => pi.IsPrimary && pi.Product == temp);
-            ViewData["primary_image"] = primaryImage.ImageUrl;
+            String[] primaryImage = await _productService.GetAllImages(products, true);
+            ViewData["primary_image"] = primaryImage[0];
 
             String[] secondaryImages = await _productService.GetAllImages(products, false);
             //List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
