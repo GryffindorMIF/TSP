@@ -30,11 +30,7 @@ namespace EShop.Business.Services
         public async Task<byte[]> ExportProductData()
         {
             byte[] exportData = null;
-            await Task.Run(() =>
-            {
-                exportData = ProductDbPorter.Export(_context, _productsImagePath, _attributeImagePath, _carouselImagePath);
-            });
-
+            exportData = await ProductDbPorter.ExportAsync(_context, _productsImagePath, _attributeImagePath, _carouselImagePath);
             return exportData;
         }
 
@@ -44,13 +40,10 @@ namespace EShop.Business.Services
             return importSuccessful;
         }
 
-        public async Task WipeProductData()
+        public async Task WipeProductDataAsync()
         {
-            await Task.Run(() =>
-            {
-                ProductDbPorter.WipeDBProducts(_context);
-                ProductDbPorter.WipeImages(_productsImagePath, _attributeImagePath, _carouselImagePath);
-            });
+            await ProductDbPorter.WipeDBProductsAsync(_context);
+            ProductDbPorter.WipeImages(_productsImagePath, _attributeImagePath, _carouselImagePath);
         }
     }
 }

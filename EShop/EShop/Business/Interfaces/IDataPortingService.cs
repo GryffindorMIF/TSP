@@ -9,7 +9,7 @@ namespace EShop.Business.Interfaces
 {
     public interface IDataPortingService
     {
-        Task WipeProductData();
+        Task WipeProductDataAsync();
         Task<bool> ImportProductData(IFormFile file);
         Task<byte[]> ExportProductData();
 

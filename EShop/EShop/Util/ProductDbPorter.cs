@@ -70,25 +70,28 @@ namespace EShop.Util
             public List<ProductImage> ProductImages { get; set; }
             public List<ProductProperty> ProductProperties { get; set; }
 
-            public void LoadFromDbContext(ApplicationDbContext context)
+            public async Task LoadFromDbContextAsync(ApplicationDbContext context)
             {
-                Attributes = context.Attribute.ToList();
-                AttributeValues = context.AttributeValue.ToList();
-                Categories = context.Category.ToList();
-                CategoryCategories = context.CategoryCategory.ToList();
-                Products = context.Product.ToList();
-                ProductAds = context.ProductAd.ToList();
-                ProductAttributeValues = context.ProductAttributeValue.ToList();
-                ProductCategories = context.ProductCategory.ToList();
-                ProductDiscounts = context.ProductDiscount.ToList();
-                ProductImages = context.ProductImage.ToList();
-                ProductProperties = context.ProductProperty.ToList();
+                await Task.Run(() => 
+                {
+                    Attributes = context.Attribute.ToList();
+                    AttributeValues = context.AttributeValue.ToList();
+                    Categories = context.Category.ToList();
+                    CategoryCategories = context.CategoryCategory.ToList();
+                    Products = context.Product.ToList();
+                    ProductAds = context.ProductAd.ToList();
+                    ProductAttributeValues = context.ProductAttributeValue.ToList();
+                    ProductCategories = context.ProductCategory.ToList();
+                    ProductDiscounts = context.ProductDiscount.ToList();
+                    ProductImages = context.ProductImage.ToList();
+                    ProductProperties = context.ProductProperty.ToList();
+                });
             }
 
             public async Task SaveToDbContextAsync(ApplicationDbContext context)
             {
                 ProductsInfo currentDbState = new ProductsInfo();
-                currentDbState.LoadFromDbContext(context);
+                await currentDbState.LoadFromDbContextAsync(context);
 
                 WrappedProductsInfo wrappedProductsInfo = new WrappedProductsInfo(this);
 
@@ -167,7 +170,6 @@ namespace EShop.Util
                         context.ProductDiscount.Add(importProductDiscount);
                     }
                 }
-                await context.SaveChangesAsync();//testavimui
 
                 //Add missing product ads
                 foreach (var importProductAd in ProductAds)
@@ -261,10 +263,10 @@ namespace EShop.Util
             }
         }
 
-        public static byte[] Export(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        public static async Task<byte[]> ExportAsync(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
             ProductsInfo productsInfo = new ProductsInfo();
-            productsInfo.LoadFromDbContext(context);
+            await productsInfo.LoadFromDbContextAsync(context);
 
             try
             {
@@ -296,11 +298,10 @@ namespace EShop.Util
                         package.Load(stream);
                     }
                     productsInfo = await package.SheetsToProductsInfoAsync();
-                    await Task.Delay(150);
+
                     package.SheetToImages("Product image files", productImageFilePath);
                     package.SheetToImages("Attribute icon files", attributeImageFilePath);
                     package.SheetToImages("Carousel image files", carouselImagePath);
-
                 }
                 await productsInfo.SaveToDbContextAsync(context);
 
@@ -312,20 +313,23 @@ namespace EShop.Util
             return true;
         }
 
-        public static void WipeDBProducts(ApplicationDbContext context)
+        public static async Task WipeDBProductsAsync(ApplicationDbContext context)
         {
-            context.Attribute.RemoveRange(context.Attribute.ToList());
-            context.AttributeValue.RemoveRange(context.AttributeValue.ToList());
-            context.Category.RemoveRange(context.Category.ToList());
-            context.CategoryCategory.RemoveRange(context.CategoryCategory.ToList());
-            context.Product.RemoveRange(context.Product.ToList());
-            context.ProductAd.RemoveRange(context.ProductAd.ToList());
-            context.ProductAttributeValue.RemoveRange(context.ProductAttributeValue.ToList());
-            context.ProductCategory.RemoveRange(context.ProductCategory.ToList());
-            context.ProductDiscount.RemoveRange(context.ProductDiscount.ToList());
-            context.ProductImage.RemoveRange(context.ProductImage.ToList());
-            context.ProductProperty.RemoveRange(context.ProductProperty.ToList());
-            context.SaveChanges();
+            await Task.Run(() => 
+            {
+                context.Attribute.RemoveRange(context.Attribute.ToList());
+                context.AttributeValue.RemoveRange(context.AttributeValue.ToList());
+                context.Category.RemoveRange(context.Category.ToList());
+                context.CategoryCategory.RemoveRange(context.CategoryCategory.ToList());
+                context.Product.RemoveRange(context.Product.ToList());
+                context.ProductAd.RemoveRange(context.ProductAd.ToList());
+                context.ProductAttributeValue.RemoveRange(context.ProductAttributeValue.ToList());
+                context.ProductCategory.RemoveRange(context.ProductCategory.ToList());
+                context.ProductDiscount.RemoveRange(context.ProductDiscount.ToList());
+                context.ProductImage.RemoveRange(context.ProductImage.ToList());
+                context.ProductProperty.RemoveRange(context.ProductProperty.ToList());
+                context.SaveChanges();
+            });
         }
 
         public static void WipeImages(string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
@@ -434,26 +438,27 @@ namespace EShop.Util
 
         private static async Task<ProductsInfo> SheetsToProductsInfoAsync(this ExcelPackage package)
         {
-            ProductsInfo info = new ProductsInfo();
-            ExcelWorksheets worksheets = package.Workbook.Worksheets;
-            info.Attributes = await worksheets["Attributes"].GetListFromWorksheetAsync<Models.Attribute>();
-            info.AttributeValues = await worksheets["AttributeValues"].GetListFromWorksheetAsync<AttributeValue>(); 
-            info.Categories = await worksheets["Categories"].GetListFromWorksheetAsync<Category>(); 
-            info.CategoryCategories = await worksheets["CategoryCategories"].GetListFromWorksheetAsync<CategoryCategory>(); 
-            info.Products = await worksheets["Products"].GetListFromWorksheetAsync<Product>(); 
-            info.ProductAds = await worksheets["ProductAds"].GetListFromWorksheetAsync<ProductAd>(); 
-            info.ProductAttributeValues = await worksheets["ProductAttributeValues"].GetListFromWorksheetAsync<ProductAttributeValue>(); 
-            info.ProductCategories = await worksheets["ProductCategories"].GetListFromWorksheetAsync<ProductCategory>(); 
-            info.ProductDiscounts = await worksheets["ProductDiscounts"].GetListFromWorksheetAsync<ProductDiscount>(); 
-            info.ProductImages = await worksheets["ProductImages"].GetListFromWorksheetAsync<ProductImage>(); 
-            info.ProductProperties = await worksheets["ProductProperties"].GetListFromWorksheetAsync<ProductProperty>();
-            return info;
+            return await Task.Run<ProductsInfo>(() =>
+            {
+                ProductsInfo info = new ProductsInfo();
+                ExcelWorksheets worksheets = package.Workbook.Worksheets;
+                info.Attributes = worksheets["Attributes"].GetListFromWorksheet<Models.Attribute>();
+                info.AttributeValues = worksheets["AttributeValues"].GetListFromWorksheet<AttributeValue>();
+                info.Categories = worksheets["Categories"].GetListFromWorksheet<Category>();
+                info.CategoryCategories = worksheets["CategoryCategories"].GetListFromWorksheet<CategoryCategory>();
+                info.Products = worksheets["Products"].GetListFromWorksheet<Product>();
+                info.ProductAds = worksheets["ProductAds"].GetListFromWorksheet<ProductAd>();
+                info.ProductAttributeValues = worksheets["ProductAttributeValues"].GetListFromWorksheet<ProductAttributeValue>();
+                info.ProductCategories = worksheets["ProductCategories"].GetListFromWorksheet<ProductCategory>();
+                info.ProductDiscounts = worksheets["ProductDiscounts"].GetListFromWorksheet<ProductDiscount>();
+                info.ProductImages = worksheets["ProductImages"].GetListFromWorksheet<ProductImage>();
+                info.ProductProperties = worksheets["ProductProperties"].GetListFromWorksheet<ProductProperty>();
+                return info;
+            });
         }
 
-        private static async Task<List<T>> GetListFromWorksheetAsync<T>(this ExcelWorksheet worksheet) where T : class, new()
+        private static List<T> GetListFromWorksheet<T>(this ExcelWorksheet worksheet) where T : class, new()
         {
-            //Hacky way to be non blocking
-            await Task.Delay(100);
             DataTable table = new DataTable();
             foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
             {
@@ -462,10 +467,6 @@ namespace EShop.Util
 
             for (int rowNum = 2; rowNum <= worksheet.Dimension.End.Row; rowNum++)
             {
-                if (rowNum % 5 == 0)
-                {
-                    await Task.Delay(20);
-                }
                 var worksheetRow = worksheet.Cells[rowNum, 1, rowNum, worksheet.Dimension.End.Column];
                 DataRow row = table.Rows.Add();
                 foreach (var cell in worksheetRow)
@@ -474,15 +475,12 @@ namespace EShop.Util
                 }
             }
 
-            return await table.ToListAsync<T>();
+            return table.ToList<T>();
         }
 
 
-        private static async Task<List<T>> ToListAsync<T>(this DataTable table) where T : class, new()
+        private static List<T> ToList<T>(this DataTable table) where T : class, new()
         {
-            //Hacky way to be non blocking
-            await Task.Delay(100);
-
             T[] array = new T[table.Rows.Count];
 
             Type type = typeof(T);
@@ -491,10 +489,6 @@ namespace EShop.Util
 
             for(int v = 0; v < table.Rows.Count; v++)
             {
-                if (v % 5 == 0)
-                {
-                    await Task.Delay(20);
-                }
                 DataRow row = table.Rows[v];
                 T entity = new T();
 

@@ -20,7 +20,7 @@ namespace EShop.Controllers
         }
 
         // GET: DataPorting
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             if (TempData["Error"] != null)
             {
@@ -70,7 +70,7 @@ namespace EShop.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Wipe()
+        public IActionResult Wipe()
         {
             return View();
         }
@@ -79,7 +79,7 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> WipeConfirmed()
         {
-            await _dataPortingService.WipeProductData();
+            await _dataPortingService.WipeProductDataAsync();
             TempData["Success"] = "Successfully wiped all product data.";
             return RedirectToAction("Index", "DataPorting");
         }
