@@ -29,7 +29,7 @@ namespace EShop.Business
                 string fromAddress = "gryffindor.shop@gmail.com";
                 string fromAddressTitle = "Gryffindor E-shop";
                 //To address
-                string ToAdressTitle = "Microsoft ASP.NET Core";
+                string ToAdressTitle = "Dear Client";
 
                 //SMTP Server
                 string SmtpServer = "smtp.gmail.com";
@@ -53,7 +53,7 @@ namespace EShop.Business
                     // Error 5.5.1 Authentication   
                     client.Authenticate(login, password);
                     await client.SendAsync(mimeMessage);
-                    Console.WriteLine("The mail has been sent successfully !!");
+                    //Console.WriteLine("The mail has been sent successfully!");
                     //Console.ReadLine();
                     await client.DisconnectAsync(true);
                     //return Task.CompletedTask;

@@ -398,7 +398,7 @@ namespace EShop.Controllers
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    return RedirectToAction("Index", "Home");//RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
 
                 // For more information on how to enable account confirmation and password reset please
@@ -406,7 +406,7 @@ namespace EShop.Controllers
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
                 await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                   $"Please confirm your account by clicking this link or copying it to browser address field: {callbackUrl}");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
