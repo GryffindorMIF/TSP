@@ -296,6 +296,7 @@ namespace EShop.Util
                         package.Load(stream);
                     }
                     productsInfo = await package.SheetsToProductsInfoAsync();
+                    await Task.Delay(150);
                     package.SheetToImages("Product image files", productImageFilePath);
                     package.SheetToImages("Attribute icon files", attributeImageFilePath);
                     package.SheetToImages("Carousel image files", carouselImagePath);
@@ -335,7 +336,10 @@ namespace EShop.Util
 
             foreach (FileInfo file in productPath.GetFiles())
             {
-                file.Delete();
+                if (file.Name != "product-image-placeholder.jpg")
+                {
+                    file.Delete();
+                }
             }
             foreach (FileInfo file in attributePath.GetFiles())
             {
@@ -343,7 +347,10 @@ namespace EShop.Util
             }
             foreach (FileInfo file in carouselPath.GetFiles())
             {
-                file.Delete();
+                if (file.Name != "ad-placeholder.png")
+                {
+                    file.Delete();
+                }
             }
 
         }
@@ -445,6 +452,8 @@ namespace EShop.Util
 
         private static async Task<List<T>> GetListFromWorksheetAsync<T>(this ExcelWorksheet worksheet) where T : class, new()
         {
+            //Hacky way to be non blocking
+            await Task.Delay(150);
             DataTable table = new DataTable();
             foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
             {
@@ -468,7 +477,7 @@ namespace EShop.Util
         private static async Task<List<T>> ToListAsync<T>(this DataTable table) where T : class, new()
         {
             //Hacky way to be non blocking
-            await Task.Delay(300);
+            await Task.Delay(150);
 
             T[] array = new T[table.Rows.Count];
 
@@ -491,7 +500,19 @@ namespace EShop.Util
                     catch
                     {
                         //Hacky bypass non string and int bugs
-                        try { accessor[entity, prop.Name] = int.Parse(row[prop.Name].ToString()); } catch { }
+                        try
+                        {
+                            if (prop.PropertyType == typeof(bool))
+                            {
+                                accessor[entity, prop.Name] = row[prop.Name].ToString() == "1" ? true : false;
+
+                            }
+                            else
+                            {
+                                accessor[entity, prop.Name] = int.Parse(row[prop.Name].ToString());
+                            }
+
+                        } catch { }
                     }
                 }
                 array[v] = entity;
