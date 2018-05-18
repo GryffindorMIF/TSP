@@ -24,14 +24,12 @@ namespace EShop.Controllers
         private readonly IProductService _productService;
         private readonly INavigationService _navigationService;
         private readonly int uploadMaxByteSize;
-        private readonly ApplicationDbContext _context;
 
-        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration, IProductService productService, INavigationService navigationService)
+        public ProductController(IHostingEnvironment appEnvironment, IConfiguration configuration, IProductService productService, INavigationService navigationService)
         {
             _appEnvironment = appEnvironment;
             _productService = productService;
             _navigationService = navigationService;
-            _context = context;
             if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
             {
                 throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
