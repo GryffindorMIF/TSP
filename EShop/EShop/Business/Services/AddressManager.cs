@@ -49,6 +49,12 @@ namespace EShop.Business.Services
             return savedAddresses;
         }
 
+        public async Task CreateDeliveryAddress(DeliveryAddress deliveryAddress)
+        {
+            _context.DeliveryAddress.Add(deliveryAddress);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<int> RemoveDeliveryAddressAsync(ApplicationUser user, DeliveryAddress addressOnDeathrow)
         {
             int returnCode = 1;

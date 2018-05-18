@@ -10,12 +10,10 @@ namespace EShop.Controllers
     [Authorize(Roles = "Admin, SuperAdmin")]
     public class DataPortingController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IDataPortingService _dataPortingService;
 
-        public DataPortingController(ApplicationDbContext context, IDataPortingService dataPortingService)
+        public DataPortingController(IDataPortingService dataPortingService)
         {
-            _context = context;
             _dataPortingService = dataPortingService;
         }
 

@@ -20,16 +20,18 @@ namespace EShop.Controllers
     [Authorize(Roles = "Admin, SuperAdmin")]
     public class ProductController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _appEnvironment;
         private readonly IProductService _productService;
+        private readonly INavigationService _navigationService;
         private readonly int uploadMaxByteSize;
+        private readonly ApplicationDbContext _context;
 
-        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration, IProductService productService)
+        public ProductController(ApplicationDbContext context, IHostingEnvironment appEnvironment, IConfiguration configuration, IProductService productService, INavigationService navigationService)
         {
-            _context = context;
             _appEnvironment = appEnvironment;
             _productService = productService;
+            _navigationService = navigationService;
+            _context = context;
             if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
             {
                 throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
@@ -40,14 +42,13 @@ namespace EShop.Controllers
         public async Task<IActionResult> Index(bool showAlert = false) //By default don't show alert about delete success
         {
             ViewData["show_alert"] = showAlert;
-            return View(await _context.Product.ToListAsync());
+            return View(await _productService.GetAllProducts());
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var model = new ProductCategoryViewModel();
-            var categories = (from c in _context.Category
-                              select c).ToList();
+            var categories = await _navigationService.GetAllCategories();
 
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name");
 
@@ -69,7 +70,8 @@ namespace EShop.Controllers
                         Description = model.Product.Description,
                         Price = model.Product.Price
                     };
-                    _context.Add(product);
+                    _productService.CreateProduct(product);
+                    
 
                     if (model.PrimaryImage != null)
                     {
@@ -82,7 +84,7 @@ namespace EShop.Controllers
                                 ImageUrl = primaryImagePath,
                                 Product = product
                             };
-                            _context.Add(primaryImage);
+                            _productService.CreateProductImage(primaryImage);
                         }
                         else
                         {
@@ -104,7 +106,7 @@ namespace EShop.Controllers
                                     ImageUrl = otherImagePath,
                                     Product = product
                                 };
-                                _context.Add(otherImage);
+                                _productService.CreateProductImage(otherImage);
                             }
                             else
                             {
@@ -123,7 +125,7 @@ namespace EShop.Controllers
                                 ProductId = product.Id,
                                 CategoryId = categoryId
                             };
-                            _context.Add(productCategory);
+                            _productService.AddProductToCategory(productCategory);
                         }
                     }
                 });
@@ -132,7 +134,6 @@ namespace EShop.Controllers
                     ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
                     return View(model);
                 }
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return RedirectToAction(nameof(Index));
@@ -147,7 +148,7 @@ namespace EShop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Product.SingleOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.FindProductByIdAsync((int)id);
             if (product == null)
             {
                 return NotFound();
@@ -171,32 +172,20 @@ namespace EShop.Controllers
             {
                 try
                 {
-                    IEnumerable<ProductCategory> relatedProductCategories = null;
-                    List<ProductImage> possiblePrimaryImages = null;
-                    List<ProductImage> possibleOtherImages = null;
-                    var task = Task.Run(() =>
-                    {
-                        relatedProductCategories = (from pc in _context.ProductCategory
-                                                    where pc.ProductId == model.Product.Id
-                                                    select pc).ToList();
+                    IList<ProductCategory> relatedProductCategories = null;
+                    IList<ProductImage> possiblePrimaryImages = null;
+                    IList<ProductImage> possibleOtherImages = null;
+                        relatedProductCategories = await _navigationService.GetProductCategories(model.Product.Id);
 
                         if (model.PrimaryImage != null)
                         {
-                            possiblePrimaryImages = (from pi in _context.ProductImage
-                                                     where pi.Product == model.Product
-                                                     where pi.IsPrimary == true
-                                                     select pi).ToList();
+                            possiblePrimaryImages = await _productService.GetPrimaryImages(model.Product);
                         }
 
                         if (model.IdsOfSelectedImages != null)
                         {
-                            possibleOtherImages = (from oi in _context.ProductImage
-                                                   where oi.Product == model.Product
-                                                   where oi.IsPrimary == false
-                                                   select oi).ToList();
-                        }
-                    });
-                    task.Wait();
+                            possibleOtherImages = await _productService.GetSecondaryImages(model.Product);
+                    }
 
                     //New primary image
                     if (model.PrimaryImage != null)
@@ -213,9 +202,9 @@ namespace EShop.Controllers
                             if (possiblePrimaryImages != null && possiblePrimaryImages.Count > 0)
                             {
                                 await _appEnvironment.DeleteImageAsync(possiblePrimaryImages[0].ImageUrl, "products");
-                                _context.Remove(possiblePrimaryImages[0]);
+                                await _productService.DeleteProductImage(possiblePrimaryImages[0]);
                             }
-                            _context.Add(primaryImage);
+                            await _productService.CreateProductImage(primaryImage);
                         }
                         else
                         {
@@ -239,7 +228,7 @@ namespace EShop.Controllers
                                     ImageUrl = otherImagePath,
                                     Product = model.Product
                                 };
-                                _context.Add(otherImage);
+                                await _productService.CreateProductImage(otherImage);
                             }
                             else
                             {
@@ -260,14 +249,14 @@ namespace EShop.Controllers
                             if (imageToClean.Count > 0)
                             {
                                 await _appEnvironment.DeleteImageAsync(imageToClean[0].ImageUrl, "products");
-                                _context.Remove(imageToClean[0]);
+                                await _productService.DeleteProductImage(imageToClean[0]);
                             }
                         }
                     }
 
+                    //Opt locking separated too. Leave it or keep it?
+                    await _productService.UpdateRowVersionEntry(model.Product);
 
-
-                    _context.Entry(model.Product).Property("RowVersion").OriginalValue = model.Product.RowVersion;
                     if (model.IdsOfSelectedCategories != null)
                     {
                         foreach (int categoryId in model.IdsOfSelectedCategories)
@@ -277,19 +266,17 @@ namespace EShop.Controllers
                                 ProductId = model.Product.Id,
                                 CategoryId = categoryId
                             };
-                            _context.Update(productCategory);
+                            await _navigationService.UpdateProductCategory(productCategory);
                         }
                     }
                     foreach (var pc in relatedProductCategories)
                     {
-                        _context.Remove(pc);
+                        await _navigationService.DeleteProductCategory(pc.Id);
                     };
-                    _context.Update(model.Product);
-                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    if (!ProductExists(model.Product.Id))
+                    if ((await _productService.GetAllProducts()).Any(p => p.Id == model.Product.Id) == false)
                     {
                         return NotFound();
                     }
@@ -313,8 +300,11 @@ namespace EShop.Controllers
                             ModelState.AddModelError("Product.Price", $"Current value: {databaseValues.Price}");
                         }
 
-                        var dbProductCategoryNames = await Task.Run(() => _context.ProductCategory.Where(x => x.Product == model.Product).Select(x => x.Category.Name).ToArray());
-                        var clientProductCategoryNames = await Task.Run(() => _context.Category.Where(x => model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
+
+                        IList<Category> allCategories = await _navigationService.GetAllCategories();
+                        IList<ProductCategory> allProductCategories = await _navigationService.GetAllProductCategories();
+                        var dbProductCategoryNames = await Task.Run(() => allProductCategories.Where(x => x.Product == model.Product).Select(x => x.Category.Name).ToArray());
+                        var clientProductCategoryNames = await Task.Run(() => allCategories.Where(x => model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
                         if (!dbProductCategoryNames.ToHashSet().SetEquals(clientProductCategoryNames.ToHashSet()))
                         {
                             string categoryStrings = String.Join(", ", dbProductCategoryNames);
@@ -344,8 +334,8 @@ namespace EShop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Product
-                .SingleOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.FindProductByIdAsync((int)id);
+
             if (product == null)
             {
                 return NotFound();
@@ -358,14 +348,9 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Product.SingleOrDefaultAsync(m => m.Id == id);
-            List<ProductImage> images = null;
-            await Task.Run(() =>
-            {
-                images = (from oi in _context.ProductImage
-                          where oi.Product == product
-                          select oi).ToList();
-            });
+            var product = await _productService.FindProductByIdAsync(id);
+
+            IList<ProductImage> images = await _productService.GetAllProductImages(product.Id);
 
             //Remove images
             if (images != null && images.Count > 0)
@@ -373,24 +358,18 @@ namespace EShop.Controllers
                 foreach (ProductImage image in images)
                 {
                     await _appEnvironment.DeleteImageAsync(image.ImageUrl, "products");
-                    _context.Remove(image);
+                    await _productService.DeleteProductImage(image);
                 }
             }
-            _context.Product.Remove(product);
-            await _context.SaveChangesAsync();
+            await _productService.DeleteProduct(product.Id);
             return RedirectToAction(nameof(Index), new { showAlert = true });
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Product.Any(e => e.Id == id);
         }
 
         //Product properties management below
         //Page with all product properties with "delete" button
         public async Task<IActionResult> ManageProperties(int id, bool showAlert = false)
         {
-            Product temp = _context.Product.First(p => p.Id == id);
+            Product temp = await _productService.FindProductByIdAsync(id);
             //Using ViewData to retrieve values in view
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = id;
@@ -399,9 +378,9 @@ namespace EShop.Controllers
         }
 
         //Page with add property form
-        public IActionResult AddProperty(int productId) //Add Property view
+        public async Task<IActionResult> AddProperty(int productId) //Add Property view
         {
-            Product temp = _context.Product.First(p => p.Id == productId);
+            Product temp = await _productService.FindProductByIdAsync(productId);
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = temp.Id;
             return View();
@@ -410,16 +389,15 @@ namespace EShop.Controllers
         //Add property action
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Name,Description,ProductId")] ProductProperty ProductProperty)
+        public async Task<IActionResult> AddProperty(int productId, [Bind("Id,Name,Description,ProductId")] ProductProperty productProperty)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(ProductProperty);
-                await _context.SaveChangesAsync();
+                await _productService.CreateProductProperty(productProperty);
                 return RedirectToAction(nameof(ManageProperties), new { id = productId });
             }
             //If admin did not fill every field then refresh page
-            Product temp = _context.Product.First(p => p.Id == productId);
+            Product temp = await _productService.FindProductByIdAsync(productId);
             ViewData["product_name"] = temp.Name;
             ViewData["product_id"] = temp.Id;
             return View();
@@ -431,55 +409,32 @@ namespace EShop.Controllers
             ProductProperty property = await _productService.FindProductPropertyByIdAsync(id);
             int productId = property.ProductId;
 
-            await Task.Run(() =>
-            {
                 try
                 {
-                    _context.Remove(property);
+                    await _productService.DeleteProductProperty(property.Id);
 
-                    var t2 = Task.Run(
-                        async () =>
-                        {
-                            await _context.SaveChangesAsync();
-                        });
-                    t2.Wait();
                     return RedirectToAction(nameof(ManageProperties), new { id = productId });
                 }
                 catch (Exception)
                 {
                     return RedirectToAction(nameof(Index));
                 }
-            });
-            return RedirectToAction(nameof(ManageProperties), new { id = productId });
         }
 
         private async Task<ProductCategoryViewModel> FillUpProductEditData(ProductCategoryViewModel model, Product product)
         {
-            IEnumerable<Category> categories = null;
-            IEnumerable<int> idsOfSelectedCategories = null;
-            List<ProductImage> otherImages = null;
-            List<ProductImage> primaryImages = null;
+            IList<Category> categories = null;
+            IList<int> idsOfSelectedCategories = null;
+            IList<ProductImage> otherImages = null;
+            IList<ProductImage> primaryImages = null;
 
-            var task = Task.Run(() =>
-            {
-                categories = (from c in _context.Category
-                              select c).ToList();
+                categories = await _navigationService.GetAllCategories();
+            var productCategories = await _navigationService.GetAllProductCategories();
+            idsOfSelectedCategories = productCategories.Where(pc => pc.ProductId == product.Id).Select(pc => pc.CategoryId).ToList();
 
-                idsOfSelectedCategories = (from pc in _context.ProductCategory
-                                           where pc.ProductId == product.Id
-                                           select pc.CategoryId).ToList();
+            otherImages = await _productService.GetSecondaryImages(product);
 
-                otherImages = (from i in _context.ProductImage
-                               where i.Product == product
-                               where i.IsPrimary == false
-                               select i).ToList();
-
-                primaryImages = (from pi in _context.ProductImage
-                                 where pi.Product == product
-                                 where pi.IsPrimary == true
-                                 select pi).ToList();
-            });
-            await task;
+            primaryImages = await _productService.GetPrimaryImages(product);
 
             model.Product = product;
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", idsOfSelectedCategories);
@@ -502,7 +457,7 @@ namespace EShop.Controllers
         [HttpGet]
         public async Task<IActionResult> Discount(string page, int productId)
         {
-            ViewBag.Product = await _context.Product.FindAsync(productId);
+            ViewBag.Product = await _productService.FindProductByIdAsync(productId);
             ViewData["page"] = page;
             return View();
         }
@@ -510,13 +465,12 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> Discount(string page, ProductDiscount productDiscount)
         {
-            ViewBag.Product = await _context.Product.FindAsync(productDiscount.ProductId);
+            ViewBag.Product = await _productService.FindProductByIdAsync(productDiscount.ProductId);
             try
             {
                 if (ModelState.IsValid) // && await _context.ProductDiscount.FirstOrDefaultAsync(pd => pd.ProductId == productDiscount.ProductId) == null) //if there is no discount for this product
                 {
-                    _context.Add(productDiscount);
-                    await _context.SaveChangesAsync();
+                    await _productService.CreateDiscount(productDiscount);
                     if (page == "Index")
                         return RedirectToAction("Index", "Home");
                     else return RedirectToAction("ProductPage", "Home", new { id = productDiscount.ProductId });
@@ -532,12 +486,9 @@ namespace EShop.Controllers
         [HttpGet]
         public async Task<IActionResult> RemoveDiscount(string page, int productId)
         {
-            var productDiscount = await (from pd in _context.ProductDiscount
-                                         where pd.ProductId == productId
-                                         select pd).FirstOrDefaultAsync();
+            var productDiscount = await _productService.GetDiscountByProductId(productId);
 
-            _context.Remove(productDiscount);
-            await _context.SaveChangesAsync();
+            await _productService.DeleteDiscount(productDiscount.Id);
             if (page == "Index")
                 return RedirectToAction("Index", "Home");
             return RedirectToAction("ProductPage", "Home", new { id = productId });

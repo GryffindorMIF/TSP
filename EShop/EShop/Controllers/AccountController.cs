@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.AccountViewModels;
 using EShop.Business;
@@ -27,7 +23,6 @@ namespace EShop.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
-        private readonly ApplicationDbContext _context;
         private readonly IShoppingCartService _shoppingCartService;
 
         public AccountController(
@@ -35,14 +30,12 @@ namespace EShop.Controllers
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            ApplicationDbContext context,
             IShoppingCartService shoppingCartService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
-            _context = context;
             _shoppingCartService = shoppingCartService;
         }
 
@@ -229,11 +222,7 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                ShoppingCart shoppingCart = new ShoppingCart();
-                await _context.ShoppingCart.AddAsync(shoppingCart);
-                await _context.SaveChangesAsync();
-
-                await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
+                ShoppingCart shoppingCart = await _shoppingCartService.CreateNewShoppingCart(HttpContext);
 
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = shoppingCart.Id };
 

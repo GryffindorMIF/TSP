@@ -15,8 +15,11 @@ namespace EShop.Business
         Task<int> RemoveShoppingCartProductAsync(Product product, ShoppingCart shoppingCart, ISession session);
         Task<IQueryable<ShoppingCartProduct>> QuerySavedProductsAsync(ShoppingCart shoppingCart);
         Task<ShoppingCart> FindShoppingCartByIdAsync(int Id);
+        Task<ShoppingCart> CreateNewShoppingCart(HttpContext httpContext);
         // 0 - success
         // 1 - error
         Task<int> CountProductsInShoppingCart(ShoppingCart shoppingCart);
+        Task AssignNewShoppingCart(ApplicationUser user);
+        Task<int> TransferSessionProducts(HttpContext httpContext, ShoppingCart shoppingCart);
     }
 }

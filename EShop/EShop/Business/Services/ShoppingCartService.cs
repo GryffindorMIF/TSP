@@ -294,5 +294,28 @@ namespace EShop.Business
             }
             return (products.ToList().AsQueryable());
         }
+
+        public async Task<ShoppingCart> CreateNewShoppingCart(HttpContext httpContext)
+        {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            await _context.ShoppingCart.AddAsync(shoppingCart);
+            await _context.SaveChangesAsync();
+            await TransferSessionProducts(httpContext, shoppingCart);
+            return shoppingCart;
+        }
+
+        public async Task AssignNewShoppingCart(ApplicationUser user)
+        {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            await _context.ShoppingCart.AddAsync(shoppingCart);
+            await _context.SaveChangesAsync();
+            user.ShoppingCartId = shoppingCart.Id;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> TransferSessionProducts(HttpContext httpContext, ShoppingCart shoppingCart)
+        {
+            return await httpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, this);
+        }
     }
 }

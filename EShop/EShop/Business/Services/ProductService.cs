@@ -1,5 +1,6 @@
 ﻿using EShop.Data;
 using EShop.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,23 +17,48 @@ namespace EShop.Business.Services
             _context = context;
         }
 
-        public ICollection<Product> GetAllProducts()
+        public async Task<ICollection<Product>> GetAllProducts()
         {
-            return _context.Product.ToList();
+            return await _context.Product.ToListAsync();
         }
         public async Task<Product> FindProductByIdAsync(int id)
         {
-            Product product = null;
-            await Task.Run(() =>
-            {
-                product = _context.Product.FirstOrDefault(p => p.Id == id);
-            });
-            return product;
+            return await _context.Product.FindAsync(id);
+        }
+
+        public async Task<Product> FindProductByName(string name)
+        {
+            return await _context.Product.Where(p => p.Name == name).FirstOrDefaultAsync();
         }
 
         public Product FindProductById(int id)
         {
             return _context.Product.Find(id);
+        }
+
+        public async Task UpdateRowVersionEntry(Product product)
+        {
+            _context.Entry(product).Property("RowVersion").OriginalValue = product.RowVersion;
+            _context.Update(product);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CreateProduct(Product product)
+        {
+            _context.Add(product);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateProduct(Product product)
+        {
+            _context.Update(product);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteProduct(int productId)
+        {
+            _context.Remove(FindProductById(productId));
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Decimal?> GetDiscountPrice(Product product)
@@ -96,27 +122,63 @@ namespace EShop.Business.Services
             return allImageLinks;
         }
 
+        public async Task<IList<ProductImage>> GetPrimaryImages(Product product)
+        {
+            return await (from pi in _context.ProductImage
+                          where pi.IsPrimary == true
+                          where pi.Product == product
+                          select pi).ToListAsync();
+        }
+
+        public async Task<IList<ProductImage>> GetSecondaryImages(Product product)
+        {
+            return await (from pi in _context.ProductImage
+                          where pi.IsPrimary == false
+                          where pi.Product == product
+                          select pi).ToListAsync();
+        }
+
+        public async Task<IList<ProductImage>> GetAllProductImages(int productId)
+        {
+            return await (from oi in _context.ProductImage
+                          where oi.Product.Id == productId
+                          select oi).ToListAsync();
+        }
+
+        public async Task CreateProductImage(ProductImage productImage)
+        {
+            _context.Add(productImage);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteProductImage(ProductImage productImage)
+        {
+            _context.Remove(productImage);
+            await _context.SaveChangesAsync();
+        }
+
         //Retrieve all properties for given product by id asynchronous
         public async Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id)
         {
-            ICollection<ProductProperty> properties = new List<ProductProperty>();
-
-            await Task.Run(() =>
-            {
-                properties = _context.ProductProperty.Where(p => p.ProductId == id).ToList();
-            });
-
+            ICollection<ProductProperty> properties = await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync();
             return properties;
         }
 
         public async Task<ProductProperty> FindProductPropertyByIdAsync(int id)
         {
-            ProductProperty property = null;
-            await Task.Run(() =>
-            {
-                property = _context.ProductProperty.FirstOrDefault(p => p.Id == id);
-            });
-            return property;
+            return await _context.ProductProperty.FindAsync(id);
+        }
+
+        public async Task CreateProductProperty(ProductProperty productProperty)
+        {
+            _context.Add(productProperty);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteProductProperty(int Id)
+        {
+            _context.Remove(FindProductPropertyByIdAsync(Id));
+            await _context.SaveChangesAsync();
         }
 
         public async Task<ICollection<Product>> SearchForProducts(string searchText)
@@ -145,6 +207,97 @@ namespace EShop.Business.Services
                 }
             });
             return filteredProducts;
+        }
+
+        public async Task<IList<ProductAd>> GetProductAds()
+        {
+            return await _context.ProductAd.ToListAsync();
+        }
+
+        public async Task<ProductAd> GetProductAdById(int Id)
+        {
+            return await _context.ProductAd.FindAsync(Id);
+        }
+
+        public async Task<IList<ProductAd>> ListPossibleAdImages(int productId)
+        {
+            return await (from pai in _context.ProductAd
+                          where pai.Product.Id == productId
+                          select pai).ToListAsync();
+        }
+
+        public async Task CreateProductAd(ProductAd productAd)
+        {
+            _context.Add(productAd);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteProductAd(ProductAd productAd)
+        {
+            _context.Remove(productAd);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ProductDiscount> GetDiscountByProductId(int productId)
+        {
+            ProductDiscount discount = await (from pd in _context.ProductDiscount
+                                              where pd.ProductId == productId
+                                              select pd).FirstOrDefaultAsync();
+            return discount;
+        }
+
+        public async Task<ProductDiscount> GetDiscountById(int id)
+        {
+            return await _context.ProductDiscount.FindAsync(id);
+        }
+
+        public async Task<IList<ProductDiscount>> GetAllDiscounts()
+        {
+            return await _context.ProductDiscount.ToListAsync();
+        }
+
+        public async Task CreateDiscount(ProductDiscount productDiscount)
+        {
+            _context.Add(productDiscount);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteDiscount(int id)
+        {
+            _context.Remove(GetDiscountById(id));
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IList<AttributeValue>> GetAttributeValues(int id)
+        {
+            List<AttributeValue> values = await (from a in _context.AttributeValue
+                                                 join pa in _context.ProductAttributeValue on id equals pa.ProductId
+                                                 where a.Id == pa.AttributeValueId
+                                                 select a).ToListAsync();
+            return values;
+        }
+
+        public async Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId)
+        {
+            return await (from a in _context.AttributeValue
+                          join pc in _context.ProductCategory on categoryId equals pc.CategoryId
+                          join p in _context.Product on pc.ProductId equals p.Id
+                          join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
+                          join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
+                          where a.Id == av.Id
+                          select a).Distinct().ToListAsync();
+        }
+
+        public async Task<Models.Attribute> GetAttributeById(int id)
+        {
+            Models.Attribute attribute = await _context.Attribute.FindAsync(id);
+            return attribute;
+        }
+
+        public async Task AddProductToCategory(ProductCategory productCategory)
+        {
+            _context.Add(productCategory);
+            await _context.SaveChangesAsync();
         }
     }
 }

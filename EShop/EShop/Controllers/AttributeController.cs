@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Business;
-using EShop.Business.Services;
-using EShop.Data;
 using EShop.Models;
 using EShop.Util;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +28,7 @@ namespace EShop.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewBag.AttributeCategories = _attributeService.GetAllAttributes();
 
@@ -49,7 +45,7 @@ namespace EShop.Controllers
                                                                         "Id",
                                                                         "AttributeInCategory"
                                                                         ),
-                ProductMultiSelectList = new MultiSelectList(_productService.GetAllProducts(), "Id", "Name"),
+                ProductMultiSelectList = new MultiSelectList(await _productService.GetAllProducts(), "Id", "Name"),
                 LinksMultiList = new MultiSelectList((from pav in _attributeService.GetAllProductAttributeValues()
                                                         select new
                                                         {

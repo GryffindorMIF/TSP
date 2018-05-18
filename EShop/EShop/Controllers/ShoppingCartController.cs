@@ -21,15 +21,15 @@ namespace EShop.Controllers
     [DenyAccess(Roles = "Admin, SuperAdmin")]
     public class ShoppingCartController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IProductService _productService;
 
-        public ShoppingCartController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IShoppingCartService shoppingCartService)
+        public ShoppingCartController(UserManager<ApplicationUser> userManager, IShoppingCartService shoppingCartService, IProductService productService)
         {
-            _context = context;
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
+            _productService = productService;
         }
        
         public async Task<IActionResult> Index()
@@ -51,14 +51,10 @@ namespace EShop.Controllers
             if (user != null)
             {
                 if (user.ShoppingCartId != null)
-                    shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
+                    shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
                 if (shoppingCart == null)
                 {
-                    shoppingCart = new ShoppingCart();
-                    _context.ShoppingCart.Add(shoppingCart);
-                    await _context.SaveChangesAsync();
-                    user.ShoppingCartId = shoppingCart.Id;
-                    await _context.SaveChangesAsync();
+                    await _shoppingCartService.AssignNewShoppingCart(user);
                 }
             }
             return shoppingCart;
@@ -67,7 +63,7 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProductToShoppingCart([FromBody]ProductToCartPostModel productToCartPostModel)// Encapsulated post model for AJAX request
         {
-            Product product = await _context.Product.FindAsync(productToCartPostModel.ProductId);
+            Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
 
             ShoppingCart shoppingCart = await GetCartAsync();
 
@@ -79,7 +75,7 @@ namespace EShop.Controllers
         {
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
+            Product product = await _productService.FindProductByName(productName);
             int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation, HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
@@ -89,7 +85,7 @@ namespace EShop.Controllers
         {
             ShoppingCart shoppingCart = await GetCartAsync();
 
-            Product product = await _context.Product.Where(p => p.Name == productName).FirstOrDefaultAsync();
+            Product product = await _productService.FindProductByName(productName);
             int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart, HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
@@ -99,7 +95,7 @@ namespace EShop.Controllers
         public async Task<int> AddSessionProductsToCartAsync()
         {
             var shoppingCart = await GetCartAsync();
-            return await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
+            return await _shoppingCartService.TransferSessionProducts(HttpContext, shoppingCart);
         }
 
         [HttpGet]
