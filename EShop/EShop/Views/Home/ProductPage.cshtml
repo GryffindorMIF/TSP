@@ -39,27 +39,57 @@
 
 <!--Overall page view-->
 <div class="sidenav">
-    <h3>Perfect<br /> place for your<br /> advertisements!</h3>
+    @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
+    {
     <br />
     <ul>
-        @foreach (var attrCategory in ViewBag.AttributeCategories)
-        {
-            <text>
-                <li>
-                    <h4>@attrCategory.Name</h4>
-                </li>
-            </text>
-            @foreach (var attr in ViewBag.Attributes)
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>Refined by</h4>
+            </div>      
+        <div class="panel-body">
+         <div class="panel panel-default">
+            @foreach (var attrCategory in ViewBag.AttributeCategories)
             {
-                if (attr.AttributeId == attrCategory.Id)
-                {
-                    <text>
-                        <li>@attr.Name</li>
+                <div class="panel-heading">
+                    <text>                 
+                        @if (attrCategory.IconUrl != null)
+                        {
+                        <li>
+                            <h4>
+                                <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
+                                @attrCategory.Name
+                            </h4>
+                        </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <h4>
+                                    <img src="~/images/category-icon.png" width="20" height="20" />
+                                    @attrCategory.Name
+                                </h4>
+                            </li>
+
+                        }
                     </text>
-                }
+                </div>
+                <div class="panel-body">
+                    @foreach (var attr in ViewBag.Attributes)
+                    {
+                        if (attr.AttributeId == attrCategory.Id)
+                        {
+                            <text>
+                                <li>@attr.Name</li>
+                            </text>
+                        }
+                    }
+                </div>
             }
-        }
+            </div>
+        </div>
     </ul>
+    }
 </div>
 
 <div class="main">

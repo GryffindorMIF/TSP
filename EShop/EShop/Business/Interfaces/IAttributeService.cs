@@ -32,5 +32,8 @@ namespace EShop.Business
         Task<int> RemoveProductAttributeValueRange(ICollection<ProductAttributeValue> pavs);
         Task<int> UpdateProductAttributeValue(ProductAttributeValue pav);
 
+        Task<IList<AttributeValue>> GetProductAttributeValues(int productId);
+        Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId);
+
     }
 }

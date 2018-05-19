@@ -1,6 +1,7 @@
 ﻿using EShop.Data;
 using EShop.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -279,6 +280,26 @@ namespace EShop.Business.Services
             {
                 return 1;
             }
+        }
+
+        public async Task<IList<AttributeValue>> GetProductAttributeValues(int productId)
+        {
+            List<AttributeValue> values = await (from a in _context.AttributeValue
+                                                 join pa in _context.ProductAttributeValue on productId equals pa.ProductId
+                                                 where a.Id == pa.AttributeValueId
+                                                 select a).ToListAsync();
+            return values;
+        }
+
+        public async Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId)
+        {
+            return await (from a in _context.AttributeValue
+                          join pc in _context.ProductCategory on categoryId equals pc.CategoryId
+                          join p in _context.Product on pc.ProductId equals p.Id
+                          join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
+                          join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
+                          where a.Id == av.Id
+                          select a).Distinct().ToListAsync();
         }
     }
 }

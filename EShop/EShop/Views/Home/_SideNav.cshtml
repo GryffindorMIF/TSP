@@ -120,24 +120,27 @@ else
                                     <text>
                                         <li>
                                             <h4>
-                                                @if(@attribute.IconUrl != null)
+                                                @if (attribute != null)
                                                 {
-                                                    <img src="~/images/attribute-icons/@attribute.IconUrl" width="20" height="20" /><text> </text>
-                                                }
-                                                else
-                                                {
-                                                    <img src="~/images/category-icon.png" width="20" height="20" /><text> </text>
-                                                }
-                                                @attribute.Name
-                                                @if (User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-                                                {
-                                                    <form asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
-                                                        <input name="attributeId" value="@attribute.Id" hidden />
-                                                        <input name="file" type="file" class="btn btn-default btn-xs" />
-                                                        <button type="submit" class="btn btn-warning btn-xs">
-                                                            <span class="glyphicon glyphicon-pencil"></span> Change icon
-                                                        </button>
-                                                    </form>
+                                                    if (attribute.IconUrl != null)
+                                                    {
+                                                        <img src="~/images/attribute-icons/@attribute.IconUrl" width="20" height="20" /><text> </text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="~/images/category-icon.png" width="20" height="20" /><text> </text>
+                                                    }
+                                                    @attribute.Name
+                                                    if (User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                                                    {
+                                                        <form asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
+                                                            <input name="attributeId" value="@attribute.Id" hidden />
+                                                            <input name="file" type="file" class="btn btn-default btn-xs" required/>
+                                                            <button type="submit" class="btn btn-warning btn-xs">
+                                                                <span class="glyphicon glyphicon-pencil"></span> Change icon
+                                                            </button>
+                                                        </form>
+                                                    }
                                                 }
                                             </h4>
 
@@ -148,8 +151,10 @@ else
                                     <ul>
                                         @foreach (var attrVal in ViewBag.AttributeValues)
                                         {
-                                            if (attrVal.AttributeId == attribute.Id)
+                                            if (attrVal != null && attribute != null)
                                             {
+                                                if (attrVal.AttributeId == attribute.Id)
+                                                {
 
                                                 <text>
                                                     <li>
@@ -175,6 +180,7 @@ else
                                                         </a>
                                                     </li>
                                                 </text>
+                                                }
                                             }
                                         }
                                     </ul>

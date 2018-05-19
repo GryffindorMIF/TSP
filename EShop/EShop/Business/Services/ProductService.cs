@@ -262,9 +262,9 @@ namespace EShop.Business.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteDiscount(int id)
+        public async Task DeleteDiscount(ProductDiscount discount)
         {
-            _context.Remove(GetDiscountById(id));
+            _context.Remove(discount);
             await _context.SaveChangesAsync();
         }
 

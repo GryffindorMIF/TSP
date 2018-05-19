@@ -37,10 +37,10 @@ namespace EShop.Controllers
 
         }
 
-        public async Task<IActionResult> Index(bool showAlert = false) //By default don't show alert about delete success
+        public IActionResult Index() //By default don't show alert about delete success
         {
-            ViewData["show_alert"] = showAlert;
-            return View(await _productService.GetAllProducts());
+            //ViewData["show_alert"] = showAlert;
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Create()
@@ -60,7 +60,7 @@ namespace EShop.Controllers
         {
             if (ModelState.IsValid)
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     Product product = new Product
                     {
@@ -68,8 +68,8 @@ namespace EShop.Controllers
                         Description = model.Product.Description,
                         Price = model.Product.Price
                     };
-                    _productService.CreateProduct(product);
-                    
+                    //_context.Add(product);
+                    await _productService.CreateProduct(product);
 
                     if (model.PrimaryImage != null)
                     {
@@ -82,7 +82,8 @@ namespace EShop.Controllers
                                 ImageUrl = primaryImagePath,
                                 Product = product
                             };
-                            _productService.CreateProductImage(primaryImage);
+                            //_context.Add(primaryImage);
+                            await _productService.CreateProductImage(primaryImage);
                         }
                         else
                         {
@@ -104,7 +105,8 @@ namespace EShop.Controllers
                                     ImageUrl = otherImagePath,
                                     Product = product
                                 };
-                                _productService.CreateProductImage(otherImage);
+                                //_context.Add(otherImage);
+                                await _productService.CreateProductImage(otherImage);
                             }
                             else
                             {
@@ -123,7 +125,8 @@ namespace EShop.Controllers
                                 ProductId = product.Id,
                                 CategoryId = categoryId
                             };
-                            _productService.AddProductToCategory(productCategory);
+                            //_context.Add(productCategory);
+                            await _productService.AddProductToCategory(productCategory);
                         }
                     }
                 });
@@ -132,9 +135,10 @@ namespace EShop.Controllers
                     ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
                     return View(model);
                 }
-                return RedirectToAction(nameof(Index));
+                //await _context.SaveChangesAsync();
+                return RedirectToAction("Index", "Home");
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -317,7 +321,7 @@ namespace EShop.Controllers
                         model.Product.RowVersion = databaseValues.RowVersion;
                         ModelState.Remove("Product.RowVersion");
 
-                        return View(model);
+                        return RedirectToAction("Index", "Home");
                     }
                 }
                 return RedirectToAction("Index", "Home");
@@ -486,7 +490,7 @@ namespace EShop.Controllers
         {
             var productDiscount = await _productService.GetDiscountByProductId(productId);
 
-            await _productService.DeleteDiscount(productDiscount.Id);
+            await _productService.DeleteDiscount(productDiscount);
             if (page == "Index")
                 return RedirectToAction("Index", "Home");
             return RedirectToAction("ProductPage", "Home", new { id = productId });

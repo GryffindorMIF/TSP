@@ -41,33 +41,15 @@
             {
                 <tr>
                     <td>
-                        @if (item.Value.Name != "Deadline")
-                        {
-                            <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
-                                <img src="~/images/products/@item.ImageLink" height="170" width="120">
-                            </a>
-                        }
-                        else
-                        {
-                            <a href="~/images/this-is-fine.gif">
-                                <img src="~/images/products/@item.ImageLink" height="120" width="120">
-                            </a>
-                        }
+                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                            <img src="~/images/products/@item.ImageLink" height="170" width="120">
+                        </a>
                     </td>
                     <td></td>
                     <td>
-                        @if (item.Value.Name != "Deadline")
-                        {
-                            <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
-                                <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
-                            </a>
-                        }
-                        else
-                        {
-                            <a href="~/images/this-is-fine.gif">
-                                <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
-                            </a>
-                        }
+                        <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
+                            <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
+                        </a>
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Value.Description) <br />
@@ -81,35 +63,17 @@
                                     <strike>€@Html.DisplayFor(modelItem => item.Value.Price)</strike>
                                     <font color="red">€@item.DiscountPriceList</font>
                                 </li>
-                                @if (item.Value.Name != "Deadline")
-                                {
                                     <li>
                                         Ends in:
                                     </li>
-                                }
-                                else
-                                {
-                                    <li>
-                                        Days left:
-                                    </li>
-                                }
                                 <li>
                                     <font color="red" id="discount-timer-@item.Index"></font>
                                 </li>
                                 @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                                 {
-                                    if (item.Value.Name != "Deadline")
-                                    {
-                                        <li>
-                                            <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Remove discount</a>
-                                        </li>
-                                    }
-                                    else
-                                    {
-                                        <li>
-                                            <a href="~/images/this-is-fine.gif">TRY TO REMOVE</a>
-                                        </li>
-                                    }
+                                    <li>
+                                        <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Remove discount</a>
+                                    </li>
                                 }
                             </ul>
                         }
@@ -136,16 +100,8 @@
                     {
                         <td>
                             <ul>
-                                @if (item.Value.Name != "Deadline")
-                                {
-                                    <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Value.Id">Edit</a></li>
-                                    <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
-                                }
-                                else
-                                {
-                                    <li><a href="~/images/this-is-fine.gif">Edit</a></li>
-                                    <li><a href="~/images/this-is-fine.gif">Delete</a></li>
-                                }
+                                <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Value.Id">Edit</a></li>
+                                <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
 
                                 @{
                                     var productDiscount = (from pd in context.ProductDiscount

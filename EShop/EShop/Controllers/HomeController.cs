@@ -21,17 +21,20 @@ namespace EShop.Controllers
         private readonly INavigationService _navigationService;
         private readonly IHostingEnvironment _appEnvironment;
         private readonly IProductService _productService;
+        private readonly IAttributeService _attributeService;
+
         private readonly int uploadMaxByteSize;
         private readonly int productsPerPage;
 
         private const int startingPageNumber = 0;
 
-        public HomeController(UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService)
+        public HomeController(UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService, IAttributeService attributeService)
         {
             _userManager = userManager;
             _navigationService = navigationService;
             _appEnvironment = appEnvironment;
             _productService = productService;
+            _attributeService = attributeService;
 
             if (!int.TryParse(configuration["PaginationConfig:ProductsPerPage"], out productsPerPage))
             {
@@ -322,16 +325,16 @@ namespace EShop.Controllers
                 }
                 else
                 {
-                    await _productService.DeleteDiscount(discount.Id);
+                    await _productService.DeleteDiscount(discount);
                 }
             }
 
-            ICollection<AttributeValue> attributes = await _productService.GetAttributeValues(id);
+            ICollection<AttributeValue> attributes = await _attributeService.GetProductAttributeValues(id);
 
             ICollection<Models.Attribute> attributeCategories = new List<Models.Attribute>();
             foreach (AttributeValue attr in attributes)
             {
-                Models.Attribute attrCategory = await _productService.GetAttributeById(attr.AttributeId);
+                Models.Attribute attrCategory = _attributeService.FindAttributeById(attr.AttributeId);
                 if (!attributeCategories.Contains(attrCategory))
                 {
                     attributeCategories.Add(attrCategory);
@@ -485,11 +488,11 @@ namespace EShop.Controllers
 
                 await Task.Run(async () =>
                 {
-                    attributeValues = await _productService.GetAttributeValuesInCategory(category.Id);
+                    attributeValues = await _attributeService.GetAttributeValuesInCategory(category.Id);
 
                     foreach (var attrVal in attributeValues)
                     {
-                        var attr = await _productService.GetAttributeById(attrVal.Id);
+                        var attr = _attributeService.FindAttributeById(attrVal.AttributeId);
                         if (!attributes.Contains(attr))
                         {
                             attributes.Add(attr);
@@ -529,7 +532,7 @@ namespace EShop.Controllers
                         }
                         else
                         {
-                            await _productService.DeleteDiscount(discount.Id);
+                            await _productService.DeleteDiscount(discount);
                         }
                         break;
                     }

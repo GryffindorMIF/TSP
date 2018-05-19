@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <None Remove="Views\Home\Index.cshtml~RF3cdd78b0.TMP" />
+    <None Remove="Views\Home\_SideNav.cshtml~RFa3ab548.TMP" />
   </ItemGroup>
 
 

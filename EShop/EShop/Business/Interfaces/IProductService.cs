@@ -49,7 +49,7 @@ namespace EShop.Business
         Task<ProductDiscount> GetDiscountByProductId(int productId);
         Task<IList<ProductDiscount>> GetAllDiscounts();
         Task CreateDiscount(ProductDiscount productDiscount);
-        Task DeleteDiscount(int id);
+        Task DeleteDiscount(ProductDiscount discount);
 
         //Product Attributes
         Task<Models.Attribute> GetAttributeById(int id);
