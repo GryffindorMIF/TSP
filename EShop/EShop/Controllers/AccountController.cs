@@ -244,9 +244,10 @@ namespace EShop.Controllers
                     user.LockoutEnd = DateTime.Today.AddYears(200);
                     await _userManager.UpdateAsync(user);
 
+                    //Don't sign in user, require to confirm e-mail
                     //await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
+                    //_logger.LogInformation("User created a new account with password.");
+                    return View("AskConfirmEmail");
                 }
                 AddErrors(result);
             }

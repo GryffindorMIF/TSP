@@ -48,10 +48,10 @@ namespace EShop.Business
 
                 using (var client = new SmtpClient())
                 {
-                    client.Connect(SmtpServer, SmtpPort, false);
+                    await client.ConnectAsync(SmtpServer, SmtpPort, false);
                     // Note: only needed if the SMTP server requires authentication  
                     // Error 5.5.1 Authentication   
-                    client.Authenticate(login, password);
+                    await client.AuthenticateAsync(login, password);
                     await client.SendAsync(mimeMessage);
                     //Console.WriteLine("The mail has been sent successfully!");
                     //Console.ReadLine();
