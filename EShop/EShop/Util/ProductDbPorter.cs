@@ -13,6 +13,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EShop.Util
@@ -56,7 +57,7 @@ namespace EShop.Util
                 }
             }
 
-
+            private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
             public List<Models.Attribute> Attributes { get; set; }
             public List<AttributeValue> AttributeValues { get; set; }
@@ -90,176 +91,184 @@ namespace EShop.Util
 
             public async Task SaveToDbContextAsync(ApplicationDbContext context)
             {
-                ProductsInfo currentDbState = new ProductsInfo();
-                await currentDbState.LoadFromDbContextAsync(context);
-
-                WrappedProductsInfo wrappedProductsInfo = new WrappedProductsInfo(this);
-
-                //LEFT TO ADD: Product, ProductDiscount, ProductAd, ProductImage, ProductAttributeValue, AttributeValue, Attribute, ProductProperty, ProductCategory, Category, CategoryCategory
-                //ADDING IN THIS STEP: Product, Attribute, Categories
-
-                //Add missing products
-                foreach (var importProduct in Products)
+                await semaphoreSlim.WaitAsync();
+                try
                 {
-                    Product dbProduct = currentDbState.Products.FirstOrDefault((p) => { return p.Equals(importProduct); });
-                    if (dbProduct == null)
+                    ProductsInfo currentDbState = new ProductsInfo();
+                    await currentDbState.LoadFromDbContextAsync(context);
+
+                    WrappedProductsInfo wrappedProductsInfo = new WrappedProductsInfo(this);
+
+                    //LEFT TO ADD: Product, ProductDiscount, ProductAd, ProductImage, ProductAttributeValue, AttributeValue, Attribute, ProductProperty, ProductCategory, Category, CategoryCategory
+                    //ADDING IN THIS STEP: Product, Attribute, Categories
+
+                    //Add missing products
+                    foreach (var importProduct in Products)
                     {
-                        importProduct.Id = 0;
-                        context.Product.Add(importProduct);
+                        Product dbProduct = currentDbState.Products.FirstOrDefault((p) => { return p.Equals(importProduct); });
+                        if (dbProduct == null)
+                        {
+                            importProduct.Id = 0;
+                            context.Product.Add(importProduct);
+                        }
                     }
-                }
 
-                //Add missing attributes
-                foreach (var importAttribute in Attributes)
-                {
-                    Models.Attribute dbAttribute = currentDbState.Attributes.FirstOrDefault((a) => { return a.Equals(importAttribute); });
-                    if (dbAttribute == null)
+                    //Add missing attributes
+                    foreach (var importAttribute in Attributes)
                     {
-                        importAttribute.Id = 0;
-                        context.Attribute.Add(importAttribute);
+                        Models.Attribute dbAttribute = currentDbState.Attributes.FirstOrDefault((a) => { return a.Equals(importAttribute); });
+                        if (dbAttribute == null)
+                        {
+                            importAttribute.Id = 0;
+                            context.Attribute.Add(importAttribute);
+                        }
                     }
-                }
 
-                //Add missing categories
-                foreach (var importCategory in Categories)
-                {
-                    Category dbCategory = currentDbState.Categories.FirstOrDefault((c) => { return c.Equals(importCategory); });
-                    if (dbCategory == null)
+                    //Add missing categories
+                    foreach (var importCategory in Categories)
                     {
-                        importCategory.Id = 0;
-                        context.Category.Add(importCategory);
+                        Category dbCategory = currentDbState.Categories.FirstOrDefault((c) => { return c.Equals(importCategory); });
+                        if (dbCategory == null)
+                        {
+                            importCategory.Id = 0;
+                            context.Category.Add(importCategory);
+                        }
                     }
-                }
-                await context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
 
-                //Update every entity's ProductId value
-                foreach (var updatedProduct in wrappedProductsInfo.Products)
-                {
-                    ProductDiscounts.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                    ProductAds.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                    ProductImages.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                    ProductAttributeValues.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                    ProductProperties.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                    ProductCategories.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
-                }
-
-                //Update every entity's AttributeId values
-                foreach (var updatedAttribute in wrappedProductsInfo.Attributes)
-                {
-                    AttributeValues.Where((x) => { return x.AttributeId == updatedAttribute.Item1; }).All((x) => { x.AttributeId = updatedAttribute.Item2.Id; return true; });
-                }
-
-                //Update every entity's CategoryId and ParentCategoryId values
-                foreach (var updatedCategory in wrappedProductsInfo.Categories)
-                {
-                    ProductCategories.Where((x) => { return x.CategoryId == updatedCategory.Item1; }).All((x) => { x.CategoryId = updatedCategory.Item2.Id; return true; });
-                    CategoryCategories.Where((x) => { return x.CategoryId == updatedCategory.Item1; }).All((x) => { x.CategoryId = updatedCategory.Item2.Id; return true; });
-                    CategoryCategories.Where((x) => { return x.ParentCategoryId == updatedCategory.Item1; }).All((x) => { x.ParentCategoryId = updatedCategory.Item2.Id; return true; });
-                }
-
-                //LEFT TO ADD: ProductDiscount, ProductAd, ProductImage, ProductAttributeValue, AttributeValue, ProductProperty, ProductCategory, CategoryCategory
-                //ADDING IN THIS STEP: ProductDiscount, ProductAd, ProductImage, AttributeValue, ProductProperty, CategoryCategory, ProductCategory
-
-                //Add missing product discounts
-                foreach (var importProductDiscount in ProductDiscounts)
-                {
-                    ProductDiscount dbProductDiscount = currentDbState.ProductDiscounts.FirstOrDefault((pd) => { return pd.Equals(importProductDiscount); });
-                    if (dbProductDiscount == null)
+                    //Update every entity's ProductId value
+                    foreach (var updatedProduct in wrappedProductsInfo.Products)
                     {
-                        importProductDiscount.Id = 0;
-                        context.ProductDiscount.Add(importProductDiscount);
+                        ProductDiscounts.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
+                        ProductAds.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
+                        ProductImages.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
+                        ProductAttributeValues.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
+                        ProductProperties.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
+                        ProductCategories.Where((x) => { return x.ProductId == updatedProduct.Item1; }).All((x) => { x.ProductId = updatedProduct.Item2.Id; return true; });
                     }
-                }
 
-                //Add missing product ads
-                foreach (var importProductAd in ProductAds)
-                {
-                    ProductAd dbProductAd = currentDbState.ProductAds.FirstOrDefault((pa) => { return pa.Equals(importProductAd); });
-                    if (dbProductAd == null)
+                    //Update every entity's AttributeId values
+                    foreach (var updatedAttribute in wrappedProductsInfo.Attributes)
                     {
-                        importProductAd.Id = 0;
-                        context.ProductAd.Add(importProductAd);
+                        AttributeValues.Where((x) => { return x.AttributeId == updatedAttribute.Item1; }).All((x) => { x.AttributeId = updatedAttribute.Item2.Id; return true; });
                     }
-                }
 
-                //Add missing product images
-                foreach (var importProductImage in ProductImages)
-                {
-                    ProductImage dbProductImage = currentDbState.ProductImages.FirstOrDefault((pi) => { return pi.Equals(importProductImage); });
-                    if (dbProductImage == null)
+                    //Update every entity's CategoryId and ParentCategoryId values
+                    foreach (var updatedCategory in wrappedProductsInfo.Categories)
                     {
-                        importProductImage.Id = 0;
-                        context.ProductImage.Add(importProductImage);
+                        ProductCategories.Where((x) => { return x.CategoryId == updatedCategory.Item1; }).All((x) => { x.CategoryId = updatedCategory.Item2.Id; return true; });
+                        CategoryCategories.Where((x) => { return x.CategoryId == updatedCategory.Item1; }).All((x) => { x.CategoryId = updatedCategory.Item2.Id; return true; });
+                        CategoryCategories.Where((x) => { return x.ParentCategoryId == updatedCategory.Item1; }).All((x) => { x.ParentCategoryId = updatedCategory.Item2.Id; return true; });
                     }
-                }
 
-                //Add missing product properties
-                foreach (var importProductProperty in ProductProperties)
-                {
-                    ProductProperty dbProductProperty = currentDbState.ProductProperties.FirstOrDefault((pp) => { return pp.Equals(importProductProperty); });
-                    if (dbProductProperty == null)
+                    //LEFT TO ADD: ProductDiscount, ProductAd, ProductImage, ProductAttributeValue, AttributeValue, ProductProperty, ProductCategory, CategoryCategory
+                    //ADDING IN THIS STEP: ProductDiscount, ProductAd, ProductImage, AttributeValue, ProductProperty, CategoryCategory, ProductCategory
+
+                    //Add missing product discounts
+                    foreach (var importProductDiscount in ProductDiscounts)
                     {
-                        importProductProperty.Id = 0;
-                        context.ProductProperty.Add(importProductProperty);
+                        ProductDiscount dbProductDiscount = currentDbState.ProductDiscounts.FirstOrDefault((pd) => { return pd.Equals(importProductDiscount); });
+                        if (dbProductDiscount == null)
+                        {
+                            importProductDiscount.Id = 0;
+                            context.ProductDiscount.Add(importProductDiscount);
+                        }
                     }
-                }
 
-                //Add missing attribute values
-                foreach (var importAttributeValue in AttributeValues)
-                {
-                    AttributeValue dbAttributeValue = currentDbState.AttributeValues.FirstOrDefault((av) => { return av.Equals(importAttributeValue); });
-                    if (dbAttributeValue == null)
+                    //Add missing product ads
+                    foreach (var importProductAd in ProductAds)
                     {
-                        importAttributeValue.Id = 0;
-                        context.AttributeValue.Add(importAttributeValue);
+                        ProductAd dbProductAd = currentDbState.ProductAds.FirstOrDefault((pa) => { return pa.Equals(importProductAd); });
+                        if (dbProductAd == null)
+                        {
+                            importProductAd.Id = 0;
+                            context.ProductAd.Add(importProductAd);
+                        }
                     }
-                }
 
-                //Add missing category categories
-                foreach (var importCategoryCategory in CategoryCategories)
-                {
-                    CategoryCategory dbCategoryCategory = currentDbState.CategoryCategories.FirstOrDefault((cc) => { return cc.Equals(importCategoryCategory); });
-                    if (dbCategoryCategory == null)
+                    //Add missing product images
+                    foreach (var importProductImage in ProductImages)
                     {
-                        importCategoryCategory.Id = 0;
-                        context.CategoryCategory.Add(importCategoryCategory);
+                        ProductImage dbProductImage = currentDbState.ProductImages.FirstOrDefault((pi) => { return pi.Equals(importProductImage); });
+                        if (dbProductImage == null)
+                        {
+                            importProductImage.Id = 0;
+                            context.ProductImage.Add(importProductImage);
+                        }
                     }
-                }
 
-                //Add missing product categories
-                foreach (var importProductCategory in ProductCategories)
-                {
-                    ProductCategory dbProductCategory = currentDbState.ProductCategories.FirstOrDefault((pc) => { return pc.Equals(importProductCategory); });
-                    if (dbProductCategory == null)
+                    //Add missing product properties
+                    foreach (var importProductProperty in ProductProperties)
                     {
-                        importProductCategory.Id = 0;
-                        context.ProductCategory.Add(importProductCategory);
+                        ProductProperty dbProductProperty = currentDbState.ProductProperties.FirstOrDefault((pp) => { return pp.Equals(importProductProperty); });
+                        if (dbProductProperty == null)
+                        {
+                            importProductProperty.Id = 0;
+                            context.ProductProperty.Add(importProductProperty);
+                        }
                     }
-                }
-                await context.SaveChangesAsync();
 
-                //Update every entity's AttributeValueId
-                foreach (var updatedAttributeValue in wrappedProductsInfo.AttributeValues)
-                {
-                    ProductAttributeValues.Where((x) => { return x.AttributeValueId == updatedAttributeValue.Item1; }).All((x) => { x.AttributeValueId = updatedAttributeValue.Item2.Id; return true; });
-                }
-
-                //LEFT TO ADD: ProductAttributeValue
-                //ADDING IN THIS STEP: ProductAttributeValue
-
-                //Add missing product attribute values
-                foreach (var importProductAttributeValue in ProductAttributeValues)
-                {
-                    ProductAttributeValue dbProductAttributeValue = currentDbState.ProductAttributeValues.FirstOrDefault((pav) => { return pav.Equals(importProductAttributeValue); });
-                    if (dbProductAttributeValue == null)
+                    //Add missing attribute values
+                    foreach (var importAttributeValue in AttributeValues)
                     {
-                        importProductAttributeValue.Id = 0;
-                        context.ProductAttributeValue.Add(importProductAttributeValue);
+                        AttributeValue dbAttributeValue = currentDbState.AttributeValues.FirstOrDefault((av) => { return av.Equals(importAttributeValue); });
+                        if (dbAttributeValue == null)
+                        {
+                            importAttributeValue.Id = 0;
+                            context.AttributeValue.Add(importAttributeValue);
+                        }
                     }
+
+                    //Add missing category categories
+                    foreach (var importCategoryCategory in CategoryCategories)
+                    {
+                        CategoryCategory dbCategoryCategory = currentDbState.CategoryCategories.FirstOrDefault((cc) => { return cc.Equals(importCategoryCategory); });
+                        if (dbCategoryCategory == null)
+                        {
+                            importCategoryCategory.Id = 0;
+                            context.CategoryCategory.Add(importCategoryCategory);
+                        }
+                    }
+
+                    //Add missing product categories
+                    foreach (var importProductCategory in ProductCategories)
+                    {
+                        ProductCategory dbProductCategory = currentDbState.ProductCategories.FirstOrDefault((pc) => { return pc.Equals(importProductCategory); });
+                        if (dbProductCategory == null)
+                        {
+                            importProductCategory.Id = 0;
+                            context.ProductCategory.Add(importProductCategory);
+                        }
+                    }
+                    await context.SaveChangesAsync();
+
+                    //Update every entity's AttributeValueId
+                    foreach (var updatedAttributeValue in wrappedProductsInfo.AttributeValues)
+                    {
+                        ProductAttributeValues.Where((x) => { return x.AttributeValueId == updatedAttributeValue.Item1; }).All((x) => { x.AttributeValueId = updatedAttributeValue.Item2.Id; return true; });
+                    }
+
+                    //LEFT TO ADD: ProductAttributeValue
+                    //ADDING IN THIS STEP: ProductAttributeValue
+
+                    //Add missing product attribute values
+                    foreach (var importProductAttributeValue in ProductAttributeValues)
+                    {
+                        ProductAttributeValue dbProductAttributeValue = currentDbState.ProductAttributeValues.FirstOrDefault((pav) => { return pav.Equals(importProductAttributeValue); });
+                        if (dbProductAttributeValue == null)
+                        {
+                            importProductAttributeValue.Id = 0;
+                            context.ProductAttributeValue.Add(importProductAttributeValue);
+                        }
+                    }
+
+
+                    await context.SaveChangesAsync();
                 }
-
-
-                await context.SaveChangesAsync();
+                finally
+                {
+                    semaphoreSlim.Release();
+                }
             }
         }
 
