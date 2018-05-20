@@ -1,10 +1,24 @@
-﻿body {
+﻿/* font-awesome.min.css */
+/* star-rating */
+.checked {
+    color: orange;
+}
+
+.pagination > li.active > a, .pagination > li.active > a:hover {
+    background: grey;
+    color: white;
+    border-color: dimgrey;
+}
+
+.pagination > li > a {
+    color: dimgrey;
+}
+
+body {
     padding-top: 50px;
     padding-bottom: 20px;
-
     font-family: Verdana, sans-serif;
     margin: 0;
-
 }
 
 /* Wrapping element */
@@ -41,6 +55,7 @@
 .sidenav {
     height: 100%;
     width: auto;
+    min-width: 46px;
     position: fixed;
     z-index: 1;
     top: 0;

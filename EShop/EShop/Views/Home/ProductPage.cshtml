@@ -71,9 +71,9 @@
     </div>
 </div>
 
-@section sidenav
+@if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
 {
-    @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
+    @section sidenav
     {
         <br />
         <ul>
@@ -122,7 +122,8 @@
                         }
                     </div>
                 </div>
-        </ul>
+            </div>
+        </ul>       
     }
 }
 

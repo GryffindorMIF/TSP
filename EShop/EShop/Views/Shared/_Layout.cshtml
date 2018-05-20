@@ -8,6 +8,7 @@
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
         <link rel="stylesheet" href="~/css/site.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -34,10 +35,10 @@
                 <ul class="nav navbar-nav">
                     @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
                     {
-                        <li>
+                        <li>                         
                             <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
                                 <img src="~/images/shopping-cart.png" width="24" height="24" /> Shopping cart
-                            </a>
+                            </a>                           
                         </li>
                     }
                     <!--Make order only appear to non-anonymous customers-->
@@ -62,22 +63,27 @@
     </nav>
     <div class="container body-content">
         <div class="sidenav">
-            @Html.Partial("_SideNavToggleBtn")
-            <div id="side-nav-content">
-                @RenderSection("sidenav")
-            </div>
+            @if (IsSectionDefined("sidenav"))
+            {
+                <div id="sidenav-toggle-btn">
+                    @Html.Partial("_SideNavToggleBtn")
+                </div>
+            
+                @RenderSection("sidenav", false)
+            }
         </div>
         <div class="main">
             @RenderBody()
             <footer>
-                <br/>
+                <br />
                 All rights reserved - Gryffindor EShop 2018 ©
             </footer>
         </div>
     </div>
 
     <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/jquery/dist/jquery.js">
+    <</script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
@@ -86,17 +92,23 @@
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery"
                 crossorigin="anonymous"
-                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
-        </script>
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk"></script>
         <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
                 asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
                 asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
                 crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+        if ($('#side-nav-content').is(':empty'))
+        {
+            $('#sidenav-toggle-btn').hide();
+        }
+</script>

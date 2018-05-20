@@ -4,14 +4,17 @@
     ViewData["Title"] = "Order";
 }
 
+
 <div id="review-modal-id" class="modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="width:auto;"> 
         <div class="modal-content">
             <div class="modal-header">
-                <h4>Leave a comment!</h4>
-                <button id="comment-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5>
+                    Leave a comment!
+                    <button id="comment-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
             </div>
             <div class="modal-body">
                 <form asp-controller="Order" asp-action="LeaveReview" method="post">
@@ -22,15 +25,19 @@
                                 <option value="@i">@i</option>
                             }
                         </select>
+                        <span id="star-1" class="fa fa-star checked"></span>
+                        <span id="star-2" class="fa fa-star"></span>
+                        <span id="star-3" class="fa fa-star"></span>
+                        <span id="star-4" class="fa fa-star"></span>
+                        <span id="star-5" class="fa fa-star"></span>
                     </div>
                     <div class="form-group ExtraComments">
-                        <input id="comment-id" type="text" required="required" />
+                        <textarea id="comment-id" type="text" required="required" style="resize:none;" rows="3"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-success" id="confirm-review-btn">Leave Comment</button>
+                    <p>
+                        <button type="submit" class="btn btn-success" id="confirm-review-btn">Leave Comment</button>
+                    </p>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button id="modal-continue-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
@@ -55,8 +62,6 @@
         </div>
     </div>
 </div>
-
-@section sidenav{}
 
 <div style="margin-left:auto">
     <h2>Order History</h2>
@@ -177,7 +182,14 @@
                         }
                         else if (item.Value.StatusCode == 4)
                         {
-                            <p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>
+                            <span id="star-1-@item.Index" class="fa fa-star"></span>
+                            <span id="star-2-@item.Index" class="fa fa-star"></span>
+                            <span id="star-3-@item.Index" class="fa fa-star"></span>
+                            <span id="star-4-@item.Index" class="fa fa-star"></span>
+                            <span id="star-5-@item.Index" class="fa fa-star"></span>
+
+                            <p><div id="comment-@item.Index"></div></p>
+                            /*<p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>*/
                         }
                         else
                         {
@@ -210,11 +222,51 @@
 
     $(document).ready(function () {
 
+        // star-rating
+        @foreach (var item in Model.Orders.Select((value, index) => new { Value = value, Index = index }))
+        {
+            if (item.Value.StatusCode == 4)
+            {
+                string comment = Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment;
+                string[] splitComment = comment.Split(':');
+                int rating = int.Parse(splitComment[0]);
+
+                comment = "";
+                // Is naujo surenkam comentara be prefixo (ratingo). 
+                // Taip elgiames, in case useris irase n ":" simboliu, o vienas is ju zymi prefixo pabaiga
+                for(int i=1; i<splitComment.Count(); i++)
+                {
+                    if (i != 1)
+                    {
+                        comment = comment + ':' + splitComment[i];
+                    }
+                    else
+                    {
+                        comment = splitComment[i];
+                    }
+                }
+
+                for(int i=1; i<=rating; i++)
+                {
+                    @:$('#star-' + @i + '-' + @item.Index).addClass('checked');
+                }
+                @:$('#comment-@item.Index').text("@comment");
+            }
+        }
+
+        $('#rating-id').change(function () {
+            for (var i = 1; i < 6; i++) {
+                $('#star-' + i).removeClass('checked');
+            }
+            for (var i = 1; i <= $(this).val(); i++) {
+                $('#star-' + i).addClass('checked');
+            }
+        });
+
         $('#confirm-repurchase-btn').click(function (e) {
+                e.preventDefault();
 
-            e.preventDefault();
-
-            var Selector = {
+                var Selector = {
                 SelectedValue: selectedId
             }
 
@@ -233,7 +285,7 @@
                     }
                 },
                 failure: function (response) {
-                    //TODO: handle AJAX request failure
+                                            //TODO: handle AJAX request failure
                 }
             });
         });
