@@ -16,12 +16,14 @@ namespace EShop.Business.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _appEnvironment;
+        private readonly IDataPortingTrackerService _portingTracker;
         private readonly string _productsImagePath, _attributeImagePath, _carouselImagePath;
 
-        public DataPortingService(ApplicationDbContext context, IHostingEnvironment appEnvironment)
+        public DataPortingService(ApplicationDbContext context, IHostingEnvironment appEnvironment, IDataPortingTrackerService portingTracker)
         {
             _context = context;
             _appEnvironment = appEnvironment;
+            _portingTracker = portingTracker;
             _productsImagePath = Path.Combine(appEnvironment.WebRootPath, "images\\products");
             _attributeImagePath = Path.Combine(appEnvironment.WebRootPath, "images\\attribute-icons");
             _carouselImagePath = Path.Combine(appEnvironment.WebRootPath, "images\\main carousel");
@@ -34,10 +36,16 @@ namespace EShop.Business.Services
             return exportData;
         }
 
-        public async Task<bool> ImportProductData(IFormFile file)
+        public async Task<ImportResult> ImportProductData(IFormFile file)
         {
+            if (_portingTracker.IsImportRunning())
+            {
+                return ImportResult.AlreadyRunning;
+            }
+            _portingTracker.SetImportRunningStatus(true);
             bool importSuccessful = await ProductDbPorter.ImportAsync(_context, file, _productsImagePath, _attributeImagePath, _carouselImagePath);
-            return importSuccessful;
+            _portingTracker.SetImportRunningStatus(false);
+            return importSuccessful ? ImportResult.Successful : ImportResult.Unsuccesful;
         }
 
         public async Task WipeProductDataAsync()
