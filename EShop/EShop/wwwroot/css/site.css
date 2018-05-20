@@ -57,7 +57,7 @@
     margin: 0 0 3px 0;
 }
 
-input[type="file"] {
+.labeled-input input[type="file"] {
     display: none;
 }
 
