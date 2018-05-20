@@ -25,6 +25,7 @@
                 <th>
                     @Html.DisplayNameFor(model => model.TotalPrice)
                 </th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +33,7 @@
             @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
             {
                 totalCost += item.Value.TotalPrice;
+                
                 <tr>
                     <td>
                         <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
@@ -40,6 +42,9 @@
                         </a>
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Price</p>
+                        </div>
                         €@Html.DisplayFor(modelItem => item.Value.Price)
                     </td>
                     <td>
@@ -51,6 +56,9 @@
                         </form>
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Quantity</p>
+                        </div>
                         @Html.DisplayFor(modelItem => item.Value.Quantity)
                     </td>
                     <td>
@@ -62,6 +70,9 @@
                         </form>
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Total price</p>
+                        </div>
                         €@Html.DisplayFor(modelItem => item.Value.TotalPrice)
                     </td>
                     <td>
@@ -72,6 +83,7 @@
                         </form>
                     </td>
                 </tr>
+                
             }
 
         </tbody>

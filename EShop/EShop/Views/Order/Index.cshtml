@@ -95,6 +95,10 @@
             {
                 <tr>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Status</strong>
+                        </div>
+
                         @if (item.Value.StatusCode == 1)
                         {
                             <p>Pending</p>
@@ -113,18 +117,39 @@
                         }
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Total price</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.TotalPrice)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Address</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.Address)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Card number</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.CardNumber)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Purchase date</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
                     </td>
                     <td>
+
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Confirmed time</strong>
+                        </div>
+
                         @if (item.Value.StatusCode == 1)
                         {
                             <p>Confirmation Pending</p>
@@ -135,9 +160,17 @@
                         }
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Repurchase</strong>
+                        </div>
+
                         <button type="button" id="repurchase-btn" class="btn btn-info" onclick="repurchaseOpen(@item.Value.Id)">Add to cart</button>
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Review</strong>
+                        </div>
+
                         @if (item.Value.StatusCode == 2)
                         {
                             <button type="button" id="review-btn" class="btn btn-info" onclick="reviewOpen(@item.Value.Id)">Review</button>

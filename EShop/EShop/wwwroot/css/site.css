@@ -151,6 +151,9 @@ ul {
     padding-left: 5px;
 }
 
+.vertical-separator{
+    display:inline-block;
+}
 /*For image enlargement modal*/
 @-webkit-keyframes zoom {
     from {
@@ -247,6 +250,48 @@ ul {
     }
     .main-carousel {
         display: none;
+    }
+
+    tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+
+        border: solid;
+        border-width: 1px;
+        border-color: lightgrey;
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    td {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    td[colspan] {
+      width: 100%;
+    }
+
+    thead {
+        display: none;
+    }
+
+    .mobile-friendly-tag {
+        display: block !important;
+    }
+
+    .mobile-friendly-single-component-block {
+        display: block !important;
+    }
+
+    td a {
+        display: block !important;
+    }
+
+    .vertical-separator {
+        display: none !important;
     }
 }
 

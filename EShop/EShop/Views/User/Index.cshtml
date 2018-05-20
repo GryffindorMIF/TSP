@@ -37,22 +37,41 @@
                 @if (item.User.UserName != this.User.Identity.Name)
                 {
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Email</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.User.Email)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Role</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Role)
                     </td>
                 }
                 else
                 {
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Email</strong>
+                        </div>
+
                         <font color="red">@Html.DisplayFor(modelItem => item.User.Email)</font>
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Role</strong>
+                        </div>
+
                         <font color="red">@Html.DisplayFor(modelItem => item.Role)</font>
                     </td>
                 }
                 <td>
+                    <div class="mobile-friendly-tag" style="display:none;">
+                        <strong>Suspended</strong>
+                    </div>
                     @if (item.User.UserName != this.User.Identity.Name)
                     {
                         @if (item.Role != "SuperAdmin")
@@ -66,7 +85,8 @@
                     {
                         @if (item.Role != "SuperAdmin")
                         {
-                            <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> <text>|</text>
+                            <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> 
+                            <div class="vertical-separator">|</div>
 
                             if (ViewBag.CurrentUserRoles.Contains("SuperAdmin"))
                             {
@@ -77,7 +97,8 @@
                                 else
                                 {
                                     <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
-                                } <text>|</text>
+                                } 
+                                <div class="vertical-separator">|</div>
                             }
                             if (!item.User.IsSuspended)
                             {

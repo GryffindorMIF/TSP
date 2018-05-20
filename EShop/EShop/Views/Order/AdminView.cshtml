@@ -43,21 +43,45 @@
             {
                 <tr>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>User</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.User.Email)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Order id</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.Id)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Shopping-cart id</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.ShoppingCartId)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Total price</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.TotalPrice)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Purchase time</strong>
+                        </div>
+
                         @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Confirm order</strong>
+                        </div>
+
                         @switch (item.Value.StatusCode)
                         {
                             case 1:
@@ -84,6 +108,10 @@
                         }
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Reject order</strong>
+                        </div>
+
                         @switch (item.Value.StatusCode)
                         {
                             case 1:
@@ -110,6 +138,10 @@
                         }
                     </td>
                     <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Review</strong>
+                        </div>
+
                         @if (item.Value.StatusCode == 4)
                         {
                             <p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>
