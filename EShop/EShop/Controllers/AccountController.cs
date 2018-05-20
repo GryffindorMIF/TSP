@@ -244,9 +244,10 @@ namespace EShop.Controllers
                     user.LockoutEnd = DateTime.Today.AddYears(200);
                     await _userManager.UpdateAsync(user);
 
+                    //Don't sign in user, require to confirm e-mail
                     //await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
+                    //_logger.LogInformation("User created a new account with password.");
+                    return View("AskConfirmEmail");
                 }
                 AddErrors(result);
             }
@@ -394,8 +395,7 @@ namespace EShop.Controllers
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-                await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                   $"Please reset your account password by clicking this link or copying it to browser address field: {callbackUrl}");
+                await _emailSender.SendEmailForgotPasswordAsync(model.Email, callbackUrl);
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
