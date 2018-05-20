@@ -108,4 +108,37 @@
             });
         </text>
     }
+
+    $("#add-btn").click(function (e) {
+
+    e.preventDefault();// prevents page refreshing
+
+    // Arguments we pass to controller's action method
+    var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
+        ProductId: $('#hidden-id').val(),
+        Quantity: $('#quantity-id').val()
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
+        data: JSON.stringify(ProductToCartPostModel),
+        dataType: 'json',
+        contentType: "application/json",
+        success: function (response) {
+            if (response == 0) {
+                $('#add-modal-id').fadeIn();
+            }
+            else if (response == 1) {
+                //TODO: handle failure sent from controller (modify modal box)
+            }
+            else if (response == 2) {// limit reached
+                $('#limit-modal-id').fadeIn();
+            }
+            },
+        failure: function (response) {
+            //TODO: handle AJAX request failure
+        }
+        });
+    });
 </script>

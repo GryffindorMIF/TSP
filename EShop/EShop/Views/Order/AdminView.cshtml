@@ -3,6 +3,11 @@
     ViewData["Title"] = "Order";
 }
 
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main" style="margin-left:auto">
     <h2>Orders Awaiting Confirmation</h2>
     <div asp-validation-summary="All" class="text-danger"></div>

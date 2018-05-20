@@ -3,7 +3,11 @@
 @{
     ViewData["Title"] = "Discount";
 }
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <h2>Discount</h2>
     <form asp-action="Discount" method="post" asp-route-page="@ViewData["page"]">

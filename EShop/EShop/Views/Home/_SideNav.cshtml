@@ -39,8 +39,8 @@ else
                     <ul>
                         <li>
                             <br />
-                            <button type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
-                                <span class="glyphicon glyphicon-plus"></span> Child category
+                            <button type="button" class="btn btn-success btn-block btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                                <span class="glyphicon glyphicon-plus"></span> Sub-category
                             </button>
                         </li>
                     </ul>
@@ -61,24 +61,24 @@ else
                     <ul>
                         <li>
                             <br />
-                            <button id="add-child-btn" type="button" class="btn btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
-                                <span class="glyphicon glyphicon-plus"></span> Child category
+                            <button id="add-child-btn" type="button" class="btn btn-block btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
+                                <span class="glyphicon glyphicon-plus"></span> Sub-category
                             </button>
                         </li>
                         <li>
-                            <button id="rename-parent" type="button" class="btn btn-warning btn-xs" onclick="$('#edit-modal').fadeIn();">
-                                <span class="glyphicon glyphicon-pencil"></span> Edit category
+                            <button id="rename-parent" type="button" class="btn btn-block btn-warning btn-xs" onclick="$('#edit-modal').fadeIn();">
+                                <span class="glyphicon glyphicon-pencil"></span> Category
                             </button>
                         </li>
                         <li>
-                            <button id="remove-categort-btn" type="button" class="btn btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
-                                <span class="glyphicon glyphicon-trash"></span> Remove category
+                            <button id="remove-categort-btn" type="button" class="btn btn-block btn-danger btn-xs" onclick="$('#remove-modal').fadeIn();">
+                                <span class="glyphicon glyphicon-trash"></span> Category
                             </button>
                         </li>
                         <li>
                             <a asp-controller="Attribute" asp-action="Index">
-                                <button type="button" class="btn btn-warning btn-xs">
-                                    <span class="glyphicon glyphicon-pencil"></span> Manage attributes
+                                <button type="button" class="btn btn-block btn-warning btn-xs">
+                                    <span class="glyphicon glyphicon-pencil"></span> Attributes
                                 </button>
                             </a>
                         </li>
@@ -133,12 +133,14 @@ else
                                                     @attribute.Name
                                                     if (User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                                                     {
-                                                        <form asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
+                                                        <form id="attr-img-form" asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
                                                             <input name="attributeId" value="@attribute.Id" hidden />
-                                                            <input name="file" type="file" class="btn btn-default btn-xs" required/>
-                                                            <button type="submit" class="btn btn-warning btn-xs">
-                                                                <span class="glyphicon glyphicon-pencil"></span> Change icon
-                                                            </button>
+                                                            <label for="file-upload">
+                                                                <label for="file-upload" class="custom-file-upload">
+                                                                    <i class="fa fa-cloud-upload"></i> Image upload
+                                                                </label>
+                                                                <input id="file-upload" type="file" name="file" onchange="$('#attr-img-form').submit();"/>
+                                                            </label>
                                                         </form>
                                                     }
                                                 }

@@ -4,7 +4,11 @@
     ViewData["Title"] = "EditMainCarousel";
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <div class="row">
         <div class="col-md-6">

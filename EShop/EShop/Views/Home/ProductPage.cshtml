@@ -37,59 +37,98 @@
     </div>
 </div>
 
-<!--Overall page view-->
-<div class="sidenav">
-    @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
-    {
-    <br />
-    <ul>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4>Refined by</h4>
-            </div>      
-        <div class="panel-body">
-         <div class="panel panel-default">
-            @foreach (var attrCategory in ViewBag.AttributeCategories)
-            {
-                <div class="panel-heading">
-                    <text>                 
-                        @if (attrCategory.IconUrl != null)
-                        {
-                        <li>
-                            <h4>
-                                <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
-                                @attrCategory.Name
-                            </h4>
-                        </li>
-                        }
-                        else
-                        {
-                            <li>
-                                <h4>
-                                    <img src="~/images/category-icon.png" width="20" height="20" />
-                                    @attrCategory.Name
-                                </h4>
-                            </li>
+<div id="limit-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
 
-                        }
-                    </text>
-                </div>
-                <div class="panel-body">
-                    @foreach (var attr in ViewBag.Attributes)
-                    {
-                        if (attr.AttributeId == attrCategory.Id)
-                        {
-                            <text>
-                                <li>@attr.Name</li>
-                            </text>
-                        }
-                    }
-                </div>
-            }
+                <button id="limit-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#limit-modal-id').fadeOut();">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <strong>You have exceeded the number of items shopping cart can carry!</strong>
+                    <ul>
+                        <li>
+                            - Remove some items and try again
+                        </li>
+                        <li>
+                            - Checkout and add the items to an empty shopping cart
+                        </li>
+                    </ul>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="ShoppingCart" asp-action="Index">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Go to Shopping Cart
+                    </button>
+                </form>
             </div>
         </div>
-    </ul>
-    }
+    </div>
+</div>
+
+<!--Overall page view-->
+<div class="sidenav">
+    <div class="sidenav">
+        @Html.Partial("_SideNavToggleBtn")
+        <div id="side-nav-content">
+            @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
+            {
+                <br />
+                <ul>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4>Refined by</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="panel panel-default">
+                                @foreach (var attrCategory in ViewBag.AttributeCategories)
+                                {
+                                    <div class="panel-heading">
+                                        <text>
+                                            @if (attrCategory.IconUrl != null)
+                                            {
+                                                <li>
+                                                    <h4>
+                                                        <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
+                                                        @attrCategory.Name
+                                                    </h4>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li>
+                                                    <h4>
+                                                        <img src="~/images/category-icon.png" width="20" height="20" />
+                                                        @attrCategory.Name
+                                                    </h4>
+                                                </li>
+
+                                            }
+                                        </text>
+                                    </div>
+                                    <div class="panel-body">
+                                        @foreach (var attr in ViewBag.Attributes)
+                                        {
+                                            if (attr.AttributeId == attrCategory.Id)
+                                            {
+                                                <text>
+                                                    <li>@attr.Name</li>
+                                                </text>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                </ul>
+            }
+        </div>
+    </div>
 </div>
 
 <div class="main">
@@ -113,7 +152,7 @@
             }
         </p>
         <div class="img_column">
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="180" width="150" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
         </div>
         <div>
             @if (ViewBag.Discount == null)
@@ -141,14 +180,14 @@
                     </ul>
                 </h3>
             }
-            @if (!this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
             {
                 <div>
                     <form id="add-btn-form" style="margin-left: 200px;">
                         <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
                         <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
-                        <button id="add-btn" type="submit" class="btn btn-info">
-                            <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Add
+                        <button id="add-btn" type="submit" class="btn btn-add">
+                            <text>Add to cart</text>
                         </button>
                     </form>
                 </div>
@@ -324,6 +363,9 @@
             }
             else if (response == 1) {
                 //TODO: handle failure sent from controller (modify modal box)
+            }
+            else if (response == 2) {// limit reached
+                $('#limit-modal-id').fadeIn();
             }
         },
         failure: function (response) {

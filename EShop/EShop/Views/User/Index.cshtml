@@ -4,7 +4,11 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <h2>Manage users</h2>
     <h4>Your current role:</h4>

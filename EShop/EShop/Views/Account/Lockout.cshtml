@@ -2,7 +2,11 @@
     ViewData["Title"] = "Locked out";
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <header>
         <h2 class="text-danger">@ViewData["Title"]</h2>

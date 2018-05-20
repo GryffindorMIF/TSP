@@ -5,6 +5,9 @@
 }
 
 <div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
 </div>
 
 <div class="main">
@@ -38,7 +41,7 @@
                         <td>
                             <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@item.Value.Id">
                                 @Html.DisplayFor(modelItem => item.Value.Name)<br />
-                                <img src="~/images/products/@item.Value.ImageUrl" height="112" width="82">
+                                <img src="~/images/products/@item.Value.ImageUrl" height="120" width="85">
                             </a>
                         </td>
                         <td>

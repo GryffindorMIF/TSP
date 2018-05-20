@@ -24,8 +24,12 @@
 </div>
 
 <div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
 </div>
 
+<div class="main">
 <h3 style="text-align:center;">Review Purchase</h3>
 @{
     Decimal totalCost = 0;
@@ -121,6 +125,7 @@
         </div>
     </div>
 }
+</div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")

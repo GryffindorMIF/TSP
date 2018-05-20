@@ -4,7 +4,11 @@
     ViewData.AddActivePage(ManageNavPages.ManageDeliveryAddresses);
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <h4>@ViewData["Title"]</h4>
     @Html.Partial("_StatusMessage", Model.StatusMessage)

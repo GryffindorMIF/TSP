@@ -4,7 +4,11 @@
     ViewData["Title"] = "Suspend";
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <h2>Suspend</h2>
 

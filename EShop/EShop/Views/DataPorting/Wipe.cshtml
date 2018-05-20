@@ -2,7 +2,11 @@
     ViewData["Title"] = "Wipe";
 }
 
-<div class="sidenav"></div>
+<div class="sidenav">
+    @Html.Partial("_SideNavToggleBtn")
+    <div id="side-nav-content">
+    </div>
+</div>
 <div class="main">
     <h2>Wipe all data</h2>
     <hr>
