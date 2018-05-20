@@ -68,8 +68,9 @@
                 <div id="sidenav-toggle-btn">
                     @Html.Partial("_SideNavToggleBtn")
                 </div>
-            
-                @RenderSection("sidenav", false)
+                <div id="side-nav-content">
+                    @RenderSection("sidenav", false)
+                </div>
             }
         </div>
         <div class="main">
