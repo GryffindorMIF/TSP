@@ -13,6 +13,12 @@
         <span class="text-success">@ViewBag.Success</span>
     </div>
 }
+@if (ViewBag.AlreadyRunning != null)
+{
+    <div class="row">
+        <span class="text-danger">@ViewBag.AlreadyRunning</span>
+    </div>
+}
 <div class="row">
     <div class="col-md-4">
         <h2>Export</h2>

@@ -52,12 +52,17 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(DataImportViewModel model)
         {
-            bool importSuccessful = await _dataPortingService.ImportProductData(model.ImportFile);
+            ImportResult importResult = await _dataPortingService.ImportProductData(model.ImportFile);
 
 
-            if (importSuccessful)
+            if (importResult == ImportResult.Successful)
             {
                 TempData["Success"] = "Successfully imported product data from file.";
+            }
+            else if (importResult == ImportResult.AlreadyRunning)
+            {
+                ViewBag.AlreadyRunning = "An import operation is already running. Please wait until it finishes and try again.";
+                return View("Index");
             }
             else
             {

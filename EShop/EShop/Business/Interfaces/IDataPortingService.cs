@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace EShop.Business.Interfaces
 {
+    public enum ImportResult { Successful, Unsuccesful, AlreadyRunning }
+
     public interface IDataPortingService
     {
         Task WipeProductDataAsync();
-        Task<bool> ImportProductData(IFormFile file);
+        Task<ImportResult> ImportProductData(IFormFile file);
         Task<byte[]> ExportProductData();
 
     }
