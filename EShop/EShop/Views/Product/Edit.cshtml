@@ -4,96 +4,92 @@
     ViewData["Title"] = "Edit";
 }
 
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-    </div>
-</div>
-<div class="main">
-    <h2>Edit</h2>
+@section sidenav{}
 
-    <h4>Product</h4>
-    <hr />
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Edit" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="Product.Id" />
-                <div class="form-group">
-                    <label asp-for="Product.Name" class="control-label"></label>
-                    <input asp-for="Product.Name" class="form-control" />
-                    <span asp-validation-for="Product.Name" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <!-- <label asp-for="Description" class="control-label"></label> -->
-                    <label class="control-label">Description</label>
-                    <input asp-for="Product.Description" class="form-control" />
-                    <span asp-validation-for="Product.Description" class="text-danger"></span>
+<h2>Edit</h2>
 
-                    <a asp-action="ManageProperties" asp-route-id="@Model.Product.Id">Manage properties</a>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Product.Price" class="control-label"></label>
-                    <input asp-for="Product.Price" class="form-control" />
-                    <span asp-validation-for="Product.Price" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Select categories (ctrl + click)</label>
-
-                    <select asp-for="IdsOfSelectedCategories"
-                            class="form-control"
-                            asp-items="@Model.CategoryMultiSelectList"></select>
-                    <span asp-validation-for="IdsOfSelectedCategories" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Primary image (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
-                    <input asp-for="PrimaryImage" class="form-control"></input>
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Other images (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
-                    <input asp-for="OtherImages" class="form-control" multiple></input>
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Select images to remove (ctrl + click): </label>
-
-                    <select asp-for="IdsOfSelectedImages"
-                            class="form-control"
-                            asp-items="@Model.ImagesToRemoveSelectList"></select>
-                </div>
-                <input type="hidden" asp-for="Product.RowVersion" />
-                <div class="form-group">
-                    <input type="submit" value="Save" class="btn btn-default" />
-                </div>
-            </form>
-        </div>
-        <div class="col-md-1"></div>
-        <div class="col-md-4">
-            <div class="row">
-                <label class="control-label">Primary image: </label><br>
-                <a href="~/images/products/@ViewBag.PrimaryImage" target="_blank"><img src="~/images/products/@ViewBag.PrimaryImage" height="150" width="110"></a>
+<h4>Product</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Product.Id" />
+            <div class="form-group">
+                <label asp-for="Product.Name" class="control-label"></label>
+                <input asp-for="Product.Name" class="form-control" />
+                <span asp-validation-for="Product.Name" class="text-danger"></span>
             </div>
-            <div class="row">
-                @if (ViewBag.OtherImages.Count > 0)
+            <div class="form-group">
+                <!-- <label asp-for="Description" class="control-label"></label> -->
+                <label class="control-label">Description</label>
+                <input asp-for="Product.Description" class="form-control" />
+                <span asp-validation-for="Product.Description" class="text-danger"></span>
+
+                <a asp-action="ManageProperties" asp-route-id="@Model.Product.Id">Manage properties</a>
+            </div>
+            <div class="form-group">
+                <label asp-for="Product.Price" class="control-label"></label>
+                <input asp-for="Product.Price" class="form-control" />
+                <span asp-validation-for="Product.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Select categories (ctrl + click)</label>
+
+                <select asp-for="IdsOfSelectedCategories"
+                        class="form-control"
+                        asp-items="@Model.CategoryMultiSelectList"></select>
+                <span asp-validation-for="IdsOfSelectedCategories" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Primary image (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
+                <input asp-for="PrimaryImage" class="form-control"></input>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Other images (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
+                <input asp-for="OtherImages" class="form-control" multiple></input>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Select images to remove (ctrl + click): </label>
+
+                <select asp-for="IdsOfSelectedImages"
+                        class="form-control"
+                        asp-items="@Model.ImagesToRemoveSelectList"></select>
+            </div>
+            <input type="hidden" asp-for="Product.RowVersion" />
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-4">
+        <div class="row">
+            <label class="control-label">Primary image: </label><br>
+            <a href="~/images/products/@ViewBag.PrimaryImage" target="_blank"><img src="~/images/products/@ViewBag.PrimaryImage" height="150" width="110"></a>
+        </div>
+        <div class="row">
+            @if (ViewBag.OtherImages.Count > 0)
+            {
+                <hr><label class="control-label">Other images: </label><br>
+            }
+            <ul>
+                @foreach (ProductImage item in ViewBag.OtherImages)
                 {
-                    <hr><label class="control-label">Other images: </label><br>
+                    <li>
+                        <a href="~/images/products/@item.ImageUrl" target="_blank"><img id="other-image-@item.Id" src="~/images/products/@item.ImageUrl" height="100" width="73"></a>
+                        @item.ImageUrl
+                    </li>
                 }
-                <ul>
-                    @foreach (ProductImage item in ViewBag.OtherImages)
-                    {
-                        <li>
-                            <a href="~/images/products/@item.ImageUrl" target="_blank"><img id="other-image-@item.Id" src="~/images/products/@item.ImageUrl" height="100" width="73"></a>
-                            @item.ImageUrl
-                        </li>
-                    }
-                </ul>
-            </div>
+            </ul>
         </div>
     </div>
-
-    <div>
-        <a asp-controller="Home" asp-action="Index">Back</a>
-    </div>
 </div>
+
+<div>
+    <a asp-controller="Home" asp-action="Index">Back</a>
+</div>
+
 <script src="~/lib/jquery/dist/jquery.js"></script>
 <script type="text/javascript">
 
@@ -103,18 +99,17 @@
 
             var allSelected = $(this).val();
             console.log(allAdditionalImages[0]);
-            for (var i = 0; i < allAdditionalImages.length; i++)
-            {
+            for (var i = 0; i < allAdditionalImages.length; i++) {
                 if (allSelected.includes(allAdditionalImages.eq(i).prop("id").replace("other-image-", ""))) {
                     $("#" + allAdditionalImages.eq(i).prop("id")).fadeTo(300, 1);
                 }
                 else {
                     $("#" + allAdditionalImages.eq(i).prop("id")).fadeTo(300, 0.25);
-                }        
+                }
             }
         });
     });
 </script>
-    @section Scripts {
-        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    }
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

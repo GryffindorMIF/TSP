@@ -3,141 +3,136 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-    </div>
-</div>
-<div class="main">
-    <div class="row">
-        <div class="col-md-6 text-center">
-            <h2>Create</h2>
-            <hr>
-            <h3>Create attribute</h3>
-            <ul>
-                <form asp-action="CreateAttribute">
-                    <li>
-                        <label>Attribute name</label>
-                        <input required name="name" class="form-control" type="text" />
-                    </li>
-                    <li>
-                        <a>
-                            <button type="submit" class="btn btn-info btn-xs">Create</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-            <hr>
-            <h3>Create new attribute value</h3>
-            <ul>
-                <form asp-action="CreateAttributeValue">
-                    <li>
-                        <label>Select attribute</label>
-                        <select required asp-for="SelectedAttributeId"
-                                asp-items="@Model.AttributeSelectList" class="form-control"></select>
-                    </li>
-                    <li>
-                        <label>Value</label>
-                        <input required name="name" class="form-control" type="text" />
-                    </li>
-                    <li>
-                        <a>
-                            <button class="btn btn-info btn-xs">Create</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-            <hr>
-            <h3>Link attribute values to products</h3>
-            <ul>
-                <form asp-action="LinkAttributeValuesToProducts">
-                    <li>
-                        <label>Select attribute values (ctrl + click)</label>
-                    </li>
-                    <li>
-                        <font color="blue">Attribute/Attribute value</font>
-                    </li>
-                    <li>
-                        <select required class="form-control" asp-items="@Model.AttributeValuesMultiSelectList" asp-for="IdsOfSelectedAttributeValues"></select>
-                    </li>
-                    <li>
-                        <label>Select products (ctrl + click)</label>
-                    </li>
-                    <li>
-                        <select required class="form-control" asp-items="@Model.ProductMultiSelectList" asp-for="IdsOfSelectedProducts"></select>
-                    </li>
-                    <li>
-                        <a>
-                            <button type="submit" class="btn btn-success btn-xs">Link</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-        </div>
-        <div class="col-md-6 text-center">
-            <h2>Remove</h2>
-            <hr>
-            <h3>Delete attributes</h3>
-            <ul>
-                <li>
-                    <label>Select attributes to delete (ctrl + click)</label>
-                </li>
-                <form asp-action="DeleteAttributes" enctype="multipart/form-data">
-                    <li>
-                        <select required asp-items="@Model.AttributeyMultiSelectList"
-                                asp-for="IdsOfSelectedAttributesToRemove"
-                                class="form-control"></select>
-                    </li>
+@section sidenav{}
 
-                    <li>
-                        <a>
-                            <button type="submit" class="btn btn-danger btn-xs">Delete</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-            <hr>
-            <h3>Delete attribute values</h3>
-            <ul>
-                <form asp-action="DeleteAttributeValues">
-                    <li>
-                        <label>Select attribute values to delete (ctrl + click)</label>
-                    </li>
-                    <li>
-                        <font color="blue">Attribute/Attribute value</font>
-                    </li>
-                    <li>
-                        <select required class="form-control"
-                                asp-items="@Model.AttributeValuesMultiSelectList"
-                                asp-for="IdsOfSelectedAttributeValues"></select>
-                    </li>
-                    <li>
-                        <a>
-                            <button type="submit" class="btn btn-danger btn-xs">Delete</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-            <hr>
-            <h3>Unlink attribute values</h3>
-            <ul>
-                <form asp-action="UnlinkAttributeValues">
-                    <li>
-                        <label>Select attribute values to unlink (ctrl + click)</label>
-                    </li>
-                    <li>
-                        <font color="blue">Attribute value -> Product</font>
-                    </li>
-                    <li>
-                        <select required class="form-control" asp-items="@Model.LinksMultiList" asp-for="IdsOfSelectedLinks"></select>
-                    </li>
-                    <li>
-                        <a>
-                            <button type="submit" class="btn btn-warning btn-xs">Unlink</button>
-                        </a>
-                    </li>
-                </form>
-            </ul>
-        </div>
+<div class="row">
+    <div class="col-md-6 text-center">
+        <h2>Create</h2>
+        <hr>
+        <h3>Create attribute</h3>
+        <ul>
+            <form asp-action="CreateAttribute">
+                <li>
+                    <label>Attribute name</label>
+                    <input required name="name" class="form-control" type="text" />
+                </li>
+                <li>
+                    <a>
+                        <button type="submit" class="btn btn-info btn-xs">Create</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
+        <hr>
+        <h3>Create new attribute value</h3>
+        <ul>
+            <form asp-action="CreateAttributeValue">
+                <li>
+                    <label>Select attribute</label>
+                    <select required asp-for="SelectedAttributeId"
+                            asp-items="@Model.AttributeSelectList" class="form-control"></select>
+                </li>
+                <li>
+                    <label>Value</label>
+                    <input required name="name" class="form-control" type="text" />
+                </li>
+                <li>
+                    <a>
+                        <button class="btn btn-info btn-xs">Create</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
+        <hr>
+        <h3>Link attribute values to products</h3>
+        <ul>
+            <form asp-action="LinkAttributeValuesToProducts">
+                <li>
+                    <label>Select attribute values (ctrl + click)</label>
+                </li>
+                <li>
+                    <font color="blue">Attribute/Attribute value</font>
+                </li>
+                <li>
+                    <select required class="form-control" asp-items="@Model.AttributeValuesMultiSelectList" asp-for="IdsOfSelectedAttributeValues"></select>
+                </li>
+                <li>
+                    <label>Select products (ctrl + click)</label>
+                </li>
+                <li>
+                    <select required class="form-control" asp-items="@Model.ProductMultiSelectList" asp-for="IdsOfSelectedProducts"></select>
+                </li>
+                <li>
+                    <a>
+                        <button type="submit" class="btn btn-success btn-xs">Link</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
+    </div>
+    <div class="col-md-6 text-center">
+        <h2>Remove</h2>
+        <hr>
+        <h3>Delete attributes</h3>
+        <ul>
+            <li>
+                <label>Select attributes to delete (ctrl + click)</label>
+            </li>
+            <form asp-action="DeleteAttributes" enctype="multipart/form-data">
+                <li>
+                    <select required asp-items="@Model.AttributeyMultiSelectList"
+                            asp-for="IdsOfSelectedAttributesToRemove"
+                            class="form-control"></select>
+                </li>
+
+                <li>
+                    <a>
+                        <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
+        <hr>
+        <h3>Delete attribute values</h3>
+        <ul>
+            <form asp-action="DeleteAttributeValues">
+                <li>
+                    <label>Select attribute values to delete (ctrl + click)</label>
+                </li>
+                <li>
+                    <font color="blue">Attribute/Attribute value</font>
+                </li>
+                <li>
+                    <select required class="form-control"
+                            asp-items="@Model.AttributeValuesMultiSelectList"
+                            asp-for="IdsOfSelectedAttributeValues"></select>
+                </li>
+                <li>
+                    <a>
+                        <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
+        <hr>
+        <h3>Unlink attribute values</h3>
+        <ul>
+            <form asp-action="UnlinkAttributeValues">
+                <li>
+                    <label>Select attribute values to unlink (ctrl + click)</label>
+                </li>
+                <li>
+                    <font color="blue">Attribute value -> Product</font>
+                </li>
+                <li>
+                    <select required class="form-control" asp-items="@Model.LinksMultiList" asp-for="IdsOfSelectedLinks"></select>
+                </li>
+                <li>
+                    <a>
+                        <button type="submit" class="btn btn-warning btn-xs">Unlink</button>
+                    </a>
+                </li>
+            </form>
+        </ul>
     </div>
 </div>

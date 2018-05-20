@@ -4,26 +4,22 @@
     ViewData["Title"] = "GiveAdminPrivileges";
 }
 
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-    </div>
-</div>
-<div class="main">
-    <h2>Give admin privileges</h2>
+@section sidenav{}
 
-    <h3>Are you sure you want to give this user admin privileges?</h3>
-    <h3><font color="red">Warning! This will destroy all customer data!</font></h3>
-    <ul>
-        <li>Order history</li>
-        <li>Shopping cart</li>
-        <li>Personal account info<li>
-    </ul>
-    <div>
-        <form asp-action="ManageAdminPrivileges" asp-route-grantPrivileges="true">
-            <input type="hidden" asp-for="Id" />
-            <input type="submit" value="Proceed" class="btn btn-default" /> |
-            <a asp-action="Index">Back to List</a>
-        </form>
-    </div>
+<h2>Give admin privileges</h2>
+
+<h3>Are you sure you want to give this user admin privileges?</h3>
+<h3><font color="red">Warning! This will destroy all customer data!</font></h3>
+<ul>
+    <li>Order history</li>
+    <li>Shopping cart</li>
+    <li>Personal account info
+    <li>
+</ul>
+<div>
+    <form asp-action="ManageAdminPrivileges" asp-route-grantPrivileges="true">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Proceed" class="btn btn-default" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
 </div>

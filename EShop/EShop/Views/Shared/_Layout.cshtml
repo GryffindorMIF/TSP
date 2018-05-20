@@ -61,7 +61,19 @@
         </div>
     </nav>
     <div class="container body-content">
-        @RenderBody()
+        <div class="sidenav">
+            @Html.Partial("_SideNavToggleBtn")
+            <div id="side-nav-content">
+                @RenderSection("sidenav")
+            </div>
+        </div>
+        <div class="main">
+            @RenderBody()
+            <footer>
+                <br/>
+                All rights reserved - Gryffindor EShop 2018 ©
+            </footer>
+        </div>
     </div>
 
     <environment include="Development">

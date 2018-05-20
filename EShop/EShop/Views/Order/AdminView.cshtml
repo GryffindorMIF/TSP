@@ -3,12 +3,9 @@
     ViewData["Title"] = "Order";
 }
 
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-    </div>
-</div>
-<div class="main" style="margin-left:auto">
+@section sidenav{}
+
+<div style="margin-left:auto">
     <h2>Orders Awaiting Confirmation</h2>
     <div asp-validation-summary="All" class="text-danger"></div>
     <table class="table">
@@ -62,13 +59,13 @@
                     </td>
                     <td>
                         @switch (item.Value.StatusCode)
-                            {
-                                case 1:
-                                    var rowVersion = "";
-                                    if (item.Value.RowVersion != null)
-                                    {
-                                        rowVersion = Convert.ToBase64String(item.Value.RowVersion);
-                                    }
+                        {
+                            case 1:
+                                var rowVersion = "";
+                                if (item.Value.RowVersion != null)
+                                {
+                                    rowVersion = Convert.ToBase64String(item.Value.RowVersion);
+                                }
                                 <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
                                     <button id="checkout-btn" type="submit" class="btn btn-success">
                                         <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>

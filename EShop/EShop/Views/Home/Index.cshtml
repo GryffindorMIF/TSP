@@ -6,138 +6,135 @@
     ViewData["Title"] = "Products";
 }
 
-<!-- Side-navigation panel-->
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-        @Html.Partial("_SideNav")
-    </div>
+
+@section sidenav
+{
+    @Html.Partial("_SideNav")
+}
+
+<div class="main-carousel">
+    <br />
+    @{
+        ICollection<ProductAd> productAds = ViewBag.ProductAds;
+    }
+    @Html.Partial("_MainCarousel", productAds)
 </div>
 
-<div class="main">
-    <div class="main-carousel">
-        <br />
-        @{
-            ICollection<ProductAd> productAds = ViewBag.ProductAds;
-        }
-        @Html.Partial("_MainCarousel", productAds)
-    </div>
+@if (ViewBag.IsSearch) //If this page is shown on product search search
+{
+    <h4><strong>Search results for:</strong> @ViewBag.SearchText</h4>
+}
+else if (ViewBag.CurrentCategoryName == null)
+{
+    <h4>All</h4>
+}
+else
+{
+    <h4>@ViewBag.CurrentCategoryName</h4>
+}
+@if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+{
+    <a asp-controller="Product" asp-action="Create">Create New</a>
+}
 
-    @if (ViewBag.IsSearch) //If this page is shown on product search search
+<div class="m-faqs">
+    @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index], HasDiscountList = ViewBag.HasDiscountList[index], DiscountPriceList = ViewBag.DiscountPriceList[index], DiscountEndDateList = ViewBag.DiscountEndDateList[index] }))
     {
-        <h4><strong>Search results for:</strong> @ViewBag.SearchText</h4>
-    }
-    else if (ViewBag.CurrentCategoryName == null)
-    {
-        <h4>All</h4>
-    }
-    else
-    {
-        <h4>@ViewBag.CurrentCategoryName</h4>
-    }
-    @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-    {
-        <a asp-controller="Product" asp-action="Create">Create New</a>
-    }
-
-    <div class="m-faqs">
-        @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index, ImageLink = ViewBag.AllPrimaryImageLinks[index], HasDiscountList = ViewBag.HasDiscountList[index], DiscountPriceList = ViewBag.DiscountPriceList[index], DiscountEndDateList = ViewBag.DiscountEndDateList[index] }))
-        {
-            <text>          
-                <div class="m-faqs_item">   
-                    <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
-                        <p>
-                            <img src="~/images/products/@item.ImageLink" height="170" width="120">
-                        </p>
-                        <p>
-                            <h5>
-                                <span>
-                                    <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
-                                </span>
-                            </h5>
-                        </p>
-                    </a>
-                    <p>@Html.DisplayFor(modelItem => item.Value.Description)</p>
+        <text>
+            <div class="m-faqs_item">
+                <a asp-action="ProductPage" asp-route-id="@item.Value.Id">
                     <p>
-                        @if (item.HasDiscountList == true)
+                        <img src="~/images/products/@item.ImageLink" height="170" width="120">
+                    </p>
+                    <p>
+                        <h5>
+                            <span>
+                                <strong>@Html.DisplayFor(modelItem => item.Value.Name)</strong>
+                            </span>
+                        </h5>
+                    </p>
+                </a>
+                <p>@Html.DisplayFor(modelItem => item.Value.Description)</p>
+                <p>
+                    @if (item.HasDiscountList == true)
+                    {
+                        <ul>
+                            <li>
+                                <img src="~/images/discount.png" height="30" width="30" />
+                                <strike>€@Html.DisplayFor(modelItem => item.Value.Price)</strike>
+                                <font color="red">€@item.DiscountPriceList</font>
+                            </li>
+                            <li>
+                                Ends in:
+                            </li>
+                            <li>
+                                <font color="red" id="discount-timer-@item.Index"></font>
+                            </li>
+                            @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                            {
+                                <li>
+                                    <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Remove discount</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <text>€</text>@Html.DisplayFor(modelItem => item.Value.Price)
+                    }
+                </p>
+                <p>
+                    <div class="m-faqs_add_btn_container">
+                        @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+                        {
+                            <div>
+                                <form id="add-btn-form-@item.Index">
+                                    Quantity &nbsp<input id="quantity-id-@item.Index" type="number" size="2" min="1" value="1" required="required" />
+                                    <input id="hidden-id-@item.Index" type="hidden" size="2" value="@item.Value.Id" required="required" />
+                                    <hr>
+                                    <!--
+                                        <hr>
+                                        Quantity &nbsp<input id="quantity-id-@item.Index" type="number" size="2" min="1" value="1" required="required" />
+                                        <input id="hidden-id-@item.Index" type="hidden" size="2" value="@item.Value.Id" required="required" />
+                                    -->
+                                    <button id="add-btn-@item.Index" type="submit" class="btn btn-add">
+                                        <img src="~/images/shopping-cart.png" width="20" height="20" />
+                                        <text>
+                                            Add to cart
+                                        </text>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+
+                        @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                         {
                             <ul>
-                                <li>
-                                    <img src="~/images/discount.png" height="30" width="30" />
-                                    <strike>€@Html.DisplayFor(modelItem => item.Value.Price)</strike>
-                                    <font color="red">€@item.DiscountPriceList</font>
-                                </li>
-                                <li>
-                                    Ends in:
-                                </li>
-                                <li>
-                                    <font color="red" id="discount-timer-@item.Index"></font>
-                                </li>
-                                @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                                <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Value.Id">Edit</a></li>
+                                <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
+
+                                @{
+                                    var productDiscount = (from pd in context.ProductDiscount
+                                                            where pd.ProductId == item.Value.Id
+                                                            select pd).FirstOrDefault();
+                                }
+                                @if (productDiscount == null)
                                 {
-                                    <li>
-                                        <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Remove discount</a>
-                                    </li>
+                                    <li><a asp-controller="Product" asp-action="Discount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Make discount</a></li>
+                                }
+                                else
+                                {
+                                    <text>Make discount</text>
+
                                 }
                             </ul>
                         }
-                        else
-                        {
-                            <text>€</text>@Html.DisplayFor(modelItem => item.Value.Price)
-                        }
-                    </p>
-                    <p>
-                        <div class="m-faqs_add_btn_container">
-                            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
-                            {
-                                <div>
-                                    <form id="add-btn-form-@item.Index">
-                                        Quantity &nbsp<input id="quantity-id-@item.Index" type="number" size="2" min="1" value="1" required="required" />
-                                        <input id="hidden-id-@item.Index" type="hidden" size="2" value="@item.Value.Id" required="required" />
-                                        <hr>
-                                        <!--
-                                            <hr>
-                                            Quantity &nbsp<input id="quantity-id-@item.Index" type="number" size="2" min="1" value="1" required="required" />
-                                            <input id="hidden-id-@item.Index" type="hidden" size="2" value="@item.Value.Id" required="required" />
-                                        -->
-                                        <button id="add-btn-@item.Index" type="submit" class="btn btn-add">
-                                            <img src="~/images/shopping-cart.png" width="20" height="20" />
-                                            <text>
-                                                Add to cart
-                                            </text>
-                                        </button>
-                                    </form>
-                                </div>
-                            }
-
-                            @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-                            {
-                                <ul>
-                                    <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Value.Id">Edit</a></li>
-                                    <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Value.Id">Delete</a></li>
-
-                                    @{
-                                        var productDiscount = (from pd in context.ProductDiscount
-                                                                where pd.ProductId == item.Value.Id
-                                                                select pd).FirstOrDefault();
-                                    }
-                                    @if (productDiscount == null)
-                                    {
-                                        <li><a asp-controller="Product" asp-action="Discount" asp-route-page="Index" asp-route-productId="@item.Value.Id">Make discount</a></li>
-                                    }
-                                    else
-                                    {
-                                        <text>Make discount</text>
-
-                                    }
-                                </ul>
-                            }
-                        </div>
-                    </p>
-                </div>
+                    </div>
+                </p>
+            </div>
             </text>
         }
-    </div>
+</div>
 <!--
     <table class="table">
         <tbody>
@@ -209,8 +206,8 @@
 
                                 @{
                                     var productDiscount = (from pd in context.ProductDiscount
-                                                           where pd.ProductId == item.Value.Id
-                                                           select pd).FirstOrDefault();
+                                                            where pd.ProductId == item.Value.Id
+                                                            select pd).FirstOrDefault();
                                 }
                                 @if (productDiscount == null)
                                 {
@@ -224,9 +221,8 @@
         </tbody>
     </table>
 -->
-    <!-- Pagination -->
-    @Html.Partial("_Pagination")
-</div>
+<!-- Pagination -->
+@Html.Partial("_Pagination")
 
 <!-- Private modals-->
 @Html.Partial("Modals/_AddChildCategoryModal")

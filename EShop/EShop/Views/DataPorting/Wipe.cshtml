@@ -2,19 +2,14 @@
     ViewData["Title"] = "Wipe";
 }
 
-<div class="sidenav">
-    @Html.Partial("_SideNavToggleBtn")
-    <div id="side-nav-content">
-    </div>
-</div>
-<div class="main">
-    <h2>Wipe all data</h2>
-    <hr>
-    <h4>Are you sure you want to wipe all product related data? This action is irreversable.</h4>
-    <div>
-        <form asp-action="WipeConfirmed">
-            <input type="submit" value="Delete" class="btn btn-danger" /> |
-            <a asp-controller="DataPorting" asp-action="Index">Back</a>
-        </form>
-    </div>
+@section sidenav{}
+
+<h2>Wipe all data</h2>
+<hr>
+<h4>Are you sure you want to wipe all product related data? This action is irreversable.</h4>
+<div>
+    <form asp-action="WipeConfirmed">
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-controller="DataPorting" asp-action="Index">Back</a>
+    </form>
 </div>

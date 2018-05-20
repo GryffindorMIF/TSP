@@ -71,220 +71,213 @@
     </div>
 </div>
 
-<!--Overall page view-->
-<div class="sidenav">
-    <div class="sidenav">
-        @Html.Partial("_SideNavToggleBtn")
-        <div id="side-nav-content">
-            @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
-            {
-                <br />
-                <ul>
+@section sidenav
+{
+    @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
+    {
+        <br />
+        <ul>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4>Refined by</h4>
+                </div>
+                <div class="panel-body">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h4>Refined by</h4>
-                        </div>
-                        <div class="panel-body">
-                            <div class="panel panel-default">
-                                @foreach (var attrCategory in ViewBag.AttributeCategories)
-                                {
-                                    <div class="panel-heading">
-                                        <text>
-                                            @if (attrCategory.IconUrl != null)
-                                            {
-                                                <li>
-                                                    <h4>
-                                                        <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
-                                                        @attrCategory.Name
-                                                    </h4>
-                                                </li>
-                                            }
-                                            else
-                                            {
-                                                <li>
-                                                    <h4>
-                                                        <img src="~/images/category-icon.png" width="20" height="20" />
-                                                        @attrCategory.Name
-                                                    </h4>
-                                                </li>
+                        @foreach (var attrCategory in ViewBag.AttributeCategories)
+                        {
+                            <div class="panel-heading">
+                                <text>
+                                    @if (attrCategory.IconUrl != null)
+                                    {
+                                        <li>
+                                            <h4>
+                                                <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
+                                                @attrCategory.Name
+                                            </h4>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <h4>
+                                                <img src="~/images/category-icon.png" width="20" height="20" />
+                                                @attrCategory.Name
+                                            </h4>
+                                        </li>
 
-                                            }
+                                    }
+                                </text>
+                            </div>
+                            <div class="panel-body">
+                                @foreach (var attr in ViewBag.Attributes)
+                                {
+                                    if (attr.AttributeId == attrCategory.Id)
+                                    {
+                                        <text>
+                                            <li>@attr.Name</li>
                                         </text>
-                                    </div>
-                                    <div class="panel-body">
-                                        @foreach (var attr in ViewBag.Attributes)
-                                        {
-                                            if (attr.AttributeId == attrCategory.Id)
-                                            {
-                                                <text>
-                                                    <li>@attr.Name</li>
-                                                </text>
-                                            }
-                                        }
-                                    </div>
+                                    }
                                 }
                             </div>
-                        </div>
+                        }
+                    </div>
+                </div>
+        </ul>
+    }
+}
+
+<div class="img_row">
+    <p>
+        <h2><strong>@ViewBag.Product.Name</strong></h2>
+        @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+        {
+            <ul>
+                <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a></li>
+                <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@ViewBag.Product.Id">Delete</a></li>
+                @if (ViewBag.Discount != null)
+                {
+                    <li><a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Remove discount</a></li>
+                }
+                else
+                {
+                    <li><a asp-controller="Product" asp-action="Discount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Make discount</a></li>
+                }
+            </ul>
+        }
+    </p>
+    <div class="img_column">
+        <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+    </div>
+    <div>
+        @if (ViewBag.Discount == null)
+        {
+            <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
+        }
+        else
+        {
+            <h3 style="margin-top: 70px; margin-left: 200px;">
+                <ul>
+                    <li>
+                        Current price is:
+                        <img src="~/images/discount.png" height="40" width="40" />
+                        <strike>€@ViewBag.Product.Price</strike>
+                        <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                    </li>
+                    <li>
+                        <h5>Discount ends in:</h5>
+                    </li>
+                    <li>
+                        <h5>
+                            <font color="red" id="discount-timer"></font>
+                        </h5>
+                    </li>
                 </ul>
-            }
-        </div>
+            </h3>
+        }
+        @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+        {
+            <div>
+                <form id="add-btn-form" style="margin-left: 200px;">
+                    <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
+                    <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
+                    <button id="add-btn" type="submit" class="btn btn-add">
+                        <text>Add to cart</text>
+                    </button>
+                </form>
+            </div>
+        }
+        <p style="margin-left: 200px;"><strong>Description:</strong> @ViewBag.Product.Description</p>
     </div>
 </div>
 
-<div class="main">
+
+@{ int counter = 1; /*Counter for photos*/
+    <!--Small photo previews-->
     <div class="img_row">
-        <p>
-            <h2><strong>@ViewBag.Product.Name</strong></h2>
-            @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-            {
-                <ul>
-                    <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a></li>
-                    <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@ViewBag.Product.Id">Delete</a></li>
-                    @if (ViewBag.Discount != null)
-                    {
-                        <li><a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Remove discount</a></li>
-                    }
-                    else
-                    {
-                        <li><a asp-controller="Product" asp-action="Discount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Make discount</a></li>
-                    }
-                </ul>
-            }
-        </p>
-        <div class="img_column">
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+        @foreach (var image in ViewBag.SecondaryImages)
+        {
+            <!--Image here-->
+            <div class="img_column">
+                @{ counter += 1; }
+                <img src="~/images/products/@image" alt="Secondary Image" style="width:100%;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
+            </div>
+        }
+    </div>
+}
+
+
+<!-- The Modal/Lightbox -->
+<div id="imageModal" class="img_modal">
+    <span class="img_close img_cursor" onclick="closeModal()">&times;</span>
+    <div class="img_modal-content">
+        <div class="imgSlides">
+            <div class="img_numbertext">1 / @totalImages</div>
+            <img src="~/images/products/@ViewData["primary_image"]" style="width:100%; height:100%;" />
         </div>
-        <div>
-            @if (ViewBag.Discount == null)
+        @{ int counter2 = 1;
+            foreach (var image in ViewBag.SecondaryImages)
             {
-                <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
-            }
-            else
-            {
-                <h3 style="margin-top: 70px; margin-left: 200px;">
-                    <ul>
-                        <li>
-                            Current price is:
-                            <img src="~/images/discount.png" height="40" width="40" />
-                            <strike>€@ViewBag.Product.Price</strike>
-                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
-                        </li>
-                        <li>
-                            <h5>Discount ends in:</h5>
-                        </li>
-                        <li>
-                            <h5>
-                                <font color="red" id="discount-timer"></font>
-                            </h5>
-                        </li>
-                    </ul>
-                </h3>
-            }
-            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
-            {
-                <div>
-                    <form id="add-btn-form" style="margin-left: 200px;">
-                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
-                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
-                        <button id="add-btn" type="submit" class="btn btn-add">
-                            <text>Add to cart</text>
-                        </button>
-                    </form>
+                counter2 += 1;
+                <!--Image here-->
+                <div class="imgSlides">
+                    <div class="img_numbertext">@counter2 / @totalImages</div>
+                    <img src="~/images/products/@image" style="width:100%" />
                 </div>
             }
-            <p style="margin-left: 200px;"><strong>Description:</strong> @ViewBag.Product.Description</p>
+        }
+        <!-- Next/previous controls -->
+        <a class="img_prev" onclick="plusSlides(-1)">&#10094;</a>
+        <a class="img_next" onclick="plusSlides(1)">&#10095;</a>
+
+        <!-- Caption text -->
+        <div class="img_caption-container">
+            <p id="img_caption"></p>
         </div>
-    </div>
 
-
-    @{ int counter = 1; /*Counter for photos*/
-        <!--Small photo previews-->
-        <div class="img_row">
-            @foreach (var image in ViewBag.SecondaryImages)
+        <!-- Thumbnail image controls -->
+        <div class="img_column">
+            <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name" />
+        </div>
+        @{
+            int counter3 = 1;
+            foreach (var image in ViewBag.SecondaryImages)
             {
+                counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    @{ counter += 1; }
-                    <img src="~/images/products/@image" alt="Secondary Image" style="width:100%;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
+                    <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@image" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
                 </div>
             }
-        </div>
-    }
-
-
-    <!-- The Modal/Lightbox -->
-    <div id="imageModal" class="img_modal">
-        <span class="img_close img_cursor" onclick="closeModal()">&times;</span>
-        <div class="img_modal-content">
-            <div class="imgSlides">
-                <div class="img_numbertext">1 / @totalImages</div>
-                <img src="~/images/products/@ViewData["primary_image"]" style="width:100%; height:100%;" />
-            </div>
-            @{ int counter2 = 1;
-                foreach (var image in ViewBag.SecondaryImages)
-                {
-                    counter2 += 1;
-                    <!--Image here-->
-                    <div class="imgSlides">
-                        <div class="img_numbertext">@counter2 / @totalImages</div>
-                        <img src="~/images/products/@image" style="width:100%" />
-                    </div>
-                }
-            }
-            <!-- Next/previous controls -->
-            <a class="img_prev" onclick="plusSlides(-1)">&#10094;</a>
-            <a class="img_next" onclick="plusSlides(1)">&#10095;</a>
-
-            <!-- Caption text -->
-            <div class="img_caption-container">
-                <p id="img_caption"></p>
-            </div>
-
-            <!-- Thumbnail image controls -->
-            <div class="img_column">
-                <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name" />
-            </div>
-            @{
-                int counter3 = 1;
-                foreach (var image in ViewBag.SecondaryImages)
-                {
-                    counter3 += 1;
-                    <!--Image here-->
-                    <div class="img_column">
-                        <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@image" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
-                    </div>
-                }
-            }
-        </div>
+        }
     </div>
+</div>
 
-    <table class="table">
-        <thead>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Property
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
+        {
             <tr>
-                <th>
-                    Property
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <div class="alert alert-success" role="alert">
-    </div>
+        }
+    </tbody>
+</table>
+<div class="alert alert-success" role="alert">
 </div>
 
 
