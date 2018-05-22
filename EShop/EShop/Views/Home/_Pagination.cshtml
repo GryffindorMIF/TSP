@@ -1,11 +1,27 @@
 ﻿<div class="text-center">
-    <ul class="pagination">
+    <ul class="pagination pagination-sm">
 
         <!-- Previous btn -->
-        @if (ViewBag.PreviousPageNumber != null)
+        @if (ViewBag.IsSearch == true && ViewBag.PreviousPageNumber != null) //In case it's search situation
+        {
+            <li class="page-item">
+                <a asp-controller="Home" asp-action="LoadPage"
+                   asp-route-isSearch="true"
+                   asp-route-searchText="@ViewBag.SearchText"
+                   asp-route-pageCount="@ViewBag.PageCount"
+                   asp-route-pageNumber="@ViewBag.PreviousPageNumber"
+                   class="page-link" aria-label="Previous"
+                   onclick="$('#loading-modal').fadeIn()">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+        }
+        else if (ViewBag.PreviousPageNumber != null) //Below everything that is not search
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -18,7 +34,7 @@
                 </a>
             </li>
         }
-        else
+        else //If there is no previous page number
         {
             <li class="page-item disabled">
                 <a href="#" class="page-link" aria-label="Previous">
@@ -33,15 +49,28 @@
             if (i == ViewBag.CurrentPageNumber)
             {
                 <text>
-                    <li class="page-item active">
-                        <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
-                    </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
+                </li>
                 </text>
+            }
+            else if (ViewBag.IsSearch == true)
+            {
+                <li class="page-item">
+                    <a asp-controller="Home" asp-action="LoadPage"
+                       asp-route-isSearch="true"
+                       asp-route-searchText="@ViewBag.SearchText"
+                       asp-route-pageCount="@ViewBag.PageCount"
+                       asp-route-pageNumber="@i"
+                       class="page-link" aria-label="Previous"
+                       onclick="$('#loading-modal').fadeIn()">@i</a>
+                </li>
             }
             else
             {
                 <li class="page-item">
                     <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                       asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                        asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                        asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                        asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -53,10 +82,26 @@
             }
         }
         <!-- Next btn -->
-        @if (ViewBag.NextPageNumber != null)
+        @if (ViewBag.IsSearch && ViewBag.NextPageNumber != null) //Search pagination
+        {
+            <li class="page-item">
+                <a asp-controller="Home" asp-action="LoadPage"
+                   asp-route-isSearch="true"
+                   asp-route-searchText="@ViewBag.SearchText"
+                   asp-route-pageCount="@ViewBag.PageCount"
+                   asp-route-pageNumber="@ViewBag.NextPageNumber"
+                   class="page-link" aria-label="Next"
+                   onclick="$('#loading-modal').fadeIn()">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
+        }
+        else if (ViewBag.NextPageNumber != null)
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -72,12 +117,12 @@
         else
         {
             <text>
-                <li class="page-item disabled">
-                    <a href="#" class="page-link" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </li>
+            <li class="page-item disabled">
+                <a href="#" class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
             </text>
         }
     </ul>

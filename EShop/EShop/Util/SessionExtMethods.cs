@@ -92,12 +92,25 @@ namespace EShop.Util
             else session.SetString(PRODUCTS_KEY, JsonConvert.SerializeObject(products));
         }
 
-        public static async Task TransferSessionProductsToCartAsync(this ISession session, ShoppingCart shoppingCart, ApplicationDbContext context, IShoppingCartService shoppingCartService)
+        public static async Task<int> TransferSessionProductsToCartAsync(this ISession session, ShoppingCart shoppingCart, ApplicationDbContext context, IShoppingCartService shoppingCartService)
         {
             var products = await session.GetProductsAsync(context);
             foreach (var product in products)
-                await shoppingCartService.AddProductToShoppingCartAsync(product.Product, shoppingCart, product.Count, session);
+            {
+                int result = await shoppingCartService.AddProductToShoppingCartAsync(product.Product, shoppingCart, product.Count, session);
+                if (result == 2 || result == 1)
+                {
+                    return result;// 2 == product limit reached || 1 == unknown error
+                }
+            }
             session.ClearProducts();
+            return 0;// success
+        }
+
+        public static async Task<int> CountProducts(this ISession session)
+        {
+            List<SessionProducts> products = await session.GetSessionProductsAsync();
+            return products.Count();
         }
     }
 }

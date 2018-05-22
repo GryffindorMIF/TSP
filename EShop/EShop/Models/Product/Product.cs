@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class Product
+    public class Product: IEquatable<Product>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -20,5 +20,11 @@ namespace EShop.Models
         public byte[] RowVersion { get; set; }
 
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
+        public virtual ProductDiscount ProductDiscount { get; set; }
+
+        public bool Equals(Product other)
+        {
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(Description, other.Description, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

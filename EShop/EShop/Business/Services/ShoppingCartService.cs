@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Util;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Business
 {
@@ -17,10 +19,17 @@ namespace EShop.Business
         private readonly ApplicationDbContext _context;
         private readonly IProductService _productService;
 
-        public ShoppingCartService(ApplicationDbContext context, IProductService productService)
+        private readonly int maxProductsInShoppingCart;
+
+        public ShoppingCartService(ApplicationDbContext context, IProductService productService, IConfiguration configuration)
         {
             _context = context;
             _productService = productService;
+
+            if (!int.TryParse(configuration["ShoppingCartConfig:MaxProducts"], out maxProductsInShoppingCart))
+            {
+                throw new InvalidOperationException("Invalid ShoppingCartConfig:MaxProducts in appsettings.json. Not an int value.");
+            }
         }
 
         public async Task<IQueryable<ProductInCartViewModel>> QueryAllShoppingCartProductsAsync(ShoppingCart shoppingCart, ISession session)
@@ -76,6 +85,13 @@ namespace EShop.Business
             return productsInCart;
         }
 
+        public async Task<int> CountProductsInShoppingCart(ShoppingCart shoppingCart)
+        {
+             return await (from scp in _context.ShoppingCartProduct
+                     where scp.ShoppingCart.Id == shoppingCart.Id
+                     select scp).CountAsync();
+        }
+
         public async Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart cart, int quantity, ISession session)
         {
             if (cart != null)
@@ -83,6 +99,7 @@ namespace EShop.Business
                 int returnCode = 1;
                 // 0 - success
                 // 1 - error
+                // 2 - limit reached
                 await Task.Run(() =>
                 {
                     try
@@ -95,29 +112,51 @@ namespace EShop.Business
                         // No such product found
                         if (shoppingCartProduct == null)
                         {
-                            shoppingCartProduct = new ShoppingCartProduct
+                            int productsInCart = 0;
+                            var t = Task.Run(async () => { productsInCart = await CountProductsInShoppingCart(cart); });
+                            t.Wait();
+
+                            if (productsInCart >= maxProductsInShoppingCart)
                             {
-                                Product = product,
-                                ShoppingCart = cart,
-                                Quantity = quantity
-                            };
+                                returnCode = 2;
+                            }
+                            else
+                            {
+                                shoppingCartProduct = new ShoppingCartProduct
+                                {
+                                    Product = product,
+                                    ShoppingCart = cart,
+                                    Quantity = quantity
+                                };
+
+                                _context.Add(shoppingCartProduct);
+
+                                var t2 = Task.Run(
+                                        async () =>
+                                        {
+                                            await _context.SaveChangesAsync();
+                                        });
+                                t2.Wait();
+                                returnCode = 0; // success
+                            }
                         }
                         // Product found: update it
                         else
                         {
                             shoppingCartProduct.ShoppingCart = cart;
                             shoppingCartProduct.Quantity += quantity;
+                        
+
+                            _context.Update(shoppingCartProduct);
+
+                            var t2 = Task.Run(
+                                async () =>
+                                {
+                                    await _context.SaveChangesAsync();
+                                });
+                            t2.Wait();
+                            returnCode = 0; // success
                         }
-
-                        _context.Update(shoppingCartProduct);
-
-                        var t2 = Task.Run(
-                            async () =>
-                            {
-                                await _context.SaveChangesAsync();
-                            });
-                        t2.Wait();
-                        returnCode = 0; // success
                     }
                     catch (Exception)
                     {
@@ -129,8 +168,15 @@ namespace EShop.Business
             }
             else
             {
-                await session.AddSessionProductAsync(product.Id, quantity);
-                return 0;
+                if (await session.CountProducts() >= maxProductsInShoppingCart)
+                {
+                    return 2;
+                }
+                else
+                {
+                    await session.AddSessionProductAsync(product.Id, quantity);
+                    return 0;
+                }
             }
         }
 
@@ -218,6 +264,58 @@ namespace EShop.Business
             {
                 return await session.DeleteSessionProductAsync(product.Id) ? 0 : 1;
             }
+        }
+        public async Task<ShoppingCart> FindShoppingCartByIdAsync(int Id)
+        {
+            ShoppingCart shoppingCart = null;
+            shoppingCart = await _context.ShoppingCart.FindAsync(Id);
+            return shoppingCart;
+        }
+
+        public async Task<IQueryable<ShoppingCartProduct>> QuerySavedProductsAsync(ShoppingCart shoppingCart)
+        {
+            IQueryable<ShoppingCartProduct> products = null;
+            if (shoppingCart != null)
+            {
+                await Task.Run(() =>
+                {
+                    products = from p in _context.Product
+                               join scp in _context.ShoppingCartProduct on p.Id equals scp.Product.Id
+                               join sc in _context.ShoppingCart on scp.ShoppingCart.Id equals sc.Id
+                               where sc.Id == shoppingCart.Id
+                               select new ShoppingCartProduct
+                               {
+                                   Id = scp.Id,
+                                   Product = p,
+                                   ShoppingCart = sc,
+                                   Quantity = scp.Quantity
+                               };
+                });
+            }
+            return (products.ToList().AsQueryable());
+        }
+
+        public async Task<ShoppingCart> CreateNewShoppingCart(HttpContext httpContext)
+        {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            await _context.ShoppingCart.AddAsync(shoppingCart);
+            await _context.SaveChangesAsync();
+            await TransferSessionProducts(httpContext, shoppingCart);
+            return shoppingCart;
+        }
+
+        public async Task AssignNewShoppingCart(ApplicationUser user)
+        {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            await _context.ShoppingCart.AddAsync(shoppingCart);
+            await _context.SaveChangesAsync();
+            user.ShoppingCartId = shoppingCart.Id;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> TransferSessionProducts(HttpContext httpContext, ShoppingCart shoppingCart)
+        {
+            return await httpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, this);
         }
     }
 }

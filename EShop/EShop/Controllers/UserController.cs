@@ -1,199 +1,223 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using EShop.Data;
+using EShop.Business;
 using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
+    [Authorize(Roles = "Admin, SuperAdmin")]
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
+        private readonly int usersPerPage;
 
-        public UserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UserController(UserManager<ApplicationUser> userManager, IUserService userService, IConfiguration configuration)
         {
-            _context = context;
             _userManager = userManager;
+            _userService = userService;
+
+            if (!int.TryParse(configuration["PaginationConfig:UsersPerPage"], out usersPerPage))
+            {
+                throw new InvalidOperationException("Invalid PaginationConfig:UsersPerPage in appsettings.json. Not an int value.");
+            }
         }
 
-        [Authorize(Roles = "Admin")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int pageNumber = 0)
         {
-            var users = from u in _context.Users
-                        join ur in _context.UserRoles on u.Id equals ur.UserId
-                        join r in _context.Roles on ur.RoleId equals r.Id
-                        select new UserInRoleViewModel
-                        {
-                            User = u,
-                            Role = r.Name
-                        };
+            //IQueryable<UserInRoleViewModel> users = null;
 
-            return View(users);
-        }
+            // Tuple<pageCount, usersInRoles>
+            Tuple<int, IQueryable<UserInRoleViewModel>> tuple;
 
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            if (id == null)
+            if (HttpContext.User.IsInRole("SuperAdmin"))
             {
-                return NotFound();
-            }
-
-            var applicationUser = await _context.Users
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-
-            return View(applicationUser);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
-        {
-
-
-            var user = await _userManager.FindByIdAsync(id);
-
-            if(user.ShoppingCartId != null)// ADMIN neturi shopping-cart
-            { 
-                var shoppingCart = await _context.ShoppingCart.FindAsync(user.ShoppingCartId);
-
-
-                //Removed since with ondelete cascade, this is no longer needed
-                /*var ShoppingCartProducts = from scp in _context.ShoppingCartProduct
-                                           where scp.ShoppingCart.Id == shoppingCart.Id
-                                           select scp;
-
-                foreach (ShoppingCartProduct scp in ShoppingCartProducts)
-                {
-                    _context.ShoppingCartProduct.Remove(scp);
-                }*/
-
-                _context.ShoppingCart.Remove(shoppingCart);
-
-                await _context.SaveChangesAsync();
-            }
-
-            await _userManager.DeleteAsync(user);
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ManageAccountSuspension(string id, bool suspendAccount)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var applicationUser = await _context.Users
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-
-            if(suspendAccount) return View("Suspend", applicationUser);
-            else return View("Restore", applicationUser);
-        }
-
-        [HttpPost, ActionName("ManageAccountSuspension")]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManageAccountSuspensionConfirmed(string id, bool suspendAccount)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            var isLocked = await _userManager.IsLockedOutAsync(user);
-
-            if (isLocked && !suspendAccount)
-            {
-                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
-                await _userManager.SetLockoutEnabledAsync(user, false);
-                await _userManager.SetLockoutEndDateAsync(user, null);
-
-                // To check lockout status without using _userManager (in Razor view pages)
-                user.IsSuspended = false;
-                await _userManager.UpdateAsync(user);
-            }
-            else if(!isLocked && suspendAccount)
-            {
-                // Lockout only works if both properties are set (lockoutEnabled and lockoutEndDate)
-                await _userManager.SetLockoutEnabledAsync(user, true);
-                await _userManager.SetLockoutEndDateAsync(user, DateTime.Today.AddYears(200)); // forever
-
-                // To check lockout status without using _userManager (in Razor view pages)
-                user.IsSuspended = true;
-                await _userManager.UpdateAsync(user);
-                await _userManager.UpdateSecurityStampAsync(user);
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ManageAdminPrivileges(string id, bool grantPrivileges)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var applicationUser = await _context.Users
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-            if(grantPrivileges) return View("GiveAdminPrivileges", applicationUser);
-            else return View("RemoveAdminPrivileges", applicationUser);
-        }
-
-
-        [HttpPost, ActionName("ManageAdminPrivileges")]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManageAdminPrivilegesConfirmed(string id, bool grantPrivileges)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-
-            // Will always return single value list (one role per user)
-            var roles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRoleAsync(user, roles[0]);
-
-            if(grantPrivileges)
-            {
-                await _userManager.AddToRoleAsync(user, "Admin");
-                user.IsAdmin = true;
-                await _userManager.UpdateAsync(user);
-                await _userManager.UpdateSecurityStampAsync(user);
+                //users = await _userService.QueryUsersInRoles(new string[]{ "Customer", "Admin" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                tuple = await _userService.QueryUsersInRolesByPageAsync(pageNumber, usersPerPage);
             }
             else
             {
-                await _userManager.AddToRoleAsync(user, "Customer");
-                // To check admin status without using _userManager (in Razor view pages)
-                user.IsAdmin = false;
-                await _userManager.UpdateAsync(user);
-                await _userManager.UpdateSecurityStampAsync(user);
+                //users = await _userService.QueryUsersInRoles(new string[] { "Customer" }, new string[] { _userManager.GetUserId(HttpContext.User) });
+                tuple = await _userService.QueryUsersInRolesByPageAsync(pageNumber, usersPerPage);
             }
+            ViewBag.CurrentUserRoles = await _userManager.GetRolesAsync(await _userManager.GetUserAsync(HttpContext.User));
 
-            return RedirectToAction(nameof(Index));
+            // pagination
+            int pageCount = tuple.Item1;
+            ViewBag.PageCount = pageCount;
+
+            if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
+            else ViewBag.NextPageNumber = null;
+            if (pageNumber > 0) ViewBag.PreviousPageNumber = pageNumber - 1;
+            else ViewBag.PreviousPageNumber = null;
+
+            ViewBag.CurrentPageNumber = pageNumber;
+
+            return View(tuple.Item2);
         }
 
-        private bool ApplicationUserExists(string id)
+        public async Task<IActionResult> Delete(string id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                if ((await _userService.IsInRoleById(id, "Admin") && User.IsInRole("SuperAdmin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("Admin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("SuperAdmin")))
+                {
+                    if (id == null)
+                    {
+                        return NotFound();
+                    }
+
+                    var applicationUser = await _userManager.FindByIdAsync(id);
+
+                    if (applicationUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return View(applicationUser);
+                }
+                else return new NotFoundResult();
+            }
+            else return new NotFoundResult();
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                if ((await _userService.IsInRoleById(id, "Admin") && User.IsInRole("SuperAdmin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("Admin")) ||
+                    (await _userService.IsInRoleById(id, "Customer") && User.IsInRole("SuperAdmin")))
+                {
+                    var user = await _userManager.FindByIdAsync(id);
+
+                    await _userService.DestroyAllCustomerData(user);
+
+                    await _userManager.DeleteAsync(user);
+
+                    return RedirectToAction(nameof(Index));
+                }
+                else return new NotFoundResult();
+            }
+            else return new NotFoundResult();
+        }
+
+        public async Task<IActionResult> ManageAccountSuspension(string id, bool suspendAccount)
+        {
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var applicationUser = await _userManager.FindByIdAsync(id);
+                
+                if (applicationUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (suspendAccount) return View("Suspend", applicationUser);
+                else return View("Restore", applicationUser);
+            }
+            else return new NotFoundResult();
+        }
+
+        [HttpPost, ActionName("ManageAccountSuspension")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageAccountSuspensionConfirmed(string id, bool suspendAccount)
+        {
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                var isLocked = await _userManager.IsLockedOutAsync(user);
+
+                if (isLocked && !suspendAccount)
+                {
+                    user.LockoutEnd = null;
+                    // To check lockout status without using _userManager (in Razor view pages)
+                    user.IsSuspended = false;
+                }
+                else if (!isLocked && suspendAccount)
+                {
+                    user.LockoutEnd = DateTime.Today.AddYears(200); // forever
+                                                                    // To check lockout status without using _userManager (in Razor views)
+                    user.IsSuspended = true;
+                }
+
+                await _userManager.UpdateAsync(user);
+
+                return RedirectToAction(nameof(Index));
+            }
+            else return new NotFoundResult();
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<IActionResult> ManageAdminPrivileges(string id, bool grantPrivileges)
+        {
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var applicationUser = await _userManager.FindByIdAsync(id);
+
+                if (applicationUser == null)
+                {
+                    return NotFound();
+                }
+                if (grantPrivileges) return View("GiveAdminPrivileges", applicationUser);
+                else return View("RemoveAdminPrivileges", applicationUser);
+            }
+            else return new NotFoundResult();
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPost, ActionName("ManageAdminPrivileges")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageAdminPrivilegesConfirmed(string id, bool grantPrivileges)
+        {
+            if (await _userService.IsInRoleById(id, "SuperAdmin") == false)
+            {
+                var user = await _userManager.FindByIdAsync(id);
+
+                // Will always return single value list (one role per user)
+                var roles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRoleAsync(user, roles[0]);
+
+                if (grantPrivileges)
+                {
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                    user.IsAdmin = true;
+                    await _userManager.UpdateAsync(user);
+                    await _userManager.UpdateSecurityStampAsync(user);
+
+                    await _userService.DestroyAllCustomerData(user);
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, "Customer");
+                    // To check admin status without using _userManager (in Razor views)
+                    user.IsAdmin = false;
+                    await _userManager.UpdateAsync(user);
+                    await _userManager.UpdateSecurityStampAsync(user);
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            else return new NotFoundResult();
         }
     }
 }

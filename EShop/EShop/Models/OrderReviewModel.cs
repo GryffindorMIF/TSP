@@ -9,6 +9,8 @@ namespace EShop.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        public int Rating { get; set; }
+
         public string CustomerComment { get; set; }
 
         [Required]
@@ -17,6 +19,6 @@ namespace EShop.Models
 
         [Required]
         [ForeignKey("OrderId")]
-        public virtual Order Order { get; set; }
+        public int? OrderId { get; set; }
     }
 }

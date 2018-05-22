@@ -1,0 +1,203 @@
+﻿@model EShop.Models.OrderHistoryModel
+@{
+    ViewData["Title"] = "Order";
+}
+
+<div style="margin-left:auto">
+    <h2>Orders Awaiting Confirmation</h2>
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <p>User</p>
+                </th>
+                <th>
+                    <p>Order Id</p>
+                </th>
+                <th>
+                    <p>Shopping Cart Id</p>
+                </th>
+                <th>
+                    <p>Total Price</p>
+                </th>
+                <th>
+                    <p>Purchase Time</p>
+                </th>
+                <th>
+                    <p>Confirm Order</p>
+                </th>
+                <th>
+                    <p>Reject Order</p>
+                </th>
+                <th>
+                    <p>Review</p>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.Orders.Select((value, index) => new { Value = value, Index = index }))
+            {
+                <tr>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>User</strong>
+                        </div>
+
+                        @Html.DisplayFor(modelItem => item.Value.User.Email)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Order id</strong>
+                        </div>
+
+                        @Html.DisplayFor(modelItem => item.Value.Id)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Shopping-cart id</strong>
+                        </div>
+
+                        @Html.DisplayFor(modelItem => item.Value.ShoppingCartId)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Total price</strong>
+                        </div>
+
+                        @Html.DisplayFor(modelItem => item.Value.TotalPrice)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Purchase time</strong>
+                        </div>
+
+                        @Html.DisplayFor(modelItem => item.Value.PurchaseDate)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Confirm order</strong>
+                        </div>
+
+                        @switch (item.Value.StatusCode)
+                        {
+                            case 1:
+                                var rowVersion = "";
+                                if (item.Value.RowVersion != null)
+                                {
+                                    rowVersion = Convert.ToBase64String(item.Value.RowVersion);
+                                }
+                                <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
+                                    <button id="checkout-btn" type="submit" class="btn btn-success">
+                                        <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                                break;
+                            case 2:
+                                <p>Order Confirmed</p>
+                                break;
+                            case 3:
+                                <p>Order Rejected</p>
+                                break;
+                            case 4:
+                                <p>Order Confirmed</p>
+                                break;
+                        }
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Reject order</strong>
+                        </div>
+
+                        @switch (item.Value.StatusCode)
+                        {
+                            case 1:
+                                var rowVersion = "";
+                                if (item.Value.RowVersion != null)
+                                {
+                                    rowVersion = Convert.ToBase64String(item.Value.RowVersion);
+                                }
+                                <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
+                                    <button id="checkout-btn" type="submit" class="btn btn-danger">
+                                        <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                                break;
+                            case 2:
+                                <p>Order Confirmed</p>
+                                break;
+                            case 3:
+                                <p>Order Rejected</p>
+                                break;
+                            case 4:
+                                <p>Order Confirmed</p>
+                                break;
+                        }
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Review</strong>
+                        </div>
+
+                        @if (item.Value.StatusCode == 4)
+                        {
+                            <span id="star-1-@item.Index" class="fa fa-star"></span>
+                            <span id="star-2-@item.Index" class="fa fa-star"></span>
+                            <span id="star-3-@item.Index" class="fa fa-star"></span>
+                            <span id="star-4-@item.Index" class="fa fa-star"></span>
+                            <span id="star-5-@item.Index" class="fa fa-star"></span>
+
+                            <p><div id="comment-@item.Index"></div></p>
+
+                            /*
+                            <p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>
+                            */
+                        }
+                        else
+                        {
+                            <p>Review Unavailable</p>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @Html.Partial("_AdminViewPagination")
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script>
+        // star-rating
+        @foreach (var item in Model.Orders.Select((value, index) => new { Value = value, Index = index }))
+        {
+            if (item.Value.StatusCode == 4)
+            {
+                string comment = Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment;
+                string[] splitComment = comment.Split(':');
+                int rating = int.Parse(splitComment[0]);
+
+                comment = "";
+                // Is naujo surenkam comentara be prefixo (ratingo).
+                // Taip elgiames, in case useris irase n ":" simboliu, o vienas is ju zymi prefixo pabaiga
+                for(int i=1; i<splitComment.Count(); i++)
+                {
+                    if (i != 1)
+                    {
+                        comment = comment + ':' + splitComment[i];
+                    }
+                    else
+                    {
+                        comment = splitComment[i];
+                    }
+                }
+
+                for(int i=1; i<=rating; i++)
+                {
+                    @:$('#star-' + @i + '-' + @item.Index).addClass('checked');
+                }
+                @:$('#comment-@item.Index').text("@comment");
+            }
+        }
+</script>

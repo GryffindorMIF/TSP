@@ -77,6 +77,36 @@ namespace EShop.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("EShop.Models.Attribute", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("IconUrl");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Attribute");
+                });
+
+            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeId");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeId");
+
+                    b.ToTable("AttributeValue");
+                });
+
             modelBuilder.Entity("EShop.Models.CardInfo", b =>
                 {
                     b.Property<int>("Id")
@@ -184,6 +214,10 @@ namespace EShop.Data.Migrations
 
                     b.Property<DateTime>("PurchaseDate");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.Property<int?>("ShoppingCartId")
                         .IsRequired();
 
@@ -195,8 +229,6 @@ namespace EShop.Data.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ShoppingCartId");
 
                     b.HasIndex("UserId");
 
@@ -213,12 +245,12 @@ namespace EShop.Data.Migrations
                     b.Property<int?>("OrderId")
                         .IsRequired();
 
+                    b.Property<int>("Rating");
+
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.HasIndex("UserId");
 
@@ -261,6 +293,24 @@ namespace EShop.Data.Migrations
                     b.ToTable("ProductAd");
                 });
 
+            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeValueId");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeValueId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAttributeValue");
+                });
+
             modelBuilder.Entity("EShop.Models.ProductCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -292,7 +342,8 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasAlternateKey("ProductId")
+                        .HasName("AlternateKey_ProductId");
 
                     b.ToTable("ProductDiscount");
                 });
@@ -306,8 +357,7 @@ namespace EShop.Data.Migrations
 
                     b.Property<bool>("IsPrimary");
 
-                    b.Property<int?>("ProductId")
-                        .IsRequired();
+                    b.Property<int>("ProductId");
 
                     b.HasKey("Id");
 
@@ -476,6 +526,14 @@ namespace EShop.Data.Migrations
                     b.ToTable("UserTokens");
                 });
 
+            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
+                {
+                    b.HasOne("EShop.Models.Attribute", "Attribute")
+                        .WithMany()
+                        .HasForeignKey("AttributeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("EShop.Models.CardInfo", b =>
                 {
                     b.HasOne("EShop.Models.ApplicationUser", "User")
@@ -506,11 +564,6 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.Order", b =>
                 {
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
-                        .WithMany()
-                        .HasForeignKey("ShoppingCartId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -519,11 +572,6 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
                 {
-                    b.HasOne("EShop.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -532,6 +580,19 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("EShop.Models.ProductAd", b =>
                 {
+                    b.HasOne("EShop.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
+                {
+                    b.HasOne("EShop.Models.AttributeValue", "AttributeValue")
+                        .WithMany()
+                        .HasForeignKey("AttributeValueId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("EShop.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -554,8 +615,8 @@ namespace EShop.Data.Migrations
             modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
                 {
                     b.HasOne("EShop.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("ProductDiscount")
+                        .HasForeignKey("EShop.Models.ProductDiscount", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

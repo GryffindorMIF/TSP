@@ -25,7 +25,6 @@ namespace EShop.Controllers
     [Route("[controller]/[action]")]
     public class ManageController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
@@ -37,7 +36,6 @@ namespace EShop.Controllers
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
 
         public ManageController(
-          ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
           IEmailSender emailSender,
@@ -45,7 +43,6 @@ namespace EShop.Controllers
           ILogger<ManageController> logger,
           UrlEncoder urlEncoder)
         {
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _addressManager = addressManager;
@@ -77,7 +74,7 @@ namespace EShop.Controllers
 
             return View(model);
         }
-
+        /*
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(IndexViewModel model)
@@ -139,7 +136,7 @@ namespace EShop.Controllers
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToAction(nameof(Index));
-        }
+        }*/
 
         // ¯\_(ツ)_/¯
         [Authorize(Roles = "Customer")]
@@ -152,8 +149,7 @@ namespace EShop.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            DeliveryAddress addressOnDeathrow = await _context.DeliveryAddress.
-                Where(da => da.Zipcode == model.RemovalZipcode).FirstOrDefaultAsync();
+            DeliveryAddress addressOnDeathrow = await _addressManager.FindAddressByZipcodeAsync(model.RemovalZipcode);
 
             int resultCode = await _addressManager.RemoveDeliveryAddressAsync(user, addressOnDeathrow);
 
@@ -202,28 +198,35 @@ namespace EShop.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            try
             {
-                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                }
+
+                DeliveryAddress newAddress = await _addressManager.FindAddressByZipcodeAsync(model.Zipcode);
+
+                if (newAddress == null)
+                {
+                    newAddress = new DeliveryAddress();
+                    newAddress.Country = model.Country;
+                    newAddress.County = model.County;
+                    newAddress.City = model.City;
+                    newAddress.Address = model.Address;
+                    newAddress.Zipcode = model.Zipcode;
+                    newAddress.User = user;
+                    await _addressManager.CreateDeliveryAddress(newAddress);
+                }
+
+                StatusMessage = "New delivery address added";
             }
-
-            DeliveryAddress newAddress = await _context.DeliveryAddress.Where(da => da.Zipcode == model.Zipcode).FirstOrDefaultAsync();
-
-            if (newAddress == null)
+            catch (Exception)
             {
-                newAddress = new DeliveryAddress();
-                newAddress.Country = model.Country;
-                newAddress.County = model.County;
-                newAddress.City = model.City;
-                newAddress.Address = model.Address;
-                newAddress.Zipcode = model.Zipcode;
-                newAddress.User = user;
-                _context.DeliveryAddress.Add(newAddress);
-                await _context.SaveChangesAsync();
+                StatusMessage = "Failed to add new delivery address";
             }
-
-            StatusMessage = "New delivery address added";
+            
 
             return RedirectToAction(nameof(ManageDeliveryAddresses));
         }

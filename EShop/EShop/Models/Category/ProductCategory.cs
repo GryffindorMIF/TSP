@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Models
 {
-    public class ProductCategory
+    public class ProductCategory : IEquatable<ProductCategory>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -20,5 +20,10 @@ namespace EShop.Models
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
+
+        public bool Equals(ProductCategory other)
+        {
+            return ProductId == other.ProductId && CategoryId == other.CategoryId;
+        }
     }
 }

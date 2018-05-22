@@ -1,0 +1,58 @@
+﻿@model DataImportViewModel
+@{
+    ViewData["Title"] = "Import / Export";
+}
+
+<div class="row">
+    <br />
+    <span asp-validation-summary="All" class="text-danger"></span>
+</div>
+@if (ViewBag.Success != null)
+{
+    <div class="row">
+        <span class="text-success">@ViewBag.Success</span>
+    </div>
+}
+@if (ViewBag.AlreadyRunning != null)
+{
+    <div class="row">
+        <span class="text-danger">@ViewBag.AlreadyRunning</span>
+    </div>
+}
+<div class="row">
+    <div class="col-md-4">
+        <h2>Export</h2>
+        <hr>
+        <h5>Export all product data to an Excel file.</h5>
+        <form asp-action="Export">
+            <button type="submit" class="btn btn-info">
+                Export data
+            </button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <h2>Import</h2>
+        <hr>
+        <h5>Import product data from an Excel file.</h5>
+        <form asp-action="Import" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="control-label">Import file: </label> <br />
+                <input asp-for="ImportFile" class="form-control"></input>
+            </div>
+            <button type="submit" class="btn btn-warning">
+                Import data
+            </button>
+        </form>
+        <hr>
+    </div>
+    <div class="col-md-4">
+        <h2>Wipe</h2>
+        <hr>
+        <h5>Wipe all product data from the server.</h5>
+        <form asp-action="Wipe">
+            <button type="submit" class="btn btn-danger">
+                Wipe data
+            </button>
+        </form>
+    </div>
+</div>

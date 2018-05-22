@@ -30,6 +30,9 @@ namespace EShop.Data
         public DbSet<ProductDiscount> ProductDiscount { get; set; }
         public DbSet<ProductAd> ProductAd { get; set; }
         public DbSet<OrderReviewModel> OrderReview { get; set; }
+        public DbSet<Models.AttributeValue> AttributeValue { get; set; }
+        public DbSet<Models.Attribute> Attribute { get; set; }
+        public DbSet<ProductAttributeValue> ProductAttributeValue { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -40,7 +43,7 @@ namespace EShop.Data
             // Add your customizations after calling base.OnModelCreating(builder);
 
             // Renaming default ASP.NET Identity tables (AspnetUsers to Users, etc.)
-            builder.Entity<ApplicationUser>(entity => { entity.ToTable("Users"); }); 
+            builder.Entity<ApplicationUser>(entity => { entity.ToTable("Users"); });
             builder.Entity<IdentityRole>(entity => { entity.ToTable("Roles"); });
             builder.Entity<IdentityUserRole<string>>(entity => { entity.ToTable("UserRoles"); });
             builder.Entity<IdentityUserClaim<string>>(entity => { entity.ToTable("UserClaims"); });
@@ -52,7 +55,7 @@ namespace EShop.Data
             builder.Entity<Category>()
                 .HasIndex(c => c.Name)
                 .IsUnique();
-            
+
             // many-to-many mapping
             builder.Entity<ProductCategory>()
                 .HasOne(pc => pc.Category)
@@ -64,6 +67,31 @@ namespace EShop.Data
                 .HasOne(pc => pc.Product)
                 .WithMany(p => p.ProductCategories)
                 .HasForeignKey(pc => pc.ProductId);
+
+            builder.Entity<ProductDiscount>()
+                .HasAlternateKey(c => c.ProductId)
+                .HasName("AlternateKey_ProductId");          
+
+            /*
+            builder.Entity<ProductAttributeValue>()
+                .HasAlternateKey(c => new { c.ProductId, c.AttributeValueId })
+                .HasName("AlternateKey_ProductId_AttributeValueId");
+
+            */
+
+            /*builder.Entity<ProductDiscount>()
+                .HasIndex(pd => pd.ProductId)
+                .IsUnique();*/
+
+            //one-to-one mapping (unique)
+            builder.Entity<ProductDiscount>()
+                .HasOne(pd => pd.Product)
+                .WithOne(p => p.ProductDiscount)
+                .HasForeignKey<ProductDiscount>(pd => pd.ProductId);
+
+            builder.Entity<Product>()
+                .HasOne(p => p.ProductDiscount)
+                .WithOne(pd => pd.Product);
         }
     }
 }

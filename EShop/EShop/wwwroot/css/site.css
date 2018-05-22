@@ -1,10 +1,24 @@
-﻿body {
+﻿/* font-awesome.min.css */
+/* star-rating */
+.checked {
+    color: orange;
+}
+
+.pagination > li.active > a, .pagination > li.active > a:hover {
+    background: grey;
+    color: white;
+    border-color: dimgrey;
+}
+
+.pagination > li > a {
+    color: dimgrey;
+}
+
+body {
     padding-top: 50px;
     padding-bottom: 20px;
-
     font-family: Verdana, sans-serif;
     margin: 0;
-
 }
 
 /* Wrapping element */
@@ -41,6 +55,7 @@
 .sidenav {
     height: 100%;
     width: auto;
+    min-width: 46px;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -53,11 +68,31 @@
     transition: 0.5s;
 }
 
+.sidenav li {
+    margin: 0 0 3px 0;
+}
+
+.labeled-input input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    margin: 3px;
+    background-color: white;
+}
+
 .sidenav a {
     padding: 0;
     text-decoration: none;
     color: #818181;
     display: inline;
+    width: auto;
 }
 
 .sidenav a:hover {
@@ -65,7 +100,7 @@
 }
 
 .main {
-    margin-left: 180px;
+    margin-left: 46px;
     padding: 0 10px;
 }
 
@@ -93,6 +128,47 @@ ul {
     vertical-align: middle;
 }
 
+.m-faqs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-column-gap: 10px;
+    width: 100%;
+}
+
+.m-faqs_item {
+    margin-bottom: 20px;
+    text-align: center;
+    border: solid;
+    border-width: 1px;
+    border-color: lightgrey;
+    padding: 10px;
+}
+
+.m-faqs_item:hover {
+    border-color: black;
+}
+
+.m-faqs_add_btn_container {
+    padding-bottom: 0;
+    bottom: 0;
+}
+
+.btn-add {
+    background-color: grey;
+}
+
+.btn-add:hover {
+    background-color: black;
+}
+
+.btn-add text {
+    color: white;
+    padding-left: 5px;
+}
+
+.vertical-separator{
+    display:inline-block;
+}
 /*For image enlargement modal*/
 @-webkit-keyframes zoom {
     from {
@@ -114,9 +190,119 @@ ul {
     }
 }
 
-/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 1500px){
+    #side-nav-content{
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 1200px) {
+    .modal-content {
+        width: 100%;
+    }
+
+    .m-faqs {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .navbar-header {
+        float: none;
+    }
+    .navbar-left,.navbar-right {
+        float: none !important;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-collapse {
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .navbar-fixed-top {
+        top: 0;
+        border-width: 0 0 1px;
+    }
+    .navbar-collapse.collapse {
+        display: none!important;
+    }
+    .navbar-nav {
+        float: none!important;
+        margin-top: 7.5px;
+    }
+    .navbar-nav>li {
+        float: none;
+    }
+    .navbar-nav>li>a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .collapse.in{
+        display:block !important;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    .modal-content {
+        width: 100%;
+    }
+
+    .m-faqs {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media only screen and (max-width: 700px) {
     .modal-content {
         width: 100%;
     }
+
+    .main {
+        text-align: center;
+    }
+
+    .m-faqs {
+        grid-template-columns: 1fr;
+    }
+    .main-carousel {
+        display: none;
+    }
+
+    tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+
+        border: solid;
+        border-width: 1px;
+        border-color: lightgrey;
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    td {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    td[colspan] {
+      width: 100%;
+    }
+
+    thead {
+        display: none;
+    }
+
+    .mobile-friendly-tag {
+        display: block !important;
+    }
+
+    td a {
+        display: block !important;
+    }
+
+    .vertical-separator {
+        display: none !important;
+    }
 }
+

@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.AccountViewModels;
 using EShop.Business;
@@ -27,7 +23,6 @@ namespace EShop.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
-        private readonly ApplicationDbContext _context;
         private readonly IShoppingCartService _shoppingCartService;
 
         public AccountController(
@@ -35,14 +30,12 @@ namespace EShop.Controllers
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            ApplicationDbContext context, 
             IShoppingCartService shoppingCartService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
-            _context = context;
             _shoppingCartService = shoppingCartService;
         }
 
@@ -59,7 +52,7 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
-    
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -82,7 +75,7 @@ namespace EShop.Controllers
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning("User account locked out. Check if you did not confirm your email.");
                     return RedirectToAction(nameof(Lockout));
                 }
                 else
@@ -229,11 +222,7 @@ namespace EShop.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                ShoppingCart shoppingCart = new ShoppingCart();
-                await _context.ShoppingCart.AddAsync(shoppingCart);
-                await _context.SaveChangesAsync();
-
-                await HttpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, _shoppingCartService);
+                ShoppingCart shoppingCart = await _shoppingCartService.CreateNewShoppingCart(HttpContext);
 
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, IsSuspended = false, ShoppingCartId = shoppingCart.Id };
 
@@ -242,16 +231,23 @@ namespace EShop.Controllers
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    string ctoken = _userManager.GenerateEmailConfirmationTokenAsync(user).Result;
+                    //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    string ctokenLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = ctoken }, protocol: HttpContext.Request.Scheme);
+                    await _emailSender.SendEmailConfirmationAsync(model.Email, ctokenLink);
 
                     // Default role for each new user
                     await _userManager.AddToRoleAsync(user, "Customer");
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
+                    //Lockout until email confirmation
+                    user.LockoutEnabled = true;
+                    user.LockoutEnd = DateTime.Today.AddYears(200);
+                    await _userManager.UpdateAsync(user);
+
+                    //Don't sign in user, require to confirm e-mail
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
+                    //_logger.LogInformation("User created a new account with password.");
+                    return View("AskConfirmEmail");
                 }
                 AddErrors(result);
             }
@@ -350,19 +346,28 @@ namespace EShop.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            if (userId == null || code == null)
+            if (userId == null || token == null)
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                //throw new ApplicationException("WAS IST DAS OMAGAD user id: " + userId + " CODE: " + token);
+                return View("Error");//, new { ShowRequestId = true, RequestId = 1 });
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+                //throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+                return View("Error");
             }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            if (!user.EmailConfirmed)
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                user.LockoutEnabled = false;
+                await _userManager.UpdateAsync(user);
+                return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            }
+            //If email already confirmed
+            return View("Error");
         }
 
         [HttpGet]
@@ -390,8 +395,7 @@ namespace EShop.Controllers
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-                await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                await _emailSender.SendEmailForgotPasswordAsync(model.Email, callbackUrl);
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
