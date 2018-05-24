@@ -145,10 +145,10 @@ namespace EShop.Business.Services
                           select oi).ToListAsync();
         }
 
-        public async Task CreateProductImage(ProductImage productImage)
+        public async Task AddProductImage(ProductImage productImage)
         {
-            _context.Add(productImage);
-            await _context.SaveChangesAsync();
+            await _context.AddAsync(productImage);
+            //await _context.SaveChangesAsync(); ANDRIUS DEBILAS SITO LINE NEREIKIA
         }
 
         public async Task DeleteProductImage(ProductImage productImage)

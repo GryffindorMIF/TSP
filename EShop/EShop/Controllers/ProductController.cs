@@ -83,7 +83,7 @@ namespace EShop.Controllers
                                 Product = product
                             };
                             //_context.Add(primaryImage);
-                            await _productService.CreateProductImage(primaryImage);
+                            await _productService.AddProductImage(primaryImage);
                         }
                         else
                         {
@@ -106,7 +106,7 @@ namespace EShop.Controllers
                                     Product = product
                                 };
                                 //_context.Add(otherImage);
-                                await _productService.CreateProductImage(otherImage);
+                                await _productService.AddProductImage(otherImage);
                             }
                             else
                             {
@@ -206,7 +206,7 @@ namespace EShop.Controllers
                                 await _appEnvironment.DeleteImageAsync(possiblePrimaryImages[0].ImageUrl, "products");
                                 await _productService.DeleteProductImage(possiblePrimaryImages[0]);
                             }
-                            await _productService.CreateProductImage(primaryImage);
+                            await _productService.AddProductImage(primaryImage);
                         }
                         else
                         {
@@ -230,7 +230,7 @@ namespace EShop.Controllers
                                     ImageUrl = otherImagePath,
                                     Product = model.Product
                                 };
-                                await _productService.CreateProductImage(otherImage);
+                                await _productService.AddProductImage(otherImage);
                             }
                             else
                             {

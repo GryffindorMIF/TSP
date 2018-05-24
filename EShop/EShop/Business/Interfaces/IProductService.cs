@@ -19,7 +19,7 @@ namespace EShop.Business
 
         //Product Images
         Task<IList<ProductImage>> GetAllProductImages(int productId);
-        Task CreateProductImage(ProductImage productImage);
+        Task AddProductImage(ProductImage productImage);
         Task DeleteProductImage(ProductImage productImage);
 
         //Product
