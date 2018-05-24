@@ -63,6 +63,16 @@ namespace EShop.Business
                     _context.Remove(a);
                 }
 
+                var scphs = await (from scph in _context.ShoppingCartProductHistory
+                                          join sc in _context.ShoppingCart on scph.ShoppingCartId equals sc.Id
+                                          where user.ShoppingCartId == sc.Id
+                                          select scph).ToListAsync();
+
+                foreach(var scph in scphs)
+                {
+                    _context.Remove(scph);
+                }
+
                 await _context.SaveChangesAsync();
 
                 return 0;// success

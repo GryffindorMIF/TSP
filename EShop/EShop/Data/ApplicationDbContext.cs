@@ -33,6 +33,7 @@ namespace EShop.Data
         public DbSet<Models.AttributeValue> AttributeValue { get; set; }
         public DbSet<Models.Attribute> Attribute { get; set; }
         public DbSet<ProductAttributeValue> ProductAttributeValue { get; set; }
+        public DbSet<ShoppingCartProductHistory> ShoppingCartProductHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

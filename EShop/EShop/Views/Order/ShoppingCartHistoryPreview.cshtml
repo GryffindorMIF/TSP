@@ -1,0 +1,91 @@
+﻿@model IEnumerable<EShop.Models.ShoppingCartProductHistory>
+@using EShop.Business
+@inject IProductService productService
+
+@{
+    ViewData["Title"] = "Shopping cart";
+}
+
+<h2>Shopping cart history</h2>
+@{ Decimal totalCost = 0;
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    Quantity
+                </th>
+                <th>                  
+                    Total price
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+            {               
+                var totalPrice = item.Value.ProductQuantity * item.Value.ProductPrice;
+                totalCost += totalPrice;
+
+                <tr>
+                    <td>
+                        @{ 
+                            // ieskom pagal name ar dar egzistuoja toks produktas
+                            var product = await productService.FindProductByName(item.Value.ProductName);
+                            if(product != null)
+                            {
+
+                                <text>
+                                    <a asp-controller="Home" asp-action="ProductPage" asp-route-id="@product.Id">
+                                        @Html.DisplayFor(modelItem => item.Value.ProductName)<br />
+                                        @if (item.Value.ProductPrimaryImageUrl != null)
+                                        {
+                                            <img src="~/images/products/@item.Value.ProductPrimaryImageUrl" height="120" width="85">
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/products/product-image-placeholder.jpg" height="120" width="85">
+                                        }
+                                    </a>
+                                </text>
+                            }
+                            else
+                            {
+                                <strike>@Html.DisplayFor(modelItem => item.Value.ProductName)</strike><br /><font color="red">UNAVAILABLE</font><br />
+                                <img src="~/images/image-not-found.png" height="120" width="85">
+
+                            }
+                        }
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Price</p>
+                        </div>
+                        €@Html.DisplayFor(modelItem => item.Value.ProductPrice)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Quantity</p>
+                        </div>
+                        @Html.DisplayFor(modelItem => item.Value.ProductQuantity)
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
+                            <p>Total price</p>
+                        </div>
+                        €@totalPrice
+                    </td>
+                </tr>
+
+            }
+
+        </tbody>
+    </table>
+    <p>Total cost: €@totalCost</p>
+}
+

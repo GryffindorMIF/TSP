@@ -18,13 +18,15 @@ namespace EShop.Business
     {
         private readonly ApplicationDbContext _context;
         private readonly IProductService _productService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         private readonly int maxProductsInShoppingCart;
 
-        public ShoppingCartService(ApplicationDbContext context, IProductService productService, IConfiguration configuration)
+        public ShoppingCartService(ApplicationDbContext context, IProductService productService, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _productService = productService;
+            _userManager = userManager;
 
             if (!int.TryParse(configuration["ShoppingCartConfig:MaxProducts"], out maxProductsInShoppingCart))
             {
@@ -316,6 +318,73 @@ namespace EShop.Business
         public async Task<int> TransferSessionProducts(HttpContext httpContext, ShoppingCart shoppingCart)
         {
             return await httpContext.Session.TransferSessionProductsToCartAsync(shoppingCart, _context, this);
+        }
+
+        public async Task<int> AddShoppingCartToHistory(ShoppingCart sc)
+        {
+
+                var scProducts = await QuerySavedProductsAsync(sc);
+
+                foreach (var scProduct in scProducts)
+                {
+                    ShoppingCartProductHistory scph = new ShoppingCartProductHistory()
+                    {
+                        ProductName = scProduct.Product.Name,
+                        ProductDescription = scProduct.Product.Description,
+                        ProductPrice = scProduct.Product.Price,
+                        ProductQuantity = scProduct.Quantity,                       
+                        ShoppingCart = sc
+                    };
+
+                    var primaryImage = await _productService.GetPrimaryImages(scProduct.Product);// will always return single value (why LIST?)
+                    if (primaryImage.Any()) scph.ProductPrimaryImageUrl = primaryImage[0].ImageUrl;
+
+                    _context.Add(scph);
+                    //_context.Remove(scProduct);
+                }
+                await _context.SaveChangesAsync();
+                return 0;
+
+        }
+
+        public async Task<IQueryable<ShoppingCartProductHistory>> QueryShoppingCartProductsFromHistory(ShoppingCart sc)
+        {
+            IQueryable<ShoppingCartProductHistory> scphs = null;
+
+            await Task.Run(() =>
+            {
+                scphs = (from scph in _context.ShoppingCartProductHistory
+                            where scph.ShoppingCartId == sc.Id
+                            select scph).AsQueryable();
+            });
+
+            return scphs;
+        }
+
+        public async Task<IQueryable<ProductInCartViewModel>> QueryProductsInCartFromHistory(ShoppingCart sc)
+        {
+            var scphs = await QueryShoppingCartProductsFromHistory(sc);
+
+            ICollection<ProductInCartViewModel> picvms = new List<ProductInCartViewModel>();
+
+            foreach(var scph in scphs)
+            {
+                var product = await _productService.FindProductByName(scph.ProductName);
+                
+                ProductInCartViewModel picvm = new ProductInCartViewModel()
+                {
+                    Name = product.Name,
+                    Price = product.Price,
+                    Quantity = scph.ProductQuantity,
+                    TotalPrice = product.Price * scph.ProductQuantity,
+                };
+
+                var productImage = await _productService.GetPrimaryImages(product);
+                if (productImage.Any()) picvm.ImageUrl = productImage[0].ImageUrl;
+
+                picvms.Add(picvm);
+            }
+            return picvms.AsQueryable();
         }
     }
 }

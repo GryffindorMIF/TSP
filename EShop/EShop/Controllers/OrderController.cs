@@ -20,6 +20,7 @@ namespace EShop.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IOrderService _orderService;
+        private readonly IProductService _productService;
 
         private readonly int orderHistoryOrdersPerPage;
         private readonly int orderConfirmationOrdersPerPage;
@@ -28,6 +29,7 @@ namespace EShop.Controllers
             (
             UserManager<ApplicationUser> userManager,
             IShoppingCartService shoppingCartService,
+            IProductService productService,
             IOrderService orderService,
             IConfiguration configuration
             )
@@ -35,6 +37,7 @@ namespace EShop.Controllers
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
             _orderService = orderService;
+            _productService = productService;
 
             if (!int.TryParse(configuration["PaginationConfig:OrderHistoryOrdersPerPage"], out orderHistoryOrdersPerPage))
             {
@@ -89,7 +92,12 @@ namespace EShop.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<int> Repurchase([FromBody] Selector s)
         {
-            int returnCode = 1;
+            // 0 - success
+            // 1 - unknown exc
+            // 2 - shopping-cart limit reached
+            // 3 - success (bet produktai nesutampa su seniau pirktais)
+
+            int returnCode = -1;
 
             try
             {
@@ -102,7 +110,8 @@ namespace EShop.Controllers
                 ShoppingCart oldShoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)order.ShoppingCartId);
 
                 var currentProducts = await _shoppingCartService.QuerySavedProductsAsync(shoppingCart);
-                var oldProducts = await _shoppingCartService.QuerySavedProductsAsync(oldShoppingCart);
+                //var oldProducts = await _shoppingCartService.QuerySavedProductsAsync(oldShoppingCart);
+                var oldProducts = await _shoppingCartService.QueryShoppingCartProductsFromHistory(oldShoppingCart);
 
                 //Can remove this if we also want to keep the already added products instead of repeating the order
                 foreach (ShoppingCartProduct scp in currentProducts)
@@ -110,12 +119,31 @@ namespace EShop.Controllers
                     await _shoppingCartService.RemoveShoppingCartProductAsync(scp.Product, shoppingCart, HttpContext.Session);
                 }
 
+                /*
                 foreach (ShoppingCartProduct scp in oldProducts)
                 {
                     await _shoppingCartService.AddProductToShoppingCartAsync(scp.Product, shoppingCart, scp.Quantity, HttpContext.Session);
                 }
-
-                returnCode = 0;
+                */
+                foreach(ShoppingCartProductHistory scph in oldProducts)
+                {
+                    // IESKOM PAGAL NAME ar dar egzistuoja toks produktas 
+                    var product = await _productService.FindProductByName(scph.ProductName);
+                    if (product == null)// neber prekes?
+                    {
+                        returnCode = 3;
+                    }
+                    else if(product.Price != scph.ProductPrice)// gal kaina pasikeite? pridet reik, bet pranest customeriui
+                    {
+                        returnCode = 3;
+                        await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
+                    }
+                    else
+                    {
+                        var newReturnCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
+                        if (newReturnCode > returnCode) returnCode = newReturnCode;
+                    }
+                }
             }
             catch (Exception)
             {
@@ -200,6 +228,13 @@ namespace EShop.Controllers
         {
             byte[] actualRowVersion = rowVersion == null ? null : Convert.FromBase64String(rowVersion);
             int confirmationResult = await _orderService.ChangeOrderConfirmationAsync(orderId, true, actualRowVersion);
+
+            /*
+            var order = await _orderService.FindOrderByIdAsync(orderId);
+            var sc = await _shoppingCartService.FindShoppingCartByIdAsync((int)order.ShoppingCartId);
+            await _shoppingCartService.AddShoppingCartToHistory(sc);
+            */
+
             if (confirmationResult == -1)
             {
                 TempData["AdminConfirmOrderConcurrency"] = "This order's status was already modifed after you've loaded the page";
@@ -221,6 +256,15 @@ namespace EShop.Controllers
             }
             
             return RedirectToAction("AdminView", "Order");
+        }
+
+        public async Task<IActionResult> PreviewShoppingCartHistory(int shoppingCartId)
+        {
+            var sc = await _shoppingCartService.FindShoppingCartByIdAsync(shoppingCartId);
+            //var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(sc, HttpContext.Session);
+            var productsInCart = await _shoppingCartService.QueryShoppingCartProductsFromHistory(sc);
+
+            return View("ShoppingCartHistoryPreview", productsInCart);
         }
     }
 

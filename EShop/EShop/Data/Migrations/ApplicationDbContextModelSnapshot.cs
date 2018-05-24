@@ -418,6 +418,31 @@ namespace EShop.Data.Migrations
                     b.ToTable("ShoppingCartProduct");
                 });
 
+            modelBuilder.Entity("EShop.Models.ShoppingCartProductHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ProductDescription");
+
+                    b.Property<string>("ProductName");
+
+                    b.Property<decimal>("ProductPrice");
+
+                    b.Property<string>("ProductPrimaryImageUrl");
+
+                    b.Property<int>("ProductQuantity");
+
+                    b.Property<int?>("ShoppingCartId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShoppingCartId");
+
+                    b.ToTable("ShoppingCartProductHistory");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -635,6 +660,14 @@ namespace EShop.Data.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
+                        .WithMany()
+                        .HasForeignKey("ShoppingCartId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EShop.Models.ShoppingCartProductHistory", b =>
+                {
                     b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
                         .WithMany()
                         .HasForeignKey("ShoppingCartId")

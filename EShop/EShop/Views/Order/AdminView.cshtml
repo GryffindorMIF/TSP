@@ -1,4 +1,5 @@
 ﻿@model EShop.Models.OrderHistoryModel
+@inject UserManager<ApplicationUser> userManager;
 @{
     ViewData["Title"] = "Order";
 }
@@ -9,6 +10,9 @@
     <table class="table">
         <thead>
             <tr>
+                <th>
+                    Shopping-cart
+                </th>
                 <th>
                     <p>User</p>
                 </th>
@@ -42,10 +46,46 @@
                 <tr>
                     <td>
                         <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Shopping cart</strong>
+                        </div>
+
+
+                        <a asp-action="PreviewShoppingCartHistory" asp-route-shoppingCartId="@item.Value.ShoppingCartId"> 
+                            <button type="button" id="repurchase-btn" class="btn btn-info">
+                                <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                Preview
+                            </button>
+                        </a>
+                        <!--
+                        @if (item.Value.StatusCode == 1 || item.Value.StatusCode == 3)// rejected or unconfirmed yet
+                        {
+                            <a asp-action="PreviewUnconfirmedShoppingCart" asp-route-shoppingCartId="@item.Value.ShoppingCartId"> 
+                                <button type="button" id="repurchase-btn" class="btn btn-info">
+                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                    Preview
+                                </button>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="PreviewShoppingCartHistory" asp-route-shoppingCartId="@item.Value.ShoppingCartId"> 
+                                <button type="button" id="repurchase-btn" class="btn btn-info">
+                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                    Preview
+                                </button>
+                            </a>
+                        }
+                        -->
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
                             <strong>User</strong>
                         </div>
 
-                        @Html.DisplayFor(modelItem => item.Value.User.Email)
+                        @{ 
+                            var user = await userManager.FindByIdAsync(item.Value.UserId);
+                        }
+                        @user.UserName
                     </td>
                     <td>
                         <div class="mobile-friendly-tag" style="display:none;">
@@ -95,13 +135,13 @@
                                 </form>
                                 break;
                             case 2:
-                                <p>Order Confirmed</p>
+                                <p><font style="color:green;">Order Confirmed</font></p>
                                 break;
                             case 3:
-                                <p>Order Rejected</p>
+                                <p><font style="color:red;">Order Rejected</font></p>
                                 break;
                             case 4:
-                                <p>Order Confirmed</p>
+                                <p><font style="color:green;">Order Confirmed</font></p>
                                 break;
                         }
                     </td>
@@ -125,13 +165,13 @@
                                 </form>
                                 break;
                             case 2:
-                                <p>Order Confirmed</p>
+                                <p><font style="color:green;">Order Confirmed</font></p>
                                 break;
                             case 3:
-                                <p>Order Rejected</p>
+                                <p><font style="color:red;">Order Rejected</font></p>
                                 break;
                             case 4:
-                                <p>Order Confirmed</p>
+                                <p><font style="color:green;">Order Confirmed</font></p>
                                 break;
                         }
                     </td>
@@ -142,11 +182,13 @@
 
                         @if (item.Value.StatusCode == 4)
                         {
-                            <span id="star-1-@item.Index" class="fa fa-star"></span>
-                            <span id="star-2-@item.Index" class="fa fa-star"></span>
-                            <span id="star-3-@item.Index" class="fa fa-star"></span>
-                            <span id="star-4-@item.Index" class="fa fa-star"></span>
-                            <span id="star-5-@item.Index" class="fa fa-star"></span>
+                            <div style="white-space:nowrap;">
+                                <span id="star-1-@item.Index" class="fa fa-star"></span>
+                                <span id="star-2-@item.Index" class="fa fa-star"></span>
+                                <span id="star-3-@item.Index" class="fa fa-star"></span>
+                                <span id="star-4-@item.Index" class="fa fa-star"></span>
+                                <span id="star-5-@item.Index" class="fa fa-star"></span>
+                            </div>
 
                             <p><div id="comment-@item.Index"></div></p>
 

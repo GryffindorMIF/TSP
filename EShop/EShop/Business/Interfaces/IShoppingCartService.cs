@@ -21,5 +21,9 @@ namespace EShop.Business
         Task<int> CountProductsInShoppingCart(ShoppingCart shoppingCart);
         Task AssignNewShoppingCart(ApplicationUser user);
         Task<int> TransferSessionProducts(HttpContext httpContext, ShoppingCart shoppingCart);
+
+        Task<int> AddShoppingCartToHistory(ShoppingCart sc);
+        Task<IQueryable<ShoppingCartProductHistory>> QueryShoppingCartProductsFromHistory(ShoppingCart sc);
+        Task<IQueryable<ProductInCartViewModel>> QueryProductsInCartFromHistory(ShoppingCart sc);
     }
 }

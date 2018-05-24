@@ -20,6 +20,7 @@ namespace EShop.Models
         [Required]
         public string Address { get; set; }
 
+        public string UserId { get; set; }
         [Required]
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }

@@ -4,6 +4,7 @@
     ViewData["Title"] = "Order";
 }
 
+@Html.Partial("Modals/_ShoppingCartLimitModal")
 
 <div id="review-modal-id" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document" style="width:auto;"> 
@@ -63,11 +64,35 @@
     </div>
 </div>
 
+<div id="warning-modal-id" class="modal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="exit-repurchase-btn" type="button" class="close" data-dismiss="modal" onclick="$('#warning-modal-id').fadeOut();">&times;</button>
+                <h4 class="modal-title"><img src="~/images/critical-alert.png" height="25" width="25" /> Warning!</h4>
+            </div>
+            <div class="modal-body">
+                <p>Some products were deleted or updated by the shop-owners! Please take a careful look!</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="ShoppingCart" asp-action="Index">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Go to Shopping Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div style="margin-left:auto">
     <h2>Order History</h2>
     <table class="table">
         <thead>
             <tr>
+                <th>
+                    <p>Shopping cart</p>
+                </th>
                 <th>
                     <p>Status</p>
                 </th>
@@ -101,24 +126,56 @@
                 <tr>
                     <td>
                         <div class="mobile-friendly-tag" style="display:none;">
+                            <strong>Shopping cart</strong>
+                        </div>
+
+                        <a asp-action="PreviewShoppingCartHistory" asp-route-shoppingCartId="@item.Value.ShoppingCartId"> 
+                            <button type="button" id="repurchase-btn" class="btn btn-info">
+                                <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                Preview
+                            </button>
+                        </a>
+                        <!--
+                        @if (item.Value.StatusCode == 1 || item.Value.StatusCode == 3)// rejected or unconfirmed yet
+                        {
+                            <a asp-action="PreviewUnconfirmedShoppingCart" asp-route-shoppingCartId="@item.Value.ShoppingCartId"> 
+                                <button type="button" id="repurchase-btn" class="btn btn-info">
+                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                    Preview
+                                </button>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="PreviewShoppingCartHistory" asp-route-shoppingCartId="@item.Value.ShoppingCartId">
+                                <button type="button" id="repurchase-btn" class="btn btn-info">
+                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                    Preview
+                                </button>
+                            </a>
+                        }
+                        -->
+                    </td>
+                    <td>
+                        <div class="mobile-friendly-tag" style="display:none;">
                             <strong>Status</strong>
                         </div>
 
                         @if (item.Value.StatusCode == 1)
                         {
-                            <p>Pending</p>
+                            <p><font style="color:orange;">Pending</font></p>
                         }
                         else if (item.Value.StatusCode == 2)
                         {
-                            <p>Confirmed</p>
+                            <p><font style="color:blue;">Confirmed</font></p>
                         }
                         else if (item.Value.StatusCode == 3)
                         {
-                            <p>Rejected</p>
+                            <p><font style="color:red;">Rejected</font></p>
                         }
                         else if (item.Value.StatusCode == 4)
                         {
-                            <p>Complete</p>
+                            <p><font style="color:green;">Complete</font></p>
                         }
                     </td>
                     <td>
@@ -168,8 +225,20 @@
                         <div class="mobile-friendly-tag" style="display:none;">
                             <strong>Repurchase</strong>
                         </div>
-
-                        <button type="button" id="repurchase-btn" class="btn btn-info" onclick="repurchaseOpen(@item.Value.Id)">Add to cart</button>
+                        @if (item.Value.StatusCode != 3 && item.Value.StatusCode != 1)
+                        {
+                            <button type="button" id="repurchase-btn" class="btn btn-info" onclick="repurchaseOpen(@item.Value.Id)">
+                                <span class="glyphicon glyphicon-shopping-cart aria-hidden="true"></span>
+                                Repurchase
+                            </button>
+                        }
+                        else
+                        {
+                            <button disabled type="button" id="repurchase-btn" class="btn btn-info">
+                                <span class="glyphicon glyphicon-shopping-cart aria-hidden="true"></span>
+                                Repurchase
+                            </button>
+                        }
                     </td>
                     <td>
                         <div class="mobile-friendly-tag" style="display:none;">
@@ -182,18 +251,28 @@
                         }
                         else if (item.Value.StatusCode == 4)
                         {
-                            <span id="star-1-@item.Index" class="fa fa-star"></span>
-                            <span id="star-2-@item.Index" class="fa fa-star"></span>
-                            <span id="star-3-@item.Index" class="fa fa-star"></span>
-                            <span id="star-4-@item.Index" class="fa fa-star"></span>
-                            <span id="star-5-@item.Index" class="fa fa-star"></span>
+                            <div style="white-space:nowrap;">
+                                <span id="star-1-@item.Index" class="fa fa-star"></span>
+                                <span id="star-2-@item.Index" class="fa fa-star"></span>
+                                <span id="star-3-@item.Index" class="fa fa-star"></span>
+                                <span id="star-4-@item.Index" class="fa fa-star"></span>
+                                <span id="star-5-@item.Index" class="fa fa-star"></span>
+                            </div>
 
                             <p><div id="comment-@item.Index"></div></p>
                             /*<p>@Model.Reviews.Find(orm => orm.OrderId == item.Value.Id).CustomerComment</p>*/
                         }
                         else
                         {
-                            <p>Awaiting Confirmation</p>
+                            @if (item.Value.StatusCode != 3)
+                            {
+                                <p>Awaiting Confirmation</p>
+                            }
+                            else
+                            {
+                                <p>Not available</p>
+
+                            }
                         }
                     </td>
                 </tr>
@@ -270,6 +349,11 @@
                 SelectedValue: selectedId
             }
 
+            // 0 - success
+            // 1 - unknown exc
+            // 2 - shopping-cart limit reached
+            // 3 - success (bet produktai nesutampa su seniau pirktais)
+
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("Repurchase", "Order")',
@@ -277,8 +361,15 @@
                 dataType: 'json',
                 contentType: "application/json",
                 success: function (response) {
+                    $('#repurchase-modal-id').fadeOut();
                     if (response == 0) {
-                        $('#repurchase-modal-id').fadeOut();
+                    }
+                    else if (response == 2) {
+                        $('#limit-modal-id').fadeIn();
+                    }
+                    else if (response == 3) {
+                        $('#warning-modal-id').fadeIn();
+
                     }
                     else if (response == 1) {
                         //TODO: handle failure sent from controller (modify modal box)

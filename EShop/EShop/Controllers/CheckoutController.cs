@@ -122,24 +122,27 @@ namespace EShop.Controllers
                     ShoppingCart shoppingCart = null;
 
                     shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
-                    user.ShoppingCartId = null;
-                    await _userManager.UpdateAsync(user);
+                    await _shoppingCartService.AssignNewShoppingCart(user);
+                    //user.ShoppingCartId = null;
+                    //await _userManager.UpdateAsync(user);
 
                     Order newOrder = new Order();
 
                     newOrder.ShoppingCartId = shoppingCart.Id;
-                    newOrder.User = user;
+                    newOrder.UserId = user.Id;
                     newOrder.TotalPrice = Convert.ToDecimal(totalCost);
                     newOrder.Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
-                        confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode;
+                    confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode;
                     newOrder.CardNumber = model.CardNumber;
                     newOrder.PurchaseDate = DateTime.Now;
                     newOrder.StatusCode = 1; //1 - Purchased 2 - Confirmed etc.
 
                     int addOrderResult = await _orderService.CreateOrderAsync(newOrder);
+
+                    await _shoppingCartService.AddShoppingCartToHistory(shoppingCart);
                     //Todo redirect to some other page or show something
                 }
-            }
+            }         
 
             //Todo something on checkout page if transaction fails etc.
             return RedirectToAction("Index", "Order");
