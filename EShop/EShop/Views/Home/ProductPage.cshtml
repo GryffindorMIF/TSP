@@ -74,7 +74,7 @@
 @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
 {
     @section sidenav
-    {
+        {
         <br />
         <ul>
             <div class="panel panel-default">
@@ -123,7 +123,7 @@
                     </div>
                 </div>
             </div>
-        </ul>       
+        </ul>
     }
 }
 
@@ -146,48 +146,95 @@
             </ul>
         }
     </p>
-    <div class="img_column">
-        <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+    <div class="desktop-product-view">
+        <div class="img_column">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+        </div>
+        <div>
+            @if (ViewBag.Discount == null)
+            {
+                <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
+            }
+            else
+            {
+                <h3 style="margin-top: 70px; margin-left: 200px;">
+                    <ul>
+                        <li>
+                            Current price is:
+                            <img src="~/images/discount.png" height="40" width="40" />
+                            <strike>€@ViewBag.Product.Price</strike>
+                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                        </li>
+                        <li>
+                            <h5>Discount ends in:</h5>
+                        </li>
+                        <li>
+                            <h5>
+                                <font color="red" id="discount-timer"></font>
+                            </h5>
+                        </li>
+                    </ul>
+                </h3>
+            }
+            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+            {
+                <div>
+                    <form id="add-btn-form" style="margin-left: 200px;">
+                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
+                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
+                        <button id="add-btn" type="submit" class="btn btn-add">
+                            <text>Add to cart</text>
+                        </button>
+                    </form>
+                </div>
+            }
+            <p style="margin-left: 200px;"><strong>Description:</strong> @ViewBag.Product.Description</p>
+        </div>
     </div>
-    <div>
-        @if (ViewBag.Discount == null)
-        {
-            <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
-        }
-        else
-        {
-            <h3 style="margin-top: 70px; margin-left: 200px;">
-                <ul>
-                    <li>
-                        Current price is:
-                        <img src="~/images/discount.png" height="40" width="40" />
-                        <strike>€@ViewBag.Product.Price</strike>
-                        <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
-                    </li>
-                    <li>
-                        <h5>Discount ends in:</h5>
-                    </li>
-                    <li>
-                        <h5>
-                            <font color="red" id="discount-timer"></font>
-                        </h5>
-                    </li>
-                </ul>
-            </h3>
-        }
-        @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
-        {
-            <div>
-                <form id="add-btn-form" style="margin-left: 200px;">
-                    <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
-                    <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
-                    <button id="add-btn" type="submit" class="btn btn-add">
-                        <text>Add to cart</text>
-                    </button>
-                </form>
-            </div>
-        }
-        <p style="margin-left: 200px;"><strong>Description:</strong> @ViewBag.Product.Description</p>
+    <div class="mobile-product-view" style="display:none;">
+        <div>
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor">
+        </div>
+        <div>
+            @if (ViewBag.Discount == null)
+            {
+                <h3>Current price is: €@ViewBag.Product.Price</h3>
+            }
+            else
+            {
+                <h3>
+                    <ul>
+                        <li>
+                            Current price is:
+                            <img src="~/images/discount.png" height="40" width="40" />
+                            <strike>€@ViewBag.Product.Price</strike>
+                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                        </li>
+                        <li>
+                            <h5>Discount ends in:</h5>
+                        </li>
+                        <li>
+                            <h5>
+                                <font color="red" id="discount-timer"></font>
+                            </h5>
+                        </li>
+                    </ul>
+                </h3>
+            }
+            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+            {
+                <div>
+                    <form id="add-btn-form">
+                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
+                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
+                        <button id="add-btn" type="submit" class="btn btn-add">
+                            <text>Add to cart</text>
+                        </button>
+                    </form>
+                </div>
+            }
+            <p><strong>Description:</strong> @ViewBag.Product.Description</p>
+        </div>
     </div>
 </div>
 
@@ -253,36 +300,50 @@
     </div>
 </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Property
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
-        {
+@if (Model.Any())// jei egzistuoja properties
+{
+    <table class="table">
+        <!--
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
+                <th>
+                    Property
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+            -->
+        <thead>
+            <tr>
+                <th colspan="2">
+                    Characteristics
+                </th>
+            </tr>
+        </thead>
+        <div class="mobile-friendly-tag" style="display:none;">
+            <strong>Characteristics</strong>
+        </div>
+        <tbody>
+            @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
+            {
+                <tr>
+                    <td>
+                        <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<!--
 <div class="alert alert-success" role="alert">
 </div>
-
-
-
+-->
 <!-- Scripts for shopping cart modal -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
