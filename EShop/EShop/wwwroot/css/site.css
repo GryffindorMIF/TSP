@@ -304,5 +304,13 @@ ul {
     .vertical-separator {
         display: none !important;
     }
+
+    .mobile-product-view {
+        display: block !important;
+    }
+
+    .desktop-product-view {
+        display: none !important;
+    }
 }
 
