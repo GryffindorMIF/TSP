@@ -28,8 +28,8 @@ namespace EShop.Business
         Task<Product> FindProductByName(string name);
         Product FindProductById(int id);
         Task UpdateRowVersionEntry(Product product);
-        Task CreateProduct(Product product);
-        Task UpdateProduct(Product product);
+        Task<int> CreateProduct(Product product);
+        Task<int> UpdateProduct(Product product);
         Task DeleteProduct(int productId);
 
         //Product Properties

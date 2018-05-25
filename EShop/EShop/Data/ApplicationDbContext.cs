@@ -52,6 +52,11 @@ namespace EShop.Data
             builder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
             builder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
 
+            // unique name for product
+            builder.Entity<Product>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
             // unique name for category
             builder.Entity<Category>()
                 .HasIndex(c => c.Name)

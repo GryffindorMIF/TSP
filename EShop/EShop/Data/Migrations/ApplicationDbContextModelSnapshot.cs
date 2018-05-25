@@ -274,6 +274,10 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
                     b.ToTable("Product");
                 });
 
@@ -401,13 +405,11 @@ namespace EShop.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("ProductId")
-                        .IsRequired();
+                    b.Property<int>("ProductId");
 
                     b.Property<int>("Quantity");
 
-                    b.Property<int?>("ShoppingCartId")
-                        .IsRequired();
+                    b.Property<int>("ShoppingCartId");
 
                     b.HasKey("Id");
 
@@ -433,8 +435,7 @@ namespace EShop.Data.Migrations
 
                     b.Property<int>("ProductQuantity");
 
-                    b.Property<int?>("ShoppingCartId")
-                        .IsRequired();
+                    b.Property<int>("ShoppingCartId");
 
                     b.HasKey("Id");
 
