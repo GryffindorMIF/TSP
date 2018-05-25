@@ -14,7 +14,6 @@
 
 .img_column {
     float: left;
-    width: 10%;
 }
 
 /* The Modal (background) */
@@ -31,15 +30,29 @@
     background-color: black;
 }
 
-/* Modal Content */
+/* Modal Content BACKGROUND!!!! */
 .img_modal-content {
     position: relative;
-    display: block;
+    vertical-align: central;
     background-color: #fefefe;
     margin: auto;
     padding: 0;
-    width: 40%;
-    max-width: 600px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 600px;
+}
+
+/*Exactly images*/
+.img_modal-style {
+    display: block;
+    margin:auto;
+    /*margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+    margin-top:auto;*/
+    padding: 0;
+    max-height: 600px;
+    max-width: 1000px;
 }
 
 

@@ -114,7 +114,7 @@
                                     if (attr.AttributeId == attrCategory.Id)
                                     {
                                         <text>
-                                            <li>@attr.Name</li>
+                                        <li>@attr.Name</li>
                                         </text>
                                     }
                                 }
@@ -247,7 +247,7 @@
             <!--Image here-->
             <div class="img_column">
                 @{ counter += 1; }
-                <img src="~/images/products/@image.ImageUrl" alt="Secondary Image" style="width:100%;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
+                <img src="~/images/products/@image.ImageUrl" alt="Secondary Image" style="width:90%; max-width:150px;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
             </div>
         }
     </div>
@@ -260,7 +260,7 @@
     <div class="img_modal-content">
         <div class="imgSlides">
             <div class="img_numbertext">1 / @totalImages</div>
-            <img src="~/images/products/@ViewData["primary_image"]" style="width:100%; height:100%;" />
+            <img class="img_modal-style" src="~/images/products/@ViewData["primary_image"]"/>
         </div>
         @{ int counter2 = 1;
             foreach (var image in ViewBag.SecondaryImages)
@@ -269,7 +269,7 @@
                 <!--Image here-->
                 <div class="imgSlides">
                     <div class="img_numbertext">@counter2 / @totalImages</div>
-                    <img src="~/images/products/@image.ImageUrl" style="width:100%" />
+                    <img class="img_modal-style" src="~/images/products/@image.ImageUrl" />
                 </div>
             }
         }
@@ -284,7 +284,7 @@
 
         <!-- Thumbnail image controls -->
         <div class="img_column">
-            <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name" />
+            <img class="img_demo img_cursor" style="width:100%; max-width:120px" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name" />
         </div>
         @{
             int counter3 = 1;
@@ -293,7 +293,7 @@
                 counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
+                    <img class="img_demo img_cursor" style="width:100%; max-width:120px" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
                 </div>
             }
         }
