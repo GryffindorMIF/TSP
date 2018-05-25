@@ -44,16 +44,32 @@ namespace EShop.Business.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task CreateProduct(Product product)
+        public async Task<int> CreateProduct(Product product)
         {
-            await _context.AddAsync(product);
-            //await _context.SaveChangesAsync();
+            try
+            {
+                _context.Add(product);
+                await _context.SaveChangesAsync();
+                return 0;
+            }
+            catch (Exception)
+            {
+                return 1;
+            }
         }
 
-        public async Task UpdateProduct(Product product)
+        public async Task<int> UpdateProduct(Product product)
         {
-            _context.Update(product);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Update(product);
+                await _context.SaveChangesAsync();
+                return 0;
+            }
+            catch(Exception)
+            {
+                return 1;
+            }
         }
 
         public async Task DeleteProduct(int productId)

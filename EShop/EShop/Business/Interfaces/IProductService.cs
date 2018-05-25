@@ -25,8 +25,8 @@ namespace EShop.Business
         Product FindProductById(int id); //For Rokas space stuff
         Task<Product> FindProductByName(string name);
         Task UpdateRowVersionEntry(Product product);
-        Task CreateProduct(Product product);
-        Task UpdateProduct(Product product);
+        Task<int> CreateProduct(Product product);
+        Task<int> UpdateProduct(Product product);
         Task DeleteProduct(int productId);
 
         //Product Properties

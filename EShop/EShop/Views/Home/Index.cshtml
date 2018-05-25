@@ -8,7 +8,7 @@
 
 
 @section sidenav
-{
+    {
     @Html.Partial("_SideNav")
 }
 
@@ -32,6 +32,20 @@ else
 {
     <h4>@ViewBag.CurrentCategoryName</h4>
 }
+
+@if (TempData["ErrorMsg"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMsg"]
+    </div>
+}
+else if (TempData["SuccessMsg"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMsg"]
+    </div>
+}
+
 @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
 {
     <a asp-controller="Product" asp-action="Create">Create New</a>
@@ -115,8 +129,8 @@ else
 
                                 @{
                                     var productDiscount = (from pd in context.ProductDiscount
-                                                            where pd.ProductId == item.Value.Id
-                                                            select pd).FirstOrDefault();
+                                                           where pd.ProductId == item.Value.Id
+                                                           select pd).FirstOrDefault();
                                 }
                                 @if (productDiscount == null)
                                 {

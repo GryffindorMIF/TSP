@@ -69,65 +69,74 @@ namespace EShop.Controllers
                         Price = model.Product.Price
                     };
                     //_context.Add(product);
-                    await _productService.CreateProduct(product);
+                    int result = await _productService.CreateProduct(product);
 
-                    if (model.PrimaryImage != null)
+                    if (result == 0)
                     {
-                        var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage, "products", uploadMaxByteSize).GetAwaiter().GetResult();
-                        if (primaryImagePath != null)
+                        if (model.PrimaryImage != null)
                         {
-                            ProductImage primaryImage = new ProductImage
+                            var primaryImagePath = _appEnvironment.UploadImageAsync(model.PrimaryImage, "products", uploadMaxByteSize).GetAwaiter().GetResult();
+                            if (primaryImagePath != null)
                             {
-                                IsPrimary = true,
-                                ImageUrl = primaryImagePath,
-                                Product = product
-                            };
-                            //_context.Add(primaryImage);
-                            await _productService.AddProductImage(primaryImage);
-                        }
-                        else
-                        {
-                            ModelState.AddModelError(string.Empty, "Primary image does not match the file requirements.");
-                            return;
-                        }
-                    }
-
-                    if (model.OtherImages != null)
-                    {
-                        foreach (IFormFile image in model.OtherImages)
-                        {
-                            var otherImagePath = _appEnvironment.UploadImageAsync(image, "products", uploadMaxByteSize).GetAwaiter().GetResult(); ;
-                            if (otherImagePath != null)
-                            {
-                                ProductImage otherImage = new ProductImage
+                                ProductImage primaryImage = new ProductImage
                                 {
-                                    IsPrimary = false,
-                                    ImageUrl = otherImagePath,
+                                    IsPrimary = true,
+                                    ImageUrl = primaryImagePath,
                                     Product = product
                                 };
-                                //_context.Add(otherImage);
-                                await _productService.AddProductImage(otherImage);
+                                //_context.Add(primaryImage);
+                                await _productService.AddProductImage(primaryImage);
                             }
                             else
                             {
-                                ModelState.AddModelError(string.Empty, "One of the additional image files doesn't match the file requirements.");
+                                ModelState.AddModelError(string.Empty, "Primary image does not match the file requirements.");
                                 return;
                             }
                         }
-                    }
 
-                    if (model.IdsOfSelectedCategories != null)
-                    {
-                        foreach (int categoryId in model.IdsOfSelectedCategories)
+                        if (model.OtherImages != null)
                         {
-                            ProductCategory productCategory = new ProductCategory
+                            foreach (IFormFile image in model.OtherImages)
                             {
-                                ProductId = product.Id,
-                                CategoryId = categoryId
-                            };
-                            //_context.Add(productCategory);
-                            await _productService.AddProductToCategory(productCategory);
+                                var otherImagePath = _appEnvironment.UploadImageAsync(image, "products", uploadMaxByteSize).GetAwaiter().GetResult(); ;
+                                if (otherImagePath != null)
+                                {
+                                    ProductImage otherImage = new ProductImage
+                                    {
+                                        IsPrimary = false,
+                                        ImageUrl = otherImagePath,
+                                        Product = product
+                                    };
+                                    //_context.Add(otherImage);
+                                    await _productService.AddProductImage(otherImage);
+                                }
+                                else
+                                {
+                                    ModelState.AddModelError(string.Empty, "One of the additional image files doesn't match the file requirements.");
+                                    return;
+                                }
+                            }
                         }
+
+                        if (model.IdsOfSelectedCategories != null)
+                        {
+                            foreach (int categoryId in model.IdsOfSelectedCategories)
+                            {
+                                ProductCategory productCategory = new ProductCategory
+                                {
+                                    ProductId = product.Id,
+                                    CategoryId = categoryId
+                                };
+                                //_context.Add(productCategory);
+                                await _productService.AddProductToCategory(productCategory);
+                            }
+                        }
+
+                        TempData["SuccessMsg"] = "Product created successfully.";
+                    }
+                    else// some constraints violated
+                    {
+                        TempData["ErrorMsg"] = "Product creation failed: Unique name constraint violated.";
                     }
                 });
                 if (!ModelState.IsValid)
@@ -179,14 +188,14 @@ namespace EShop.Controllers
                     IList<ProductImage> possibleOtherImages = null;
                     relatedProductCategories = await _navigationService.GetProductCategories(model.Product.Id);
 
-                    if (model.PrimaryImage != null)
-                    {
-                        possiblePrimaryImages = await _productService.GetProductImages(model.Product.Id);
+                        if (model.PrimaryImage != null)
+                        {
+                            possiblePrimaryImages = await _productService.GetProductImages(model.Product.Id);
                     }
 
-                    if (model.IdsOfSelectedImages != null)
-                    {
-                        possibleOtherImages = await _productService.GetProductImages(model.Product.Id, false);
+                        if (model.IdsOfSelectedImages != null)
+                        {
+                            possibleOtherImages = await _productService.GetProductImages(model.Product.Id, false);
                     }
 
                     //New primary image
@@ -321,9 +330,11 @@ namespace EShop.Controllers
                         model.Product.RowVersion = databaseValues.RowVersion;
                         ModelState.Remove("Product.RowVersion");
 
+                        TempData["ErrorMsg"] = "Product update failed. Someone has already updated selected product. Please try again.";
                         return RedirectToAction("Index", "Home");
                     }
                 }
+                TempData["SuccessMsg"] = "Product updated successfully.";
                 return RedirectToAction("Index", "Home");
             }
             return RedirectToAction("Index", "Home");
