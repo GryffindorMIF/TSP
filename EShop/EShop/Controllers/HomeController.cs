@@ -206,7 +206,7 @@ namespace EShop.Controllers
 
             ViewBag.TopLevelCategories = selectableCategories;
 
-            String[] allPrimaryImageLinks = await _productService.GetAllImages(productsToView);
+            String[] allPrimaryImageLinks = await _productService.GetProductsImagesLinks(productsToView);
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
@@ -276,7 +276,7 @@ namespace EShop.Controllers
             }
             var listProducts = products.ToList();
 
-            String[] allPrimaryImageLinks = await _productService.GetAllImages(products); //Retrieve all image links
+            String[] allPrimaryImageLinks = await _productService.GetProductsImagesLinks(products); //Retrieve all image links
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
@@ -304,17 +304,17 @@ namespace EShop.Controllers
         {
             //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
             Product temp = await _productService.FindProductByIdAsync(id);
-            List<Product> products = new List<Product>();
-            products.Add(temp);
+            //List<Product> products = new List<Product>();
+            //products.Add(temp);
             ViewBag.Product = temp;
 
-            String[] primaryImage = await _productService.GetAllImages(products, true);
-            ViewData["primary_image"] = primaryImage[0];
+            IList<ProductImage> primaryImage = await _productService.GetProductImages(temp.Id);
 
-            String[] secondaryImages = await _productService.GetAllImages(products, false);
-            //List<ProductImage> secondaryImages = _context.ProductImage.Where(pi => !pi.IsPrimary && pi.Product.Id == temp.Id).ToList();
+            ViewData["primary_image"] = primaryImage.Count == 0 ? "product-image-placeholder.jpg" : primaryImage[0].ImageUrl;
+
+            IList<ProductImage> secondaryImages = await _productService.GetProductImages(temp.Id, false);
+            //String[] secondaryImages = await _productService.GetProductsImagesLinks(products, false);
             ViewBag.SecondaryImages = secondaryImages;
-
 
             ProductDiscount discount = await _productService.GetDiscountByProductId(id);
             if (discount != null)
@@ -451,7 +451,7 @@ namespace EShop.Controllers
             var listProducts = products.ToList();
 
             //--------- images --------------//
-            ViewBag.AllPrimaryImageLinks = await GetProductImages(listProducts);
+            ViewBag.AllPrimaryImageLinks = await _productService.GetProductsImagesLinks(listProducts);
 
             //---------- ads ----------------//
             ICollection<ProductAd> productAds = await _productService.GetProductAds();
@@ -547,13 +547,14 @@ namespace EShop.Controllers
             };
         }
 
-        private async Task<ICollection<string>> GetProductImages(IList<Product> products)
+        //DEPRECATED
+        /*private async Task<ICollection<string>> GetProductImages(IList<Product> products)
         {
             String[] allPrimaryImageLinks = new String[products.Count];
 
             for (int i = 0; i < products.Count; i++)
             {
-                IList<ProductImage> primaryImage = await _productService.GetPrimaryImages(products[i]);
+                IList<ProductImage> primaryImage = await _productService.GetProductImages(products[i]);
 
                 if (primaryImage.Count > 0)
                 {
@@ -565,7 +566,7 @@ namespace EShop.Controllers
                 }
             }
             return allPrimaryImageLinks;
-        }
+        }*/
 
         [AllowAnonymous]
         [HttpGet]

@@ -336,7 +336,7 @@ namespace EShop.Business
                         ShoppingCart = sc
                     };
 
-                    var primaryImage = await _productService.GetPrimaryImages(scProduct.Product);// will always return single value (why LIST?)
+                    var primaryImage = await _productService.GetProductImages(scProduct.Product.Id);// will always return single value (why LIST?)
                     if (primaryImage.Any()) scph.ProductPrimaryImageUrl = primaryImage[0].ImageUrl;
 
                     _context.Add(scph);
@@ -379,7 +379,7 @@ namespace EShop.Business
                     TotalPrice = product.Price * scph.ProductQuantity,
                 };
 
-                var productImage = await _productService.GetPrimaryImages(product);
+                var productImage = await _productService.GetProductImages(product.Id);
                 if (productImage.Any()) picvm.ImageUrl = productImage[0].ImageUrl;
 
                 picvms.Add(picvm);

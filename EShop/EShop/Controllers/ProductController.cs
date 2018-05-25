@@ -177,16 +177,16 @@ namespace EShop.Controllers
                     IList<ProductCategory> relatedProductCategories = null;
                     IList<ProductImage> possiblePrimaryImages = null;
                     IList<ProductImage> possibleOtherImages = null;
-                        relatedProductCategories = await _navigationService.GetProductCategories(model.Product.Id);
+                    relatedProductCategories = await _navigationService.GetProductCategories(model.Product.Id);
 
-                        if (model.PrimaryImage != null)
-                        {
-                            possiblePrimaryImages = await _productService.GetPrimaryImages(model.Product);
-                        }
+                    if (model.PrimaryImage != null)
+                    {
+                        possiblePrimaryImages = await _productService.GetProductImages(model.Product.Id);
+                    }
 
-                        if (model.IdsOfSelectedImages != null)
-                        {
-                            possibleOtherImages = await _productService.GetSecondaryImages(model.Product);
+                    if (model.IdsOfSelectedImages != null)
+                    {
+                        possibleOtherImages = await _productService.GetProductImages(model.Product.Id, false);
                     }
 
                     //New primary image
@@ -411,16 +411,16 @@ namespace EShop.Controllers
             ProductProperty property = await _productService.FindProductPropertyByIdAsync(id);
             int productId = property.ProductId;
 
-                try
-                {
-                    await _productService.DeleteProductProperty(property.Id);
+            try
+            {
+                await _productService.DeleteProductProperty(property.Id);
 
-                    return RedirectToAction(nameof(ManageProperties), new { id = productId });
-                }
-                catch (Exception)
-                {
-                    return RedirectToAction(nameof(Index));
-                }
+                return RedirectToAction(nameof(ManageProperties), new { id = productId });
+            }
+            catch (Exception)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private async Task<ProductCategoryViewModel> FillUpProductEditData(ProductCategoryViewModel model, Product product)
@@ -430,13 +430,13 @@ namespace EShop.Controllers
             IList<ProductImage> otherImages = null;
             IList<ProductImage> primaryImages = null;
 
-                categories = await _navigationService.GetAllCategories();
+            categories = await _navigationService.GetAllCategories();
             var productCategories = await _navigationService.GetAllProductCategories();
             idsOfSelectedCategories = productCategories.Where(pc => pc.ProductId == product.Id).Select(pc => pc.CategoryId).ToList();
 
-            otherImages = await _productService.GetSecondaryImages(product);
 
-            primaryImages = await _productService.GetPrimaryImages(product);
+            primaryImages = await _productService.GetProductImages(product.Id);
+            otherImages = await _productService.GetProductImages(product.Id, false);
 
             model.Product = product;
             model.CategoryMultiSelectList = new MultiSelectList(categories, "Id", "Name", idsOfSelectedCategories);

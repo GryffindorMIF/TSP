@@ -34,12 +34,15 @@
 /* Modal Content */
 .img_modal-content {
     position: relative;
+    display: block;
     background-color: #fefefe;
     margin: auto;
     padding: 0;
-    width: 60%;
-    max-width: 800px;
+    width: 40%;
+    max-width: 600px;
 }
+
+
 
 /* The Close Button */
 .img_close {
@@ -132,4 +135,20 @@ img.img_hover-shadow {
 
 .img_hover-shadow:hover {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+}
+
+
+.img_modal-content, img_caption-container {
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(0)
+    }
+
+    to {
+        transform: scale(1)
+    }
 }

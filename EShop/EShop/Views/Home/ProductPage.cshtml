@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = ViewBag.Product.Name;
-    int totalImages = ViewBag.SecondaryImages.Length + 1;
+    int totalImages = ViewBag.SecondaryImages.Count + 1;
 }
 
 <head>
@@ -148,7 +148,7 @@
     </p>
     <div class="desktop-product-view">
         <div class="img_column">
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px; margin-top: 20px;">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px;">
         </div>
         <div>
             @if (ViewBag.Discount == null)
@@ -247,7 +247,7 @@
             <!--Image here-->
             <div class="img_column">
                 @{ counter += 1; }
-                <img src="~/images/products/@image" alt="Secondary Image" style="width:100%;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
+                <img src="~/images/products/@image.ImageUrl" alt="Secondary Image" style="width:100%;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
             </div>
         }
     </div>
@@ -269,7 +269,7 @@
                 <!--Image here-->
                 <div class="imgSlides">
                     <div class="img_numbertext">@counter2 / @totalImages</div>
-                    <img src="~/images/products/@image" style="width:100%" />
+                    <img src="~/images/products/@image.ImageUrl" style="width:100%" />
                 </div>
             }
         }
@@ -293,7 +293,7 @@
                 counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@image" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
+                    <img class="img_demo img_cursor" style="width:100%" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
                 </div>
             }
         }

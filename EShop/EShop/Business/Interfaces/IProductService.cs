@@ -9,15 +9,12 @@ namespace EShop.Business
     public interface IProductService
     {
         Task<Decimal?> GetDiscountPrice(Product product);
-        /*For one product and primary image just create List<Product> add it to the list and then write
-         * String[] img = await _productService.GetAllImages(products);
-         * String ImageLink = img[0];
-         * */
-        Task<String[]> GetAllImages(ICollection<Product> products, bool isPrimary = true);
-        Task<IList<ProductImage>> GetPrimaryImages(Product product);
-        Task<IList<ProductImage>> GetSecondaryImages(Product product);
 
         //Product Images
+        //For many products (used in Home/Index)
+        Task<String[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true);
+        //For one product (used in Home/ProductPage)
+        Task<IList<ProductImage>> GetProductImages(int productId, bool isPrimary = true);
         Task<IList<ProductImage>> GetAllProductImages(int productId);
         Task AddProductImage(ProductImage productImage);
         Task DeleteProductImage(ProductImage productImage);
@@ -25,8 +22,8 @@ namespace EShop.Business
         //Product
         Task<ICollection<Product>> GetAllProducts();
         Task<Product> FindProductByIdAsync(int id);
+        Product FindProductById(int id); //For Rokas space stuff
         Task<Product> FindProductByName(string name);
-        Product FindProductById(int id);
         Task UpdateRowVersionEntry(Product product);
         Task CreateProduct(Product product);
         Task UpdateProduct(Product product);

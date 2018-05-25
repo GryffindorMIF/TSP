@@ -11,6 +11,8 @@ namespace EShop.Models.AccountViewModels
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
+        [RegularExpression(@"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
+                @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-0-9a-z]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$", ErrorMessage = "E-mail you provided is not valid.")]
         public string Email { get; set; }
 
         [Required]

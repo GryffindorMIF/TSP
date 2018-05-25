@@ -21,19 +21,20 @@ namespace EShop.Business.Services
         {
             return await _context.Product.ToListAsync();
         }
+
         public async Task<Product> FindProductByIdAsync(int id)
         {
             return await _context.Product.FindAsync(id);
         }
 
-        public async Task<Product> FindProductByName(string name)
-        {
-            return await _context.Product.Where(p => p.Name == name).FirstOrDefaultAsync();
-        }
-
         public Product FindProductById(int id)
         {
             return _context.Product.Find(id);
+        }
+
+        public async Task<Product> FindProductByName(string name)
+        {
+            return await _context.Product.Where(p => p.Name == name).FirstOrDefaultAsync();
         }
 
         public async Task UpdateRowVersionEntry(Product product)
@@ -45,8 +46,8 @@ namespace EShop.Business.Services
 
         public async Task CreateProduct(Product product)
         {
-            _context.Add(product);
-            await _context.SaveChangesAsync();
+            await _context.AddAsync(product);
+            //await _context.SaveChangesAsync();
         }
 
         public async Task UpdateProduct(Product product)
@@ -57,7 +58,7 @@ namespace EShop.Business.Services
 
         public async Task DeleteProduct(int productId)
         {
-            _context.Remove(FindProductById(productId));
+            _context.Remove(FindProductByIdAsync(productId));
             await _context.SaveChangesAsync();
         }
 
@@ -77,14 +78,10 @@ namespace EShop.Business.Services
         }
 
         //Retrieve primary image link for every product in passed collection
-        public async Task<String[]> GetAllImages(ICollection<Product> products, bool isPrimary = true)
+        public async Task<String[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true)
         {
             //If it is primary images request, then links count should be products amount, otherwise - unknown yet 
             String[] allImageLinks = isPrimary ? new String[products.Count] : new String[0];
-
-            if (isPrimary)
-                allImageLinks = new String[products.Count];
-            else allImageLinks = new String[0];
 
             if (products.Count > 0) //To avoid null reference exception
             {
@@ -95,7 +92,7 @@ namespace EShop.Business.Services
                     {
                         List<ProductImage> images = (from pi in _context.ProductImage
                                                      where pi.IsPrimary == isPrimary
-                                                     where pi.Product == listProducts[i]
+                                                     where pi.Product.Id == listProducts[i].Id
                                                      select pi).ToList();
                         if (isPrimary) //If request was made to get primary image(-s)
                         {
@@ -122,7 +119,30 @@ namespace EShop.Business.Services
             return allImageLinks;
         }
 
-        public async Task<IList<ProductImage>> GetPrimaryImages(Product product)
+        public async Task<IList<ProductImage>> GetProductImages(int productId, bool isPrimary = true)
+        {
+            List<ProductImage> images = new List<ProductImage>();
+            int result = 0;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    images = (from pi in _context.ProductImage
+                              where pi.IsPrimary == isPrimary
+                              where pi.Product.Id == productId
+                              select pi).ToList();
+                }
+                catch (Exception)
+                {
+                    result = -1;
+                }
+            });
+
+            return result == 0 ? images : null;
+        }
+
+       /* public async Task<IList<ProductImage>> GetPrimaryImages(Product product)
         {
             return await (from pi in _context.ProductImage
                           where pi.IsPrimary == true
@@ -136,7 +156,7 @@ namespace EShop.Business.Services
                           where pi.IsPrimary == false
                           where pi.Product == product
                           select pi).ToListAsync();
-        }
+        }*/
 
         public async Task<IList<ProductImage>> GetAllProductImages(int productId)
         {
@@ -153,7 +173,10 @@ namespace EShop.Business.Services
 
         public async Task DeleteProductImage(ProductImage productImage)
         {
-            _context.Remove(productImage);
+            await Task.Run(() =>
+            {
+                _context.Remove(productImage);
+            });
             await _context.SaveChangesAsync();
         }
 
