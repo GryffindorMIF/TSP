@@ -31,7 +31,7 @@ namespace EShop.Controllers
             _shoppingCartService = shoppingCartService;
             _productService = productService;
         }
-       
+
         public async Task<IActionResult> Index()
         {
             ShoppingCart shoppingCart = await GetCartAsync();
@@ -63,11 +63,18 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProductToShoppingCart([FromBody]ProductToCartPostModel productToCartPostModel)// Encapsulated post model for AJAX request
         {
-            Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
+            int resultCode;
+            if (productToCartPostModel.Quantity > 0)
+            {
+                Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
 
-            ShoppingCart shoppingCart = await GetCartAsync();
+                ShoppingCart shoppingCart = await GetCartAsync();
 
-            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
+                resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
+            } else
+            {
+                resultCode = 1;
+            }
             return Json(resultCode);// AJAX handles pop-up modal based on this return
         }
 
@@ -90,7 +97,7 @@ namespace EShop.Controllers
 
             return RedirectToAction("Index", "ShoppingCart");
         }
-        
+
         [HttpGet]
         public async Task<int> AddSessionProductsToCartAsync()
         {

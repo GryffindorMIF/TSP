@@ -22,6 +22,7 @@ namespace EShop.Models
         [Required]
         [ForeignKey("ShoppingCartId")]
         public virtual ShoppingCart ShoppingCart { get; set; }
+        [Range(1, 100, ErrorMessage = "Amount of products cannot be less than 1 or greater than 100.")]
         public int Quantity { get; set; }
     }
 }

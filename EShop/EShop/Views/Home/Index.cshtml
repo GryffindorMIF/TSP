@@ -97,7 +97,6 @@ else if (TempData["SuccessMsg"] != null)
                         <text>€</text>@Html.DisplayFor(modelItem => item.Value.Price)
                     }
                 </p>
-                <p>
                     <div class="m-faqs_add_btn_container">
                         @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
                         {
@@ -144,7 +143,6 @@ else if (TempData["SuccessMsg"] != null)
                             </ul>
                         }
                     </div>
-                </p>
             </div>
             </text>
         }

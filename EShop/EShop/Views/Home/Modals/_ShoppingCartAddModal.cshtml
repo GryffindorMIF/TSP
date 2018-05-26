@@ -36,9 +36,11 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <p>
-                    <strong>You have exceeded the number of items shopping cart can carry!</strong>
+            <div id="div_change" class="modal-body">
+                <p id="p_quantity">
+                </p>
+                <p id="p_special">
+                    <strong id="p_strong">You have exceeded the number of items shopping cart can carry!</strong>
                     <ul>
                         <li>
                             - Remove some items and try again
@@ -60,6 +62,32 @@
     </div>
 </div>
 
+<div id="quantity-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
+
+                <button id="quantity-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="div_change" class="modal-body">
+                <p id="p_quantity">
+                </p>
+                <p id="p_special">
+                    <strong id="p_strong">Quantity of product cannot be less than 1 or greater than 100!</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="quantity-modal-exit-btn2" type="button" class="btn btn-primary" data-dismiss="modal">
+                    <span class="glyphicon" aria-hidden="true"></span> I understand.
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
@@ -69,6 +97,14 @@
 
     $('#limit-modal-exit-btn').click(function () {
         $('#limit-modal-id').fadeOut();
+    });
+
+    $('#quantity-modal-exit-btn').click(function () {
+        $('#quantity-modal-id').fadeOut();
+    });
+
+    $('#quantity-modal-exit-btn2').click(function () {
+        $('#quantity-modal-id').fadeOut();
     });
 
     @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
@@ -96,6 +132,8 @@
                     }
                     else if (response == 1) {
                         //TODO: handle failure sent from controller (modify modal box)
+                        //Change text
+                        $('#quantity-modal-id').fadeIn();
                     }
                     else if (response == 2) {// limit reached
                         $('#limit-modal-id').fadeIn();
