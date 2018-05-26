@@ -9,14 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using EShop.Models;
 using EShop.Models.ManageViewModels;
 using EShop.Business;
-using EShop.Data;
 using EShop.Business.Interfaces;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace EShop.Controllers
@@ -30,6 +27,7 @@ namespace EShop.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly IAddressManager _addressManager;
+        private readonly ICardInfoService _cardInfoService;
         private readonly UrlEncoder _urlEncoder;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
@@ -41,7 +39,8 @@ namespace EShop.Controllers
           IEmailSender emailSender,
           IAddressManager addressManager,
           ILogger<ManageController> logger,
-          UrlEncoder urlEncoder)
+          UrlEncoder urlEncoder,
+          ICardInfoService cardInfoService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -49,6 +48,7 @@ namespace EShop.Controllers
             _emailSender = emailSender;
             _logger = logger;
             _urlEncoder = urlEncoder;
+            _cardInfoService = cardInfoService;
         }
 
         [TempData]
@@ -186,6 +186,55 @@ namespace EShop.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> ManageCardInformation()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var model = new ManageCardInfoViewModel { StatusMessage = StatusMessage };
+
+            CardInfo cardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+
+            if (cardInfo != null)
+            {
+                model.CardNumber = cardInfo.CardNumber;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> RemoveSavedCardInformation()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            int cardInfoId = (await _cardInfoService.GetCardInfoByUserId(user.Id)).Id;
+            int resultCode = await _cardInfoService.DeleteCardInfo(cardInfoId);
+
+            if (resultCode == 1)
+            {
+                StatusMessage = "Failed to remove card information";
+            }
+            else if (resultCode == 0)
+            {
+                StatusMessage = "Card Information Removed";
+            }
+
+            return RedirectToAction(nameof(ManageCardInformation));
         }
 
         [HttpPost]

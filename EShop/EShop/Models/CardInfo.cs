@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EShop.Models
 {
@@ -15,15 +11,15 @@ namespace EShop.Models
 
         [Required]
         [ForeignKey("UserId")]
-        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
 
-        [Required]
+        [CreditCard, Required]
         public string CardNumber { get; set; }
 
         [Required]
-        public int ExpYear { get; set; }
+        public string ExpYear { get; set; }
 
         [Required]
-        public int ExpMonth { get; set; }
+        public string ExpMonth { get; set; }
     }
 }

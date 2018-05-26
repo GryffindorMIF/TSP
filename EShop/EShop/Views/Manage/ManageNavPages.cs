@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -17,6 +14,8 @@ namespace EShop.Views.Manage
 
         public static string ManageDeliveryAddresses => "ManageDeliveryAddresses";
 
+        public static string ManageCardInformation => "ManageCardInformation";
+
         public static string ExternalLogins => "ExternalLogins";
 
         public static string TwoFactorAuthentication => "TwoFactorAuthentication";
@@ -29,8 +28,10 @@ namespace EShop.Views.Manage
 
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, TwoFactorAuthentication);
 
-        public static string ManageDeliveryAddressesNavClas(ViewContext viewContext) => PageNavClass(viewContext, ManageDeliveryAddresses);
-    
+        public static string ManageDeliveryAddressesNavClass(ViewContext viewContext) => PageNavClass(viewContext, ManageDeliveryAddresses);
+
+        public static string ManageCardInformationNavClass(ViewContext viewContext) => PageNavClass(viewContext, ManageCardInformation);
+
         public static string PageNavClass(ViewContext viewContext, string page)
         {
             var activePage = viewContext.ViewData["ActivePage"] as string;

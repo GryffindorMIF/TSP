@@ -1,6 +1,5 @@
 ﻿using EShop.Business;
 using EShop.Business.Interfaces;
-using EShop.Data;
 using EShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -11,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -26,19 +24,22 @@ namespace EShop.Controllers
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IAddressManager _addressManager;
         private readonly IOrderService _orderService;
+        private readonly ICardInfoService _cardInfoService;
 
         public CheckoutController
             (
-            UserManager<ApplicationUser> userManager, 
+            UserManager<ApplicationUser> userManager,
             IShoppingCartService shoppingCartService,
             IAddressManager addressManager,
-            IOrderService orderService
+            IOrderService orderService,
+            ICardInfoService cardInfoService
             )
         {
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
             _addressManager = addressManager;
             _orderService = orderService;
+            _cardInfoService = cardInfoService;
         }
 
         [TempData]
@@ -54,6 +55,15 @@ namespace EShop.Controllers
             model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
 
             model.savedAddresses = new List<SelectListItem>();
+
+            CardInfo savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+
+            if (savedCardInfo != null)
+            {
+                model.CardNumber = savedCardInfo.CardNumber;
+                model.Exp_Year = savedCardInfo.ExpYear;
+                model.Exp_Month = savedCardInfo.ExpMonth;
+            }
 
             foreach (DeliveryAddress da in savedAddresses)
             {
@@ -142,7 +152,28 @@ namespace EShop.Controllers
                     await _shoppingCartService.AddShoppingCartToHistory(shoppingCart);
                     //Todo redirect to some other page or show something
                 }
-            }         
+            }
+
+            if (model.checkbox)
+            {
+                CardInfo savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+                if (savedCardInfo == null)
+                {
+                    savedCardInfo = new CardInfo();
+                    savedCardInfo.UserId = user.Id;
+                    savedCardInfo.CardNumber = model.CardNumber;
+                    savedCardInfo.ExpYear = model.Exp_Year;
+                    savedCardInfo.ExpMonth = model.Exp_Month;
+                    await _cardInfoService.CreateCardInfo(savedCardInfo);
+                }
+                else
+                {
+                    savedCardInfo.CardNumber = model.CardNumber;
+                    savedCardInfo.ExpYear = model.Exp_Year;
+                    savedCardInfo.ExpMonth = model.Exp_Month;
+                    await _cardInfoService.UpdateCardInfo(savedCardInfo);
+                }
+            }
 
             //Todo something on checkout page if transaction fails etc.
             return RedirectToAction("Index", "Order");

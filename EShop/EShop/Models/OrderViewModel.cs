@@ -8,6 +8,7 @@ namespace EShop.Models
     {
         public IEnumerable<ProductInCartViewModel> Products { get; set; }
         public List<SelectListItem> savedAddresses;
+        public bool checkbox { get; set; }
 
         //Add custom error messages
 

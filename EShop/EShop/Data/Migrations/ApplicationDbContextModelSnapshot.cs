@@ -115,16 +115,16 @@ namespace EShop.Data.Migrations
                     b.Property<string>("CardNumber")
                         .IsRequired();
 
-                    b.Property<int>("ExpMonth");
+                    b.Property<string>("ExpMonth")
+                        .IsRequired();
 
-                    b.Property<int>("ExpYear");
+                    b.Property<string>("ExpYear")
+                        .IsRequired();
 
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("CardInfo");
                 });
@@ -557,14 +557,6 @@ namespace EShop.Data.Migrations
                     b.HasOne("EShop.Models.Attribute", "Attribute")
                         .WithMany()
                         .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("EShop.Models.CardInfo", b =>
-                {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

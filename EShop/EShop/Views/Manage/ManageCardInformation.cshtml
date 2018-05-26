@@ -1,0 +1,32 @@
+﻿@model ManageCardInfoViewModel
+@{
+    ViewData["Title"] = "Manage Card Information";
+    ViewData.AddActivePage(ManageNavPages.ManageCardInformation);
+}
+
+<h4>@ViewData["Title"]</h4>
+@Html.Partial("_StatusMessage", Model.StatusMessage)
+<div asp-validation-summary="All" class="text-danger"></div>
+<div class="row">
+    <div class="col-md-6">
+        @if (Model.CardNumber != null)
+        {
+            <form asp-controller="Manage" asp-action="RemoveSavedCardInformation" method="post">
+                <br /><button type="submit" class="btn btn-danger">Remove Data: @Model.CardNumber</button>
+            </form>
+        }
+        else
+        {
+            <h5 style="color:red">
+                No saved credit card information.
+                You may choose to save card information during purchase.
+            </h5>
+        }
+    </div>
+</div>
+
+@section Scripts
+    {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
