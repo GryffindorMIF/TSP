@@ -4,14 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Globalization;
 
 namespace EShop.Business
 {
@@ -392,7 +389,7 @@ namespace EShop.Business
 
         public async Task<int> CalculateTotalPriceCents(ApplicationUser user, ISession session)
         {
-            Decimal totalCost = 0;
+            decimal totalCost = 0;
 
             //Calculate total price in backend
             ShoppingCart shoppingCart = await FindShoppingCartByIdAsync((int)user.ShoppingCartId);
@@ -402,9 +399,8 @@ namespace EShop.Business
             {
                 totalCost += product.Price * product.Quantity;
             }
-            string[] costSplit = totalCost.ToString().Split(Convert.ToChar(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
-            int totalCostCents = 0;
-            Int32.TryParse(costSplit[0] + costSplit[1], out totalCostCents);
+
+            int totalCostCents = (int)(totalCost * 100);
 
             return totalCostCents;
         }

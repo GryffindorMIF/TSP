@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EShop.Models
 {
-    public class OrderViewModel
+    public class CheckoutViewModel
     {
         public IEnumerable<ProductInCartViewModel> Products { get; set; }
         public List<SelectListItem> savedAddresses;

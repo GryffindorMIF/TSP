@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace EShop.Controllers
@@ -44,7 +42,7 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Checkout()
         {
-            var model = new OrderViewModel { StatusMessage = StatusMessage };
+            var model = new CheckoutViewModel { StatusMessage = StatusMessage };
             var user = await _userManager.GetUserAsync(User);
             var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
             ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
@@ -83,7 +81,7 @@ namespace EShop.Controllers
         [EnableCors("EShopCorsPolicy")]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> MakePurchase(OrderViewModel model)
+        public async Task<IActionResult> MakePurchase(CheckoutViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -119,7 +117,7 @@ namespace EShop.Controllers
                     {
                         ShoppingCartId = shoppingCart.Id,
                         UserId = user.Id,
-                        TotalPrice = totalCost,
+                        TotalPrice = (decimal)totalCost / 100,
                         Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
                             confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode,
                         CardNumber = model.CardNumber,
