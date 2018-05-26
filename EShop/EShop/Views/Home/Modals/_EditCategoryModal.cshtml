@@ -69,6 +69,7 @@
     $('#edit-category-modal-btn').click(function() {
         if ($.trim($('#new-category-name').val()) && $.trim($('#new-category-description').val())) {
 
+
             var CategoryNewNamePostModel = {
                 CategoryId: "@ViewBag.CurrentCategoryId",
                 NewName: $('#new-category-name').val(),
@@ -93,7 +94,8 @@
                     }
                     else if (response == 2) {
                         $('#edit-category-error-modal').attr('hidden', false);
-                        $('#edit-category-error-message').text(" Someone already modified this category while you were editing it. Reload the page and try again.")
+                        $('#old-category-row-version').remove();
+                        $('#edit-category-error-message').text(" Someone already modified this category while you were editing it. Click 'Rename' again if you want to overrite the values. Reload the page if you wish to work on the newest available values.")
                     }
                 },
                 failure: function (response) {

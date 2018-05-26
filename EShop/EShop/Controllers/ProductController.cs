@@ -311,27 +311,29 @@ namespace EShop.Controllers
                             ModelState.AddModelError("Product.Price", $"Current value: {databaseValues.Price}");
                         }
 
-
-                        IList<Category> allCategories = await _navigationService.GetAllCategories();
-                        IList<ProductCategory> allProductCategories = await _navigationService.GetAllProductCategories();
-                        var dbProductCategoryNames = await Task.Run(() => allProductCategories.Where(x => x.Product == model.Product).Select(x => x.Category.Name).ToArray());
-                        var clientProductCategoryNames = await Task.Run(() => allCategories.Where(x => model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
-                        if (!dbProductCategoryNames.ToHashSet().SetEquals(clientProductCategoryNames.ToHashSet()))
+                        if (model.IdsOfSelectedCategories != null)
                         {
-                            string categoryStrings = String.Join(", ", dbProductCategoryNames);
-                            ModelState.AddModelError("IdsOfSelectedCategories", $"Current value: {categoryStrings}");
+                            IList<Category> allCategories = await _navigationService.GetAllCategories();
+                            IList<ProductCategory> allProductCategories = await _navigationService.GetAllProductCategories();
+                            var dbProductCategoryNames = await Task.Run(() => allProductCategories.Where(x => x.Product == model.Product).Select(x => x.Category.Name).ToArray());
+                            var clientProductCategoryNames = await Task.Run(() => allCategories.Where(x => model.IdsOfSelectedCategories.Contains(x.Id)).Select(x => x.Name).ToArray());
+                            if (!dbProductCategoryNames.ToHashSet().SetEquals(clientProductCategoryNames.ToHashSet()))
+                            {
+                                string categoryStrings = String.Join(", ", dbProductCategoryNames);
+                                ModelState.AddModelError("IdsOfSelectedCategories", $"Current value: {categoryStrings}");
+                            }
                         }
 
+
                         ModelState.AddModelError(string.Empty, "The product's values were updated while you were editing them. Review the changes (if any) " +
-                            "and if you still wish to submit them, click the 'Save' button again.");
+                            "and if you still wish to submit them, click the 'Save' button again. Otherwise, refresh the page to get the updated data.");
 
                         await FillUpProductEditData(model, model.Product);
 
                         model.Product.RowVersion = databaseValues.RowVersion;
                         ModelState.Remove("Product.RowVersion");
 
-                        TempData["ErrorMsg"] = "Product update failed. Someone has already updated selected product. Please try again.";
-                        return RedirectToAction("Index", "Home");
+                        return View(model);
                     }
                 }
                 TempData["SuccessMsg"] = "Product updated successfully.";

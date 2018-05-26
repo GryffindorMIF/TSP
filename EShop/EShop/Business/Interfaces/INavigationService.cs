@@ -30,6 +30,7 @@ namespace EShop.Business
         Task AddCategory(int? parentId, string name, string description);
         Task DeleteCategory(int Id);
         Task RenameCategory(int Id, string rowVersion, string newName, string newDescription);
+        Task RenameCategory(int Id, string newName, string newDescription);
         Task AddTopLevelCategory(string name, string description);
 
         Task<ICollection<CategoryViewModel>> BuildRecursiveMenuAsync();
