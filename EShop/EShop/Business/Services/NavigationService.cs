@@ -339,6 +339,16 @@ namespace EShop.Business
             await _context.SaveChangesAsync();
         }
 
+        public async Task RenameCategory(int Id, string newName, string newDescription)
+        {
+            Category category = await GetCategoryById(Id);
+
+            category.Name = newName;
+            category.Description = newDescription;
+            _context.Update(category);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteCategory(int Id)
         {
             Category category = await GetCategoryById(Id);

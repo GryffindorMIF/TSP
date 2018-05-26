@@ -35,7 +35,15 @@ namespace EShop.Views
             {
                 Category category = await _navigationService.GetCategoryById(postModel.CategoryId);
 
-                await _navigationService.RenameCategory(postModel.CategoryId, postModel.RowVersion, postModel.NewName, postModel.NewDescription);
+                if (postModel.RowVersion == null)
+                {
+                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.NewName, postModel.NewDescription);
+                }
+                else
+                {
+                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.RowVersion, postModel.NewName, postModel.NewDescription);
+                }
+
 
                 return Json(0);// success
             }
