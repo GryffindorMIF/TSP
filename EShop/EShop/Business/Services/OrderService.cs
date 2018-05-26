@@ -203,7 +203,6 @@ namespace EShop.Business.Services
 
         public async Task<int> Purchase(int totalCost, string postMessage)
         {
-            //Touching anything 'Http' beyond this point is likely to result in some browsers flipping their shit out
             HttpClientHandler handler = new HttpClientHandler()
             {
                 PreAuthenticate = true,
