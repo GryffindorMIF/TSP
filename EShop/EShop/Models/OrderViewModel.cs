@@ -16,6 +16,7 @@ namespace EShop.Models
         public string ZipConfirmation { get; set; }
 
         [CreditCard, Required]
+        [Display(Prompt = "16 digit card number")]
         public string CardNumber { get; set; }
 
         [RegularExpression(@"^[0-9]{3}$"), Required]

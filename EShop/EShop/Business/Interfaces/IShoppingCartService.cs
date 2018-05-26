@@ -25,5 +25,7 @@ namespace EShop.Business
         Task<int> AddShoppingCartToHistory(ShoppingCart sc);
         Task<IQueryable<ShoppingCartProductHistory>> QueryShoppingCartProductsFromHistory(ShoppingCart sc);
         Task<IQueryable<ProductInCartViewModel>> QueryProductsInCartFromHistory(ShoppingCart sc);
+
+        Task<int> CalculateTotalPriceCents(ApplicationUser user, ISession session);
     }
 }

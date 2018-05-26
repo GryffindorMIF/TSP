@@ -19,5 +19,6 @@ namespace EShop.Business.Interfaces
         ICollection<Order> GetAllAdminOrdersByPage(int pageNumber, int ordersPerPage);
         int GetAdminOrdersPageCount(int ordersPerPage);
         Task<Order> FindOrderByIdAsync(int Id);
+        Task<int> Purchase(int totalCost, string postMessage);
     }
 }

@@ -10,9 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EShop.Controllers
@@ -85,78 +82,70 @@ namespace EShop.Controllers
 
         [EnableCors("EShopCorsPolicy")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MakePurchase(OrderViewModel model, string totalCost)
+        [HttpPost]
+        public async Task<IActionResult> MakePurchase(OrderViewModel model)
         {
             if (!ModelState.IsValid)
             {
+                model.StatusMessage = "Please fill out all fields";
                 return View(model);
             }
 
-            Debug.WriteLine("ZipConf is: " + model.ZipConfirmation);
-            //This crap definitely needs to be reworked
-            string[] costSplit = totalCost.Split(Convert.ToChar(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
-            int costOut = 0;
-            Int32.TryParse(costSplit[0] + costSplit[1], out costOut);
-
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
+            //Total cost is recalculated off-view to prevent user interference
+            int totalCost = await _shoppingCartService.CalculateTotalPriceCents(user, HttpContext.Session);
+
             string jsonPost =
-                "{\"amount\":" + costOut +
+                "{\"amount\":" + totalCost +
                 ",\"number\": \"" + model.CardNumber +
                 "\",\"holder\": \"" + model.FirstName + " " + model.LastName +
                 "\",\"exp_year\": " + model.Exp_Year +
                 ",\"exp_month\": " + model.Exp_Month +
                 ",\"cvv\": \"" + model.CVV + "\"}";
 
-            //Touching anything 'Http' beyond this point is likely to result in some browsers flipping their shit out
-            HttpClientHandler handler = new HttpClientHandler()
-            {
-                PreAuthenticate = true,
-                UseDefaultCredentials = false,
-            };
-
-            HttpClient client = new HttpClient(handler);
-            client.DefaultRequestHeaders.Authorization
-                = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{"technologines"}:{"platformos"}")));
-
-            //Create POST content from data
-            StringContent jContent = new StringContent(jsonPost, Encoding.UTF8, "application/json");
-            jContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, "https://mock-payment-processor.appspot.com/v1/payment/")
-            {
-                Content = jContent,
-            };
-
             DeliveryAddress confirmAddress = await _addressManager.FindAddressByZipcodeAsync(model.ZipConfirmation);
+
             if (confirmAddress != null) //If address exists
             {
-                //Send payment request
-                HttpResponseMessage response = await client.SendAsync(req);
+                int purchaseResult = await _orderService.Purchase(totalCost, jsonPost);
 
-                if ((int)response.StatusCode == 201) //Success
+                if (purchaseResult == 201) //Payment successful
                 {
-                    ShoppingCart shoppingCart = null;
-
-                    shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
+                    ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
                     await _shoppingCartService.AssignNewShoppingCart(user);
-                    //user.ShoppingCartId = null;
-                    //await _userManager.UpdateAsync(user);
 
-                    Order newOrder = new Order();
+                    Order newOrder = new Order()
+                    {
+                        ShoppingCartId = shoppingCart.Id,
+                        UserId = user.Id,
+                        TotalPrice = totalCost,
+                        Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
+                            confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode,
+                        CardNumber = model.CardNumber,
+                        PurchaseDate = DateTime.Now,
+                        StatusCode = 1
+                    };
 
-                    newOrder.ShoppingCartId = shoppingCart.Id;
-                    newOrder.UserId = user.Id;
-                    newOrder.TotalPrice = Convert.ToDecimal(totalCost);
-                    newOrder.Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
-                    confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode;
-                    newOrder.CardNumber = model.CardNumber;
-                    newOrder.PurchaseDate = DateTime.Now;
-                    newOrder.StatusCode = 1; //1 - Purchased 2 - Confirmed etc.
-
-                    int addOrderResult = await _orderService.CreateOrderAsync(newOrder);
-
+                    await _orderService.CreateOrderAsync(newOrder);
                     await _shoppingCartService.AddShoppingCartToHistory(shoppingCart);
-                    //Todo redirect to some other page or show something
+                }
+                else if (purchaseResult == 400)
+                {
+                    StatusMessage = "Purchase failed - Invalid input data";
+                    return RedirectToAction(nameof(Checkout));
+                }
+                else if (purchaseResult == 402)
+                {
+                    StatusMessage = "Purchase failed - Out of funds";
+                    return RedirectToAction(nameof(Checkout));
+                }
+                else
+                {
+                    StatusMessage = "Purchase failed - Internal server error";
+                    //401 - could not auth user on mock-payment server-side
+                    //404 - operation not found on mock-payment server-side
+                    return RedirectToAction(nameof(Checkout));
                 }
             }
 

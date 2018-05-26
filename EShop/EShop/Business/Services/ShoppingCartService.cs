@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using EShop.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Globalization;
 
 namespace EShop.Business
 {
@@ -387,6 +388,25 @@ namespace EShop.Business
                 picvms.Add(picvm);
             }
             return picvms.AsQueryable();
+        }
+
+        public async Task<int> CalculateTotalPriceCents(ApplicationUser user, ISession session)
+        {
+            Decimal totalCost = 0;
+
+            //Calculate total price in backend
+            ShoppingCart shoppingCart = await FindShoppingCartByIdAsync((int)user.ShoppingCartId);
+            IEnumerable<ProductInCartViewModel> products = await QueryAllShoppingCartProductsAsync(shoppingCart, session);
+
+            foreach (ProductInCartViewModel product in products)
+            {
+                totalCost += product.Price * product.Quantity;
+            }
+            string[] costSplit = totalCost.ToString().Split(Convert.ToChar(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator));
+            int totalCostCents = 0;
+            Int32.TryParse(costSplit[0] + costSplit[1], out totalCostCents);
+
+            return totalCostCents;
         }
     }
 }

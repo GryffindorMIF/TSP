@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EShop.Business.Services
@@ -196,6 +199,32 @@ namespace EShop.Business.Services
             OrderReviewModel orderReview = null;
             orderReview = await _context.OrderReview.Where(or => or.OrderId == OrderId).FirstOrDefaultAsync();
             return orderReview;
+        }
+
+        public async Task<int> Purchase(int totalCost, string postMessage)
+        {
+            //Touching anything 'Http' beyond this point is likely to result in some browsers flipping their shit out
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                PreAuthenticate = true,
+                UseDefaultCredentials = false,
+            };
+
+            HttpClient client = new HttpClient(handler);
+            client.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{"technologines"}:{"platformos"}")));
+
+            //Create POST content from data
+            StringContent jContent = new StringContent(postMessage, Encoding.UTF8, "application/json");
+            jContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, "https://mock-payment-processor.appspot.com/v1/payment/")
+            {
+                Content = jContent,
+            };
+
+            HttpResponseMessage response = await client.SendAsync(req);
+
+            return (int)response.StatusCode;
         }
     }
 }
