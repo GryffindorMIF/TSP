@@ -330,8 +330,7 @@ namespace EShop.Controllers
                         model.Product.RowVersion = databaseValues.RowVersion;
                         ModelState.Remove("Product.RowVersion");
 
-                        TempData["ErrorMsg"] = "Product update failed. Someone has already updated selected product. Please try again.";
-                        return RedirectToAction("Index", "Home");
+                        return View(model);
                     }
                 }
                 TempData["SuccessMsg"] = "Product updated successfully.";
