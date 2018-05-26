@@ -51,8 +51,14 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(User);
             var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
             ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
+            await _shoppingCartService.TransferSessionProducts(HttpContext, shoppingCart);
 
             model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+            using (var enumerator = model.Products.GetEnumerator())
+            {
+                if (!enumerator.MoveNext())
+                    return RedirectToAction("Index", "Home");
+            }
 
             model.savedAddresses = new List<SelectListItem>();
 
