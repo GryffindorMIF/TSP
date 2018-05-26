@@ -89,13 +89,15 @@ namespace EShop.Business
 
         public async Task<int> CountProductsInShoppingCart(ShoppingCart shoppingCart)
         {
-             return await (from scp in _context.ShoppingCartProduct
-                     where scp.ShoppingCart.Id == shoppingCart.Id
-                     select scp).CountAsync();
+            return await (from scp in _context.ShoppingCartProduct
+                          where scp.ShoppingCart.Id == shoppingCart.Id
+                          select scp).CountAsync();
         }
 
         public async Task<int> AddProductToShoppingCartAsync(Product product, ShoppingCart cart, int quantity, ISession session)
         {
+            if (quantity < 1)
+                return 1; //Return quantity error
             if (cart != null)
             {
                 int returnCode = 1;
@@ -108,8 +110,8 @@ namespace EShop.Business
                     {
                         // Check if such product has already been added
                         ShoppingCartProduct shoppingCartProduct = _context.ShoppingCartProduct
-                            .Where(scp => scp.Product == product && scp.ShoppingCart == cart)
-                            .FirstOrDefault();
+                                .Where(scp => scp.Product == product && scp.ShoppingCart == cart)
+                                .FirstOrDefault();
 
                         // No such product found
                         if (shoppingCartProduct == null)
@@ -147,7 +149,7 @@ namespace EShop.Business
                         {
                             shoppingCartProduct.ShoppingCart = cart;
                             shoppingCartProduct.Quantity += quantity;
-                        
+
 
                             _context.Update(shoppingCartProduct);
 
@@ -323,27 +325,27 @@ namespace EShop.Business
         public async Task<int> AddShoppingCartToHistory(ShoppingCart sc)
         {
 
-                var scProducts = await QuerySavedProductsAsync(sc);
+            var scProducts = await QuerySavedProductsAsync(sc);
 
-                foreach (var scProduct in scProducts)
+            foreach (var scProduct in scProducts)
+            {
+                ShoppingCartProductHistory scph = new ShoppingCartProductHistory()
                 {
-                    ShoppingCartProductHistory scph = new ShoppingCartProductHistory()
-                    {
-                        ProductName = scProduct.Product.Name,
-                        ProductDescription = scProduct.Product.Description,
-                        ProductPrice = scProduct.Product.Price,
-                        ProductQuantity = scProduct.Quantity,                       
-                        ShoppingCart = sc
-                    };
+                    ProductName = scProduct.Product.Name,
+                    ProductDescription = scProduct.Product.Description,
+                    ProductPrice = scProduct.Product.Price,
+                    ProductQuantity = scProduct.Quantity,
+                    ShoppingCart = sc
+                };
 
-                    var primaryImage = await _productService.GetProductImages(scProduct.Product.Id);// will always return single value (why LIST?)
-                    if (primaryImage.Any()) scph.ProductPrimaryImageUrl = primaryImage[0].ImageUrl;
+                var primaryImage = await _productService.GetProductImages(scProduct.Product.Id);// will always return single value (why LIST?)
+                if (primaryImage.Any()) scph.ProductPrimaryImageUrl = primaryImage[0].ImageUrl;
 
-                    _context.Add(scph);
-                    //_context.Remove(scProduct);
-                }
-                await _context.SaveChangesAsync();
-                return 0;
+                _context.Add(scph);
+                //_context.Remove(scProduct);
+            }
+            await _context.SaveChangesAsync();
+            return 0;
 
         }
 
@@ -354,8 +356,8 @@ namespace EShop.Business
             await Task.Run(() =>
             {
                 scphs = (from scph in _context.ShoppingCartProductHistory
-                            where scph.ShoppingCartId == sc.Id
-                            select scph).AsQueryable();
+                         where scph.ShoppingCartId == sc.Id
+                         select scph).AsQueryable();
             });
 
             return scphs;
@@ -367,10 +369,10 @@ namespace EShop.Business
 
             ICollection<ProductInCartViewModel> picvms = new List<ProductInCartViewModel>();
 
-            foreach(var scph in scphs)
+            foreach (var scph in scphs)
             {
                 var product = await _productService.FindProductByName(scph.ProductName);
-                
+
                 ProductInCartViewModel picvm = new ProductInCartViewModel()
                 {
                     Name = product.Name,

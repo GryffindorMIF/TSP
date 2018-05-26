@@ -63,18 +63,11 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProductToShoppingCart([FromBody]ProductToCartPostModel productToCartPostModel)// Encapsulated post model for AJAX request
         {
-            int resultCode;
-            if (productToCartPostModel.Quantity > 0)
-            {
-                Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
+            Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
 
-                ShoppingCart shoppingCart = await GetCartAsync();
+            ShoppingCart shoppingCart = await GetCartAsync();
 
-                resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
-            } else
-            {
-                resultCode = 1;
-            }
+            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
             return Json(resultCode);// AJAX handles pop-up modal based on this return
         }
 
