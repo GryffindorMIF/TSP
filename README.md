@@ -12,6 +12,7 @@
 
 * Architecture: https://drive.google.com/file/d/1lW9S3cV23YsQXhReobfExJItX6L1Jpd_/view?usp=sharing
 * Database model: https://drive.google.com/file/d/1LkllZZ7pa-x7LM0DNllx9MBBYHL5wVih/view?usp=sharing
+* Visos sistemos testavimo planas: https://1drv.ms/w/s!Asg_hoYplurKgwW-t8L7gXJhbPEy
 
 ## Migrations
 
