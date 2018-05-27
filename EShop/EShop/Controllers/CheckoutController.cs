@@ -91,7 +91,7 @@ namespace EShop.Controllers
 
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            //Total cost is recalculated off-view to prevent user interference
+            //Total cost is recalculated separately to prevent user meddling
             int totalCost = await _shoppingCartService.CalculateTotalPriceCents(user, HttpContext.Session);
 
             string jsonPost =
@@ -168,7 +168,6 @@ namespace EShop.Controllers
                 }
             }
 
-            //Todo something on checkout page if transaction fails etc.
             return RedirectToAction("Index", "Order");
         }
     }
