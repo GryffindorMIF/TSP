@@ -8,8 +8,10 @@
 * Antras ciklas: https://1drv.ms/w/s!Ao-39X8OWHung2IWWhRSdmgQPdXA
 * Trecias ciklas: https://1drv.ms/w/s!Ao-39X8OWHunhA6ePMEN1xmadV7L
 
-* Architecture: https://www.draw.io/?state=%7B%22ids%22:%5B%221lW9S3cV23YsQXhReobfExJItX6L1Jpd_%22%5D,%22action%22:%22open%22,%22userId%22:%22111572487005689292820%22%7D#G1lW9S3cV23YsQXhReobfExJItX6L1Jpd_
-* Database model: https://www.draw.io/?state=%7B%22ids%22:%5B%221LkllZZ7pa-x7LM0DNllx9MBBYHL5wVih%22%5D,%22action%22:%22open%22,%22userId%22:%22111572487005689292820%22%7D#G1LkllZZ7pa-x7LM0DNllx9MBBYHL5wVih
+## Other links
+
+* Architecture: https://drive.google.com/file/d/1lW9S3cV23YsQXhReobfExJItX6L1Jpd_/view?usp=sharing
+* Database model: https://drive.google.com/file/d/1LkllZZ7pa-x7LM0DNllx9MBBYHL5wVih/view?usp=sharing
 
 ## Migrations
 
