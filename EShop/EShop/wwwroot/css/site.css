@@ -312,5 +312,10 @@ ul {
     .desktop-product-view {
         display: none !important;
     }
+
+    #cvv-modal p img {
+        width: 80%;
+        height: 80%;
+    }
 }
 

@@ -59,11 +59,11 @@ namespace EShop.Controllers
             //var orders = await _orderService.QueryAllOrdersAsync(user);
             var orders = _orderService.GetAllOrdersByPage(user, pageNumber, orderHistoryOrdersPerPage);
 
-            List<OrderReviewModel> reviews = new List<OrderReviewModel>();
+            List<OrderReview> reviews = new List<OrderReview>();
 
             foreach (Order o in orders)
             {
-                OrderReviewModel orm = await _orderService.FindOrderReviewAsync(o.Id);
+                OrderReview orm = await _orderService.FindOrderReviewAsync(o.Id);
                 if (orm != null)
                 {
                     orm.CustomerComment = orm.Rating + ": " + orm.CustomerComment;
@@ -162,7 +162,7 @@ namespace EShop.Controllers
             {
                 Order order = await _orderService.FindOrderByIdAsync(rpm.OrderId);
 
-                OrderReviewModel newReview = new OrderReviewModel();
+                OrderReview newReview = new OrderReview();
 
                 var user = await _userManager.GetUserAsync(HttpContext.User);
 
@@ -189,11 +189,11 @@ namespace EShop.Controllers
             //var orders = await _orderService.QueryAllAdminOrdersAsync();
             var orders = _orderService.GetAllAdminOrdersByPage(pageNumber, orderConfirmationOrdersPerPage);
 
-            List<OrderReviewModel> reviews = new List<OrderReviewModel>();
+            List<OrderReview> reviews = new List<OrderReview>();
 
             foreach (Order o in orders)
             {
-                OrderReviewModel orm = await _orderService.FindOrderReviewAsync(o.Id);
+                OrderReview orm = await _orderService.FindOrderReviewAsync(o.Id);
                 if (orm != null)
                 {
                     orm.CustomerComment = orm.Rating + ": " + orm.CustomerComment;

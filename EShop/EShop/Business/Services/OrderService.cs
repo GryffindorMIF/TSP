@@ -21,7 +21,7 @@ namespace EShop.Business.Services
             _context = context;
         }
 
-        public async Task<int> AddOrderReviewAsync(Order order, OrderReviewModel review)
+        public async Task<int> AddOrderReviewAsync(Order order, OrderReview review)
         {
             int returnCode = 1;
             try
@@ -194,9 +194,9 @@ namespace EShop.Business.Services
             return returnCode;
         }
 
-        public async Task<OrderReviewModel> FindOrderReviewAsync(int OrderId)
+        public async Task<OrderReview> FindOrderReviewAsync(int OrderId)
         {
-            OrderReviewModel orderReview = null;
+            OrderReview orderReview = null;
             orderReview = await _context.OrderReview.Where(or => or.OrderId == OrderId).FirstOrDefaultAsync();
             return orderReview;
         }

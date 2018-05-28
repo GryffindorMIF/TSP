@@ -301,9 +301,11 @@
                 </div>
             }
         }
+        
         <!-- Next/previous controls -->
         <a class="img_prev" onclick="plusSlides(-1)">&#10094;</a>
         <a class="img_next" onclick="plusSlides(1)">&#10095;</a>
+        
 
         <!-- Caption text -->
         <div class="img_caption-container">
@@ -321,7 +323,7 @@
                 counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    <img class="img_demo img_cursor" style="width:100%; max-width:120px" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
+                    <img class="img_demo img_cursor" style="width:100%; max-width:120px; height:100%" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
                 </div>
             }
         }

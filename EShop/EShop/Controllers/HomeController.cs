@@ -405,9 +405,16 @@ namespace EShop.Controllers
         {
             foreach (var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
             {
-                var adToRemove = await _productService.GetProductAdById(adId);
-                await _appEnvironment.DeleteImageAsync(adToRemove.AdImageUrl, "main carousel");
-                await _productService.DeleteProductAd(adToRemove);
+                try
+                {
+                    var adToRemove = await _productService.GetProductAdById(adId);
+                    await _appEnvironment.DeleteImageAsync(adToRemove.AdImageUrl, "main carousel");
+                    await _productService.DeleteProductAd(adToRemove);
+                }
+                catch(Exception)// kazkas jau anksciau removino ad'a
+                {
+                    continue;
+                }
             }
             return await EditMainCarousel();
         }

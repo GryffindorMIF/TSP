@@ -74,7 +74,7 @@ namespace EShop.Business.Services
 
         public async Task DeleteProduct(int productId)
         {
-            _context.Remove(FindProductByIdAsync(productId));
+            _context.Remove(await FindProductByIdAsync(productId));
             await _context.SaveChangesAsync();
         }
 

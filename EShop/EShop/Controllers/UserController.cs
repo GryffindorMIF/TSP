@@ -83,7 +83,7 @@ namespace EShop.Controllers
 
                     return View(applicationUser);
                 }
-                else return new NotFoundResult();
+                else return RedirectToAction(nameof(Index));// jei deletina jau nudeletinta useri
             }
             else return new NotFoundResult();
         }
