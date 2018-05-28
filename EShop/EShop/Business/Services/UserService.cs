@@ -133,13 +133,20 @@ namespace EShop.Business
 
         public async Task<bool> IsInRoleById(string id, string role)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains(role))
+            try
             {
-                return true;
+                var user = await _userManager.FindByIdAsync(id);
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains(role))
+                {
+                    return true;
+                }
+                else return false;
             }
-            else return false;
+            catch(Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<Tuple<int,IQueryable<UserInRoleViewModel>>> QueryUsersInRolesByPageAsync(int pageNumber, int usersPerPage)

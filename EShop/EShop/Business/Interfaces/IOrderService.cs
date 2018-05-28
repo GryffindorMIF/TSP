@@ -8,10 +8,10 @@ namespace EShop.Business.Interfaces
 {
     public interface IOrderService
     {
-        Task<int> AddOrderReviewAsync(Order order, OrderReviewModel review);
+        Task<int> AddOrderReviewAsync(Order order, OrderReview review);
         Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm, byte[] rowVersion); //True if confirm, false if reject
         Task<int> CreateOrderAsync(Order order);
-        Task<OrderReviewModel> FindOrderReviewAsync(int OrderId);
+        Task<OrderReview> FindOrderReviewAsync(int OrderId);
         Task<IQueryable<Order>> QueryAllOrdersAsync(ApplicationUser user);
         ICollection<Order> GetAllOrdersByPage(ApplicationUser user, int pageNumber, int ordersPerPage);
         int GetOrdersPageCount(ApplicationUser user, int ordersPerPage);

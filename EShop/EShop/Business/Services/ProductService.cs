@@ -66,7 +66,7 @@ namespace EShop.Business.Services
                 await _context.SaveChangesAsync();
                 return 0;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return 1;
             }
@@ -74,7 +74,7 @@ namespace EShop.Business.Services
 
         public async Task DeleteProduct(int productId)
         {
-            _context.Remove(FindProductByIdAsync(productId));
+            _context.Remove(await FindProductByIdAsync(productId));
             await _context.SaveChangesAsync();
         }
 
@@ -158,21 +158,21 @@ namespace EShop.Business.Services
             return result == 0 ? images : null;
         }
 
-       /* public async Task<IList<ProductImage>> GetPrimaryImages(Product product)
-        {
-            return await (from pi in _context.ProductImage
-                          where pi.IsPrimary == true
-                          where pi.Product == product
-                          select pi).ToListAsync();
-        }
+        /* public async Task<IList<ProductImage>> GetPrimaryImages(Product product)
+         {
+             return await (from pi in _context.ProductImage
+                           where pi.IsPrimary == true
+                           where pi.Product == product
+                           select pi).ToListAsync();
+         }
 
-        public async Task<IList<ProductImage>> GetSecondaryImages(Product product)
-        {
-            return await (from pi in _context.ProductImage
-                          where pi.IsPrimary == false
-                          where pi.Product == product
-                          select pi).ToListAsync();
-        }*/
+         public async Task<IList<ProductImage>> GetSecondaryImages(Product product)
+         {
+             return await (from pi in _context.ProductImage
+                           where pi.IsPrimary == false
+                           where pi.Product == product
+                           select pi).ToListAsync();
+         }*/
 
         public async Task<IList<ProductImage>> GetAllProductImages(int productId)
         {
@@ -216,7 +216,7 @@ namespace EShop.Business.Services
 
         public async Task DeleteProductProperty(int Id)
         {
-            _context.Remove(FindProductPropertyByIdAsync(Id));
+            _context.Remove(await FindProductPropertyByIdAsync(Id));
             await _context.SaveChangesAsync();
         }
 

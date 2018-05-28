@@ -71,6 +71,34 @@
     </div>
 </div>
 
+<div id="quantity-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
+
+                <button id="quantity-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#quantity-modal-id').fadeOut()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="div_change" class="modal-body">
+                <p id="p_quantity">
+                </p>
+                <p id="p_special">
+                    <strong id="p_strong">Quantity of product cannot be less than 1!</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="quantity-modal-exit-btn2" type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#quantity-modal-id').fadeOut()">
+                    <span class="glyphicon" aria-hidden="true"></span> I understand.
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
 {
     @section sidenav
@@ -183,6 +211,7 @@
                         <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
                         <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
                         <button id="add-btn" type="submit" class="btn btn-add">
+                            <img src="~/images/shopping-cart.png" style="margin-bottom:1px" width="20" height="20" />
                             <text>Add to cart</text>
                         </button>
                     </form>
@@ -228,6 +257,7 @@
                         <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
                         <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
                         <button id="add-btn" type="submit" class="btn btn-add">
+                            <img src="~/images/shopping-cart.png" style="margin-bottom:1px" width="20" height="20" />
                             <text>Add to cart</text>
                         </button>
                     </form>
@@ -260,7 +290,7 @@
     <div class="img_modal-content">
         <div class="imgSlides">
             <div class="img_numbertext">1 / @totalImages</div>
-            <img class="img_modal-style" src="~/images/products/@ViewData["primary_image"]"/>
+            <img class="img_modal-style" src="~/images/products/@ViewData["primary_image"]" />
         </div>
         @{ int counter2 = 1;
             foreach (var image in ViewBag.SecondaryImages)
@@ -273,9 +303,11 @@
                 </div>
             }
         }
+        
         <!-- Next/previous controls -->
         <a class="img_prev" onclick="plusSlides(-1)">&#10094;</a>
         <a class="img_next" onclick="plusSlides(1)">&#10095;</a>
+        
 
         <!-- Caption text -->
         <div class="img_caption-container">
@@ -293,7 +325,7 @@
                 counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    <img class="img_demo img_cursor" style="width:100%; max-width:120px" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
+                    <img class="img_demo img_cursor" style="width:100%; max-width:120px; height:100%" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
                 </div>
             }
         }
@@ -345,6 +377,7 @@
 </div>
 -->
 <!-- Scripts for shopping cart modal -->
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
     $(document).ready(function () {
@@ -418,6 +451,7 @@
             }
             else if (response == 1) {
                 //TODO: handle failure sent from controller (modify modal box)
+                $('#quantity-modal-id').fadeIn();
             }
             else if (response == 2) {// limit reached
                 $('#limit-modal-id').fadeIn();

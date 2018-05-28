@@ -1,0 +1,104 @@
+﻿@using Microsoft.AspNetCore.Http
+@using EShop.Util
+@using EShop.Data
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ApplicationDbContext context
+
+@{
+    var products = await HttpContextAccessor.HttpContext.Session.GetProductsAsync(context);
+}
+
+<div id="save-session-products-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/success.png" width="30" height="30" /> &nbsp; Your previous products remain in session.
+
+                <button id="save-session-products-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="DiscardProducts()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Do you wish to transfer the following products to your account's cart?</p>
+                <ul>
+                    @foreach (var product in products)
+                    {
+                        <li>Product: @product.Product.Name, Amount: @product.Count</li>
+                    }
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button id="save-session-products-modal-discard-btn" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="DiscardProducts()">Discard</button>
+                &nbsp;
+                <button id="save-session-products-modal-add-btn" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="AddProducts()">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="limit-modal-id" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
+
+                <button id="limit-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <strong>You have exceeded the number of items shopping cart can carry!</strong>
+                    <ul>
+                        <li>
+                            - Remove some items and try again
+                        </li>
+                        <li>
+                            - Checkout and add the items to an empty shopping cart
+                        </li>
+                    </ul>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="ShoppingCart" asp-action="Index">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Go to Shopping Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (this.User.IsInRole("Customer") && products.Count > 0)
+{
+    <script type="text/javascript">
+            $('#save-session-products-modal-id').fadeIn();
+
+            function AddProducts() {
+                $('#save-session-products-modal-id').fadeOut();
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("AddSessionProductsToCartAsync", "ShoppingCart")',
+                    success: function (response) {
+                        if (response == 0) {
+                            location.reload(true);
+                        }
+                        else if (response == 1) {
+                            //TODO: handle failure sent from controller (modify modal box)
+                        }
+                        else if (response == 2) {// limit reached
+                            $('#limit-modal-id').fadeIn();
+                        }
+                    },
+                });
+            }
+            function DiscardProducts() {
+                $('#save-session-products-modal-id').fadeOut();
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("DiscardSessionProducts", "ShoppingCart")'
+                });
+            }
+    </script>
+}

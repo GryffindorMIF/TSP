@@ -29,7 +29,7 @@ namespace EShop.Data
         public DbSet<DeliveryAddress> DeliveryAddress { get; set; }
         public DbSet<ProductDiscount> ProductDiscount { get; set; }
         public DbSet<ProductAd> ProductAd { get; set; }
-        public DbSet<OrderReviewModel> OrderReview { get; set; }
+        public DbSet<OrderReview> OrderReview { get; set; }
         public DbSet<Models.AttributeValue> AttributeValue { get; set; }
         public DbSet<Models.Attribute> Attribute { get; set; }
         public DbSet<ProductAttributeValue> ProductAttributeValue { get; set; }
@@ -51,6 +51,14 @@ namespace EShop.Data
             builder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable("UserLogins"); });
             builder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
             builder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
+
+            builder.Entity<Models.Attribute>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            builder.Entity<AttributeValue>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
 
             // unique name for product
             builder.Entity<Product>()
@@ -77,17 +85,10 @@ namespace EShop.Data
             builder.Entity<ProductDiscount>()
                 .HasAlternateKey(c => c.ProductId)
                 .HasName("AlternateKey_ProductId");          
-
-            /*
+         
             builder.Entity<ProductAttributeValue>()
                 .HasAlternateKey(c => new { c.ProductId, c.AttributeValueId })
                 .HasName("AlternateKey_ProductId_AttributeValueId");
-
-            */
-
-            /*builder.Entity<ProductDiscount>()
-                .HasIndex(pd => pd.ProductId)
-                .IsUnique();*/
 
             //one-to-one mapping (unique)
             builder.Entity<ProductDiscount>()

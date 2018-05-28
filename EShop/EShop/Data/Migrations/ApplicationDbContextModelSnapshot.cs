@@ -88,6 +88,10 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
                     b.ToTable("Attribute");
                 });
 
@@ -103,6 +107,10 @@ namespace EShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AttributeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
 
                     b.ToTable("AttributeValue");
                 });
@@ -235,7 +243,7 @@ namespace EShop.Data.Migrations
                     b.ToTable("Order");
                 });
 
-            modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
+            modelBuilder.Entity("EShop.Models.OrderReview", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -262,9 +270,13 @@ namespace EShop.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100);
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100);
 
                     b.Property<decimal>("Price");
 
@@ -275,8 +287,7 @@ namespace EShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Product");
                 });
@@ -308,9 +319,10 @@ namespace EShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AttributeValueId");
+                    b.HasAlternateKey("ProductId", "AttributeValueId")
+                        .HasName("AlternateKey_ProductId_AttributeValueId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("AttributeValueId");
 
                     b.ToTable("ProductAttributeValue");
                 });
@@ -588,7 +600,7 @@ namespace EShop.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.OrderReviewModel", b =>
+            modelBuilder.Entity("EShop.Models.OrderReview", b =>
                 {
                     b.HasOne("EShop.Models.ApplicationUser", "User")
                         .WithMany()
