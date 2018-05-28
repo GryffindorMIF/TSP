@@ -81,7 +81,10 @@
                     type: 'GET',
                     url: '@Url.Action("AddSessionProductsToCartAsync", "ShoppingCart")',
                     success: function (response) {
-                        if (response == 1) {
+                        if (response == 0) {
+                            location.reload(true);
+                        }
+                        else if (response == 1) {
                             //TODO: handle failure sent from controller (modify modal box)
                         }
                         else if (response == 2) {// limit reached

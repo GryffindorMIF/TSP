@@ -35,10 +35,10 @@
                 <ul class="nav navbar-nav">
                     @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
                     {
-                        <li>                         
+                        <li>
                             <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
                                 <img src="~/images/shopping-cart.png" width="24" height="24" /> Shopping cart
-                            </a>                           
+                            </a>
                         </li>
                     }
                     <!--Make order only appear to non-anonymous customers-->
@@ -84,7 +84,7 @@
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js">
-    <</script>
+            <</script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
@@ -103,6 +103,7 @@
     </environment>
 
     @RenderSection("Scripts", required: false)
+    @Html.Partial("Modals/_ShoppingCartSessionModal")
 </body>
 </html>
 
