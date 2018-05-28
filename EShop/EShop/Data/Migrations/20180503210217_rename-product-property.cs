@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,12 +7,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Property",
-                table: "ProductDetails");
+                "Property",
+                "ProductDetails");
 
             migrationBuilder.AddColumn<string>(
-                name: "Name",
-                table: "ProductDetails",
+                "Name",
+                "ProductDetails",
                 maxLength: 20,
                 nullable: false,
                 defaultValue: "");
@@ -23,12 +21,12 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Name",
-                table: "ProductDetails");
+                "Name",
+                "ProductDetails");
 
             migrationBuilder.AddColumn<string>(
-                name: "Property",
-                table: "ProductDetails",
+                "Property",
+                "ProductDetails",
                 maxLength: 200,
                 nullable: false,
                 defaultValue: "");

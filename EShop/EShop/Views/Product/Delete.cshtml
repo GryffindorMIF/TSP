@@ -1,4 +1,4 @@
-﻿@model EShop.Models.Product
+﻿@model EShop.Models.EFModels.Product.Product
 
 @{
     ViewData["Title"] = "Delete";
@@ -9,7 +9,7 @@
 <h3>Are you sure you want to delete selected product?</h3>
 <div>
     <h4>Product</h4>
-    <hr />
+    <hr/>
     <dl class="dl-horizontal">
         <dt>
             @Html.DisplayNameFor(model => model.Name)
@@ -32,8 +32,8 @@
     </dl>
 
     <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-default" /> |
+        <input type="hidden" asp-for="Id"/>
+        <input type="submit" value="Delete" class="btn btn-default"/> |
         <a asp-controller="Home" asp-action="Index">Back</a>
     </form>
 </div>

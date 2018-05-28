@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using EShop.Business;
 using EShop.Business.Interfaces;
-using EShop.Data;
-using EShop.Models;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.ShoppingCart;
+using EShop.Models.EFModels.User;
 using EShop.Models.PostModels;
+using EShop.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +21,8 @@ namespace EShop.Controllers
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
 
-        private readonly int orderHistoryOrdersPerPage;
-        private readonly int orderConfirmationOrdersPerPage;
+        private readonly int _orderHistoryOrdersPerPage;
+        private readonly int _orderConfirmationOrdersPerPage;
 
         public OrderController
             (
@@ -39,11 +38,11 @@ namespace EShop.Controllers
             _orderService = orderService;
             _productService = productService;
 
-            if (!int.TryParse(configuration["PaginationConfig:OrderHistoryOrdersPerPage"], out orderHistoryOrdersPerPage))
+            if (!int.TryParse(configuration["PaginationConfig:OrderHistoryOrdersPerPage"], out _orderHistoryOrdersPerPage))
             {
                 throw new InvalidOperationException("Invalid PaginationConfig:OrderHistoryOrdersPerPage in appsettings.json. Not an int value.");
             }
-            if (!int.TryParse(configuration["PaginationConfig:OrderConfirmationOrdersPerPage"], out orderConfirmationOrdersPerPage))
+            if (!int.TryParse(configuration["PaginationConfig:OrderConfirmationOrdersPerPage"], out _orderConfirmationOrdersPerPage))
             {
                 throw new InvalidOperationException("Invalid PaginationConfig:OrderConfirmationOrdersPerPage in appsettings.json. Not an int value.");
             }
@@ -57,7 +56,7 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
             //var orders = await _orderService.QueryAllOrdersAsync(user);
-            var orders = _orderService.GetAllOrdersByPage(user, pageNumber, orderHistoryOrdersPerPage);
+            var orders = _orderService.GetAllOrdersByPage(user, pageNumber, _orderHistoryOrdersPerPage);
 
             List<OrderReview> reviews = new List<OrderReview>();
 
@@ -75,7 +74,7 @@ namespace EShop.Controllers
             model.Reviews = reviews;
 
             // pagination
-            int pageCount = _orderService.GetOrdersPageCount(user, orderHistoryOrdersPerPage);
+            int pageCount = _orderService.GetOrdersPageCount(user, _orderHistoryOrdersPerPage);
             ViewBag.PageCount = pageCount;
 
             if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
@@ -103,45 +102,51 @@ namespace EShop.Controllers
             {
                 var user = await _userManager.GetUserAsync(HttpContext.User);
 
-                ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
-
-                Order order = await _orderService.FindOrderByIdAsync(s.SelectedValue);
-
-                ShoppingCart oldShoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)order.ShoppingCartId);
-
-                var currentProducts = await _shoppingCartService.QuerySavedProductsAsync(shoppingCart);
-                //var oldProducts = await _shoppingCartService.QuerySavedProductsAsync(oldShoppingCart);
-                var oldProducts = await _shoppingCartService.QueryShoppingCartProductsFromHistory(oldShoppingCart);
-
-                //Can remove this if we also want to keep the already added products instead of repeating the order
-                foreach (ShoppingCartProduct scp in currentProducts)
+                if (user.ShoppingCartId != null)
                 {
-                    await _shoppingCartService.RemoveShoppingCartProductAsync(scp.Product, shoppingCart, HttpContext.Session);
-                }
+                    ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
 
-                /*
+                    Order order = await _orderService.FindOrderByIdAsync(s.SelectedValue);
+
+                    if (order.ShoppingCartId != null)
+                    {
+                        ShoppingCart oldShoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)order.ShoppingCartId);
+
+                        var currentProducts = await _shoppingCartService.QuerySavedProductsAsync(shoppingCart);
+                        //var oldProducts = await _shoppingCartService.QuerySavedProductsAsync(oldShoppingCart);
+                        var oldProducts = await _shoppingCartService.QueryShoppingCartProductsFromHistory(oldShoppingCart);
+
+                        //Can remove this if we also want to keep the already added products instead of repeating the order
+                        foreach (ShoppingCartProduct scp in currentProducts)
+                        {
+                            await _shoppingCartService.RemoveShoppingCartProductAsync(scp.Product, shoppingCart, HttpContext.Session);
+                        }
+
+                        /*
                 foreach (ShoppingCartProduct scp in oldProducts)
                 {
                     await _shoppingCartService.AddProductToShoppingCartAsync(scp.Product, shoppingCart, scp.Quantity, HttpContext.Session);
                 }
                 */
-                foreach(ShoppingCartProductHistory scph in oldProducts)
-                {
-                    // IESKOM PAGAL NAME ar dar egzistuoja toks produktas 
-                    var product = await _productService.FindProductByName(scph.ProductName);
-                    if (product == null)// neber prekes?
-                    {
-                        returnCode = 3;
-                    }
-                    else if(product.Price != scph.ProductPrice)// gal kaina pasikeite? pridet reik, bet pranest customeriui
-                    {
-                        returnCode = 3;
-                        await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
-                    }
-                    else
-                    {
-                        var newReturnCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
-                        if (newReturnCode > returnCode) returnCode = newReturnCode;
+                        foreach(ShoppingCartProductHistory scph in oldProducts)
+                        {
+                            // IESKOM PAGAL NAME ar dar egzistuoja toks produktas 
+                            var product = await _productService.FindProductByName(scph.ProductName);
+                            if (product == null)// neber prekes?
+                            {
+                                returnCode = 3;
+                            }
+                            else if(product.Price != scph.ProductPrice)// gal kaina pasikeite? pridet reik, bet pranest customeriui
+                            {
+                                returnCode = 3;
+                                await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
+                            }
+                            else
+                            {
+                                var newReturnCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, scph.ProductQuantity, HttpContext.Session);
+                                if (newReturnCode > returnCode) returnCode = newReturnCode;
+                            }
+                        }
                     }
                 }
             }
@@ -156,7 +161,7 @@ namespace EShop.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<int> LeaveReview([FromBody] ReviewPostModel rpm)
         {
-            int returnCode = 1;
+            int returnCode;
 
             try
             {
@@ -170,7 +175,7 @@ namespace EShop.Controllers
                 newReview.Rating = Convert.ToInt16(rpm.Rating);
                 newReview.CustomerComment = rpm.Comment;
                 newReview.User = user;
-                int reviewResult = await _orderService.AddOrderReviewAsync(order, newReview);
+                await _orderService.AddOrderReviewAsync(order, newReview);
 
                 returnCode = 0;
             }
@@ -187,7 +192,7 @@ namespace EShop.Controllers
             var model = new OrderHistoryModel();
 
             //var orders = await _orderService.QueryAllAdminOrdersAsync();
-            var orders = _orderService.GetAllAdminOrdersByPage(pageNumber, orderConfirmationOrdersPerPage);
+            var orders = _orderService.GetAllAdminOrdersByPage(pageNumber, _orderConfirmationOrdersPerPage);
 
             List<OrderReview> reviews = new List<OrderReview>();
 
@@ -210,7 +215,7 @@ namespace EShop.Controllers
             }
 
             // pagination
-            int pageCount = _orderService.GetAdminOrdersPageCount(orderConfirmationOrdersPerPage);
+            int pageCount = _orderService.GetAdminOrdersPageCount(_orderConfirmationOrdersPerPage);
             ViewBag.PageCount = pageCount;
 
             if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;

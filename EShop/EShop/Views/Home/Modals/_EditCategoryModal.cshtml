@@ -1,4 +1,5 @@
-﻿@using EShop.Data;
+﻿@using EShop.Data
+@using EShop.Models.EFModels.Category
 @inject ApplicationDbContext context
 
 <div id="edit-modal" class="modal" tabindex="-1" role="dialog">
@@ -6,7 +7,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <p align="center">
-                    <img src="~/images/folder.png" width="30" height="26" />
+                    <img src="~/images/folder.png" width="30" height="26"/>
                     Edit "@ViewBag.CurrentCategoryName" category
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#edit-modal').hide();">
                         <span aria-hidden="true">&times;</span>
@@ -19,21 +20,19 @@
                         <strong>Ooops!</strong><text id="edit-category-error-message"></text>
                     </div>
                     @{
-                        Category category;
                         string categoryName;
                         string categoryDesc;
                         string rowVersion;
 
                         if (ViewBag.CurrentCategoryId == null)
                         {
-                            category = null;
                             categoryName = "";
                             categoryDesc = "";
                             rowVersion = "";
                         }
                         else
                         {
-                            category = await context.Category.FindAsync(ViewBag.CurrentCategoryId);
+                            Category category = await context.Category.FindAsync(ViewBag.CurrentCategoryId);
                             categoryName = category.Name;
                             categoryDesc = category.Description;
                             rowVersion = Convert.ToBase64String(category.RowVersion);
@@ -43,7 +42,7 @@
                         <tr>
                             <td>Name &nbsp;</td>
                             <td>
-                                <input id="new-category-name" type="text" value="@categoryName" />
+                                <input id="new-category-name" type="text" value="@categoryName"/>
                             </td>
                         </tr>
                         <tr>
@@ -53,7 +52,7 @@
                             </td>
                         </tr>
                     </table>
-                    <input id="old-category-row-version" type="hidden" value="@rowVersion" />
+                    <input id="old-category-row-version" type="hidden" value="@rowVersion"/>
                 </div>
                 <div class="modal-footer">
                     <button id="edit-category-modal-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Rename</button>
@@ -70,43 +69,41 @@
         if ($.trim($('#new-category-name').val()) && $.trim($('#new-category-description').val())) {
 
 
-            var CategoryNewNamePostModel = {
+            var categoryNewNamePostModel = {
                 CategoryId: "@ViewBag.CurrentCategoryId",
                 NewName: $('#new-category-name').val(),
                 NewDescription: $('#new-category-description').val(),
-                RowVersion: $('#old-category-row-version').val(),
-            }
+                RowVersion: $('#old-category-row-version').val()
+            };
 
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("RenameCategory", "Category")',
-                data: JSON.stringify(CategoryNewNamePostModel),
+                data: JSON.stringify(categoryNewNamePostModel),
                 dataType: 'json',
                 contentType: "application/json",
-                success: function (response) {
-                    if (response == 0) {
+                success: function(response) {
+                    if (response === 0) {
                         $('#edit-modal').hide();
-                        location.reload();// page refresh
-                    }
-                    else if (response == 1) {
+                        location.reload(); // page refresh
+                    } else if (response === 1) {
                         $('#edit-category-error-modal').attr('hidden', false);
-                        $('#edit-category-error-message').text(" Some value violated the integrity constraints!")
-                    }
-                    else if (response == 2) {
+                        $('#edit-category-error-message').text(" Some value violated the integrity constraints!");
+                    } else if (response === 2) {
                         $('#edit-category-error-modal').attr('hidden', false);
                         $('#old-category-row-version').remove();
-                        $('#edit-category-error-message').text(" Someone already modified this category while you were editing it. Click 'Rename' again if you want to overwrite the values. Reload the page if you wish to work on the newest available values.")
+                        $('#edit-category-error-message').text(
+                            " Someone already modified this category while you were editing it. Click 'Rename' again if you want to overwrite the values. Reload the page if you wish to work on the newest available values.");
                     }
                 },
-                failure: function (response) {
+                failure: function() {
                     $('#edit-category-error-modal').attr('hidden', false);
-                    $('#edit-category-error-message').text(" Some unexpected error occured. Please try again!")
+                    $('#edit-category-error-message').text(" Some unexpected error occured. Please try again!");
                 }
             });
-        }
-        else {
+        } else {
             $('#edit-category-error-modal').attr('hidden', false);
-            $('#edit-category-error-message').text(" Illegal input.")
+            $('#edit-category-error-message').text(" Illegal input.");
 
         }
     });

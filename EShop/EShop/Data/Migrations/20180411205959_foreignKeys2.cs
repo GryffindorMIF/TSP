@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,56 +7,56 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_ShoppingCartProduct_Product_ProductId",
-                table: "ShoppingCartProduct");
+                "FK_ShoppingCartProduct_Product_ProductId",
+                "ShoppingCartProduct");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
-                table: "ShoppingCartProduct");
+                "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
+                "ShoppingCartProduct");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users");
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users");
 
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "Users",
+                "ShoppingCartId",
+                "Users",
                 nullable: true,
                 oldClrType: typeof(int));
 
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "ShoppingCartProduct",
+                "ShoppingCartId",
+                "ShoppingCartProduct",
                 nullable: true,
                 oldClrType: typeof(int));
 
             migrationBuilder.AlterColumn<int>(
-                name: "ProductId",
-                table: "ShoppingCartProduct",
+                "ProductId",
+                "ShoppingCartProduct",
                 nullable: true,
                 oldClrType: typeof(int));
 
             migrationBuilder.AddForeignKey(
-                name: "FK_ShoppingCartProduct_Product_ProductId",
-                table: "ShoppingCartProduct",
-                column: "ProductId",
-                principalTable: "Product",
+                "FK_ShoppingCartProduct_Product_ProductId",
+                "ShoppingCartProduct",
+                "ProductId",
+                "Product",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
-                table: "ShoppingCartProduct",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
+                "ShoppingCartProduct",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -66,59 +64,59 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_ShoppingCartProduct_Product_ProductId",
-                table: "ShoppingCartProduct");
+                "FK_ShoppingCartProduct_Product_ProductId",
+                "ShoppingCartProduct");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
-                table: "ShoppingCartProduct");
+                "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
+                "ShoppingCartProduct");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users");
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users");
 
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "Users",
+                "ShoppingCartId",
+                "Users",
                 nullable: false,
                 oldClrType: typeof(int),
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "ShoppingCartProduct",
+                "ShoppingCartId",
+                "ShoppingCartProduct",
                 nullable: false,
                 oldClrType: typeof(int),
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<int>(
-                name: "ProductId",
-                table: "ShoppingCartProduct",
+                "ProductId",
+                "ShoppingCartProduct",
                 nullable: false,
                 oldClrType: typeof(int),
                 oldNullable: true);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_ShoppingCartProduct_Product_ProductId",
-                table: "ShoppingCartProduct",
-                column: "ProductId",
-                principalTable: "Product",
+                "FK_ShoppingCartProduct_Product_ProductId",
+                "ShoppingCartProduct",
+                "ProductId",
+                "Product",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
-                table: "ShoppingCartProduct",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_ShoppingCartProduct_ShoppingCart_ShoppingCartId",
+                "ShoppingCartProduct",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
         }

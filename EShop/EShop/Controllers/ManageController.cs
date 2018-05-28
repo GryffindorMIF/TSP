@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.User;
+using EShop.Models.ViewModels.ManageViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using EShop.Models;
-using EShop.Models.ManageViewModels;
-using EShop.Business;
-using EShop.Business.Interfaces;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Diagnostics;
 
 namespace EShop.Controllers
 {
@@ -22,42 +20,33 @@ namespace EShop.Controllers
     [Route("[controller]/[action]")]
     public class ManageController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
-        private readonly IAddressManager _addressManager;
-        private readonly ICardInfoService _cardInfoService;
-
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
+        private readonly IAddressManager _addressManager;
+        private readonly ICardInfoService _cardInfoService;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public ManageController(
-          UserManager<ApplicationUser> userManager,
-          SignInManager<ApplicationUser> signInManager,
-          IEmailSender emailSender,
-          IAddressManager addressManager,
-          ILogger<ManageController> logger,
-          UrlEncoder urlEncoder,
-          ICardInfoService cardInfoService)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IAddressManager addressManager,
+            ICardInfoService cardInfoService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _addressManager = addressManager;
-            _emailSender = emailSender;
             _cardInfoService = cardInfoService;
         }
 
-        [TempData]
-        public string StatusMessage { get; set; }
+        [TempData] public string StatusMessage { get; set; }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var model = new IndexViewModel
             {
@@ -141,13 +130,11 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            DeliveryAddress addressOnDeathrow = await _addressManager.FindAddressByZipcodeAsync(model.RemovalZipcode);
+            var addressOnDeathrow = await _addressManager.FindAddressByZipcodeAsync(model.RemovalZipcode);
 
-            int resultCode = await _addressManager.RemoveDeliveryAddressAsync(user, addressOnDeathrow);
+            await _addressManager.RemoveDeliveryAddressAsync(user, addressOnDeathrow);
 
             Debug.WriteLine("Code is: " + addressOnDeathrow.Zipcode);
             StatusMessage = "Delivery address removed";
@@ -162,24 +149,20 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            var model = new ManageDeliveryAddressesViewModel {StatusMessage = StatusMessage };
+            var model = new ManageDeliveryAddressesViewModel {StatusMessage = StatusMessage};
 
             var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
 
-            model.savedAddresses = new List<SelectListItem>();
+            model.SavedAddresses = new List<SelectListItem>();
 
-            foreach (DeliveryAddress da in savedAddresses)
-            {
-                model.savedAddresses.Add(new SelectListItem
+            foreach (var da in savedAddresses)
+                model.SavedAddresses.Add(new SelectListItem
                 {
                     Text = da.Zipcode,
                     Value = da.Zipcode
                 });
-            }
 
             return View(model);
         }
@@ -191,18 +174,13 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            var model = new ManageCardInfoViewModel { StatusMessage = StatusMessage };
+            var model = new ManageCardInfoViewModel {StatusMessage = StatusMessage};
 
-            CardInfo cardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+            var cardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
 
-            if (cardInfo != null)
-            {
-                model.CardNumber = cardInfo.CardNumber;
-            }
+            if (cardInfo != null) model.CardNumber = cardInfo.CardNumber;
 
             return View(model);
         }
@@ -214,21 +192,14 @@ namespace EShop.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            int cardInfoId = (await _cardInfoService.GetCardInfoByUserId(user.Id)).Id;
-            int resultCode = await _cardInfoService.DeleteCardInfo(cardInfoId);
+            var cardInfoId = (await _cardInfoService.GetCardInfoByUserId(user.Id)).Id;
+            var resultCode = await _cardInfoService.DeleteCardInfo(cardInfoId);
 
             if (resultCode == 1)
-            {
                 StatusMessage = "Failed to remove card information";
-            }
-            else if (resultCode == 0)
-            {
-                StatusMessage = "Card Information Removed";
-            }
+            else if (resultCode == 0) StatusMessage = "Card Information Removed";
 
             return RedirectToAction(nameof(ManageCardInformation));
         }
@@ -238,20 +209,15 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ManageDeliveryAddresses(ManageDeliveryAddressesViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             try
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
-                {
                     throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-                }
 
-                DeliveryAddress newAddress = await _addressManager.FindAddressByZipcodeAsync(model.Zipcode);
+                var newAddress = await _addressManager.FindAddressByZipcodeAsync(model.Zipcode);
 
                 if (newAddress == null)
                 {
@@ -271,7 +237,7 @@ namespace EShop.Controllers
             {
                 StatusMessage = "Failed to add new delivery address";
             }
-            
+
 
             return RedirectToAction(nameof(ManageDeliveryAddresses));
         }
@@ -281,44 +247,35 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
-            if (!hasPassword)
-            {
-                return RedirectToAction(nameof(SetPassword));
-            }
+            if (!hasPassword) return RedirectToAction(nameof(SetPassword));
 
-            var model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
+            var model = new ChangePasswordViewModel {StatusMessage = StatusMessage};
             return View(model);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            var changePasswordResult =
+                await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (!changePasswordResult.Succeeded)
             {
                 AddErrors(changePasswordResult);
                 return View(model);
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.SignInAsync(user, false);
             StatusMessage = "Your password has been changed.";
 
             return RedirectToAction(nameof(ChangePassword));
@@ -329,18 +286,13 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
 
-            if (hasPassword)
-            {
-                return RedirectToAction(nameof(ChangePassword));
-            }
+            if (hasPassword) return RedirectToAction(nameof(ChangePassword));
 
-            var model = new SetPasswordViewModel { StatusMessage = StatusMessage };
+            var model = new SetPasswordViewModel {StatusMessage = StatusMessage};
             return View(model);
         }
 
@@ -348,16 +300,11 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
             if (!addPasswordResult.Succeeded)
@@ -366,7 +313,7 @@ namespace EShop.Controllers
                 return View(model);
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.SignInAsync(user, false);
             StatusMessage = "Your password has been set.";
 
             return RedirectToAction(nameof(SetPassword));
@@ -377,11 +324,9 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            var model = new ExternalLoginsViewModel { CurrentLogins = await _userManager.GetLoginsAsync(user) };
+            var model = new ExternalLoginsViewModel {CurrentLogins = await _userManager.GetLoginsAsync(user)};
             model.OtherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
                 .Where(auth => model.CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
@@ -400,7 +345,9 @@ namespace EShop.Controllers
 
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action(nameof(LinkLoginCallback));
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            var properties =
+                _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl,
+                    _userManager.GetUserId(User));
             return new ChallengeResult(provider, properties);
         }
 
@@ -409,21 +356,17 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var info = await _signInManager.GetExternalLoginInfoAsync(user.Id);
             if (info == null)
-            {
-                throw new ApplicationException($"Unexpected error occurred loading external login info for user with ID '{user.Id}'.");
-            }
+                throw new ApplicationException(
+                    $"Unexpected error occurred loading external login info for user with ID '{user.Id}'.");
 
             var result = await _userManager.AddLoginAsync(user, info);
             if (!result.Succeeded)
-            {
-                throw new ApplicationException($"Unexpected error occurred adding external login for user with ID '{user.Id}'.");
-            }
+                throw new ApplicationException(
+                    $"Unexpected error occurred adding external login for user with ID '{user.Id}'.");
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -438,17 +381,14 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var result = await _userManager.RemoveLoginAsync(user, model.LoginProvider, model.ProviderKey);
             if (!result.Succeeded)
-            {
-                throw new ApplicationException($"Unexpected error occurred removing external login for user with ID '{user.Id}'.");
-            }
+                throw new ApplicationException(
+                    $"Unexpected error occurred removing external login for user with ID '{user.Id}'.");
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.SignInAsync(user, false);
             StatusMessage = "The external login was removed.";
             return RedirectToAction(nameof(ExternalLogins));
         }
@@ -458,52 +398,42 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var model = new TwoFactorAuthenticationViewModel
             {
                 HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
-                Is2faEnabled = user.TwoFactorEnabled,
-                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+                Is2FaEnabled = user.TwoFactorEnabled,
+                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user)
             };
 
             return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Disable2faWarning()
+        public async Task<IActionResult> Disable2FaWarning()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             if (!user.TwoFactorEnabled)
-            {
                 throw new ApplicationException($"Unexpected error occured disabling 2FA for user with ID '{user.Id}'.");
-            }
 
-            return View(nameof(Disable2fa));
+            return View(nameof(Disable2Fa));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Disable2fa()
+        public async Task<IActionResult> Disable2Fa()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
-            var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
-            if (!disable2faResult.Succeeded)
-            {
+            var disable2FaResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
+            if (!disable2FaResult.Succeeded)
                 throw new ApplicationException($"Unexpected error occured disabling 2FA for user with ID '{user.Id}'.");
-            }
 
             return RedirectToAction(nameof(TwoFactorAuthentication));
         }
@@ -513,9 +443,7 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             var model = new EnableAuthenticatorViewModel();
             await LoadSharedKeyAndQrCodeUriAsync(user, model);
@@ -529,9 +457,7 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             if (!ModelState.IsValid)
             {
@@ -542,10 +468,10 @@ namespace EShop.Controllers
             // Strip spaces and hypens
             var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-            var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
+            var is2FaTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
                 user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
 
-            if (!is2faTokenValid)
+            if (!is2FaTokenValid)
             {
                 ModelState.AddModelError("Code", "Verification code is invalid.");
                 await LoadSharedKeyAndQrCodeUriAsync(user, model);
@@ -562,13 +488,10 @@ namespace EShop.Controllers
         [HttpGet]
         public IActionResult ShowRecoveryCodes()
         {
-            var recoveryCodes = (string[])TempData[RecoveryCodesKey];
-            if (recoveryCodes == null)
-            {
-                return RedirectToAction(nameof(TwoFactorAuthentication));
-            }
+            var recoveryCodes = (string[]) TempData[RecoveryCodesKey];
+            if (recoveryCodes == null) return RedirectToAction(nameof(TwoFactorAuthentication));
 
-            var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes };
+            var model = new ShowRecoveryCodesViewModel {RecoveryCodes = recoveryCodes};
             return View(model);
         }
 
@@ -584,9 +507,7 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
@@ -599,14 +520,11 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             if (!user.TwoFactorEnabled)
-            {
-                throw new ApplicationException($"Cannot generate recovery codes for user with ID '{user.Id}' because they do not have 2FA enabled.");
-            }
+                throw new ApplicationException(
+                    $"Cannot generate recovery codes for user with ID '{user.Id}' because they do not have 2FA enabled.");
 
             return View(nameof(GenerateRecoveryCodes));
         }
@@ -617,18 +535,15 @@ namespace EShop.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
 
             if (!user.TwoFactorEnabled)
-            {
-                throw new ApplicationException($"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled.");
-            }
+                throw new ApplicationException(
+                    $"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled.");
 
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
 
-            var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
+            var model = new ShowRecoveryCodesViewModel {RecoveryCodes = recoveryCodes.ToArray()};
 
             return View(nameof(ShowRecoveryCodes), model);
         }
@@ -637,30 +552,25 @@ namespace EShop.Controllers
 
         private void AddErrors(IdentityResult result)
         {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
+            foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
         }
 
         private string FormatKey(string unformattedKey)
         {
             var result = new StringBuilder();
-            int currentPosition = 0;
+            var currentPosition = 0;
             while (currentPosition + 4 < unformattedKey.Length)
             {
                 result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
                 currentPosition += 4;
             }
-            if (currentPosition < unformattedKey.Length)
-            {
-                result.Append(unformattedKey.Substring(currentPosition));
-            }
+
+            if (currentPosition < unformattedKey.Length) result.Append(unformattedKey.Substring(currentPosition));
 
             return result.ToString().ToLowerInvariant();
         }
 
-        private string GenerateQrCodeUri(string email, string unformattedKey)
+        private string GenerateQrCodeUri(string unformattedKey)
         {
             return string.Format(
                 AuthenticatorUriFormat,
@@ -677,7 +587,7 @@ namespace EShop.Controllers
             }
 
             model.SharedKey = FormatKey(unformattedKey);
-            model.AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey);
+            model.AuthenticatorUri = GenerateQrCodeUri(unformattedKey);
         }
 
         #endregion

@@ -1,12 +1,12 @@
 ﻿//Below functions that are responsible for photo preview
 function openModal() {
     //$('#imageModal').style.display = "block";
-    document.getElementById('imageModal').style.display = "block";
+    document.getElementById("imageModal").style.display = "block";
 }
 
 // Close the Modal
 function closeModal() {
-    document.getElementById('imageModal').style.display = "none";
+    document.getElementById("imageModal").style.display = "none";
 }
 
 var slideIndex = 1;
@@ -29,8 +29,12 @@ function showSlides(n) {
     var dots = document.getElementsByClassName("img_demo");
     var captionText = document.getElementById("img_caption");
 
-    if (n > slides.length) { slideIndex = 1 }
-    if (n < 1) { slideIndex = slides.length }
+    if (n > slides.length) {
+        slideIndex = 1
+    }
+    if (n < 1) {
+        slideIndex = slides.length
+    }
     for (i = 0; i < slides.length; i++) {
         slides[i].style.display = "none";
     }

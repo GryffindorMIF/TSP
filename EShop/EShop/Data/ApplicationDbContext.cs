@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EShop.Models.EFModels.Attribute;
+using EShop.Models.EFModels.Category;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.Product;
+using EShop.Models.EFModels.ShoppingCart;
+using EShop.Models.EFModels.User;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using EShop.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace EShop.Data
 {
@@ -30,8 +31,8 @@ namespace EShop.Data
         public DbSet<ProductDiscount> ProductDiscount { get; set; }
         public DbSet<ProductAd> ProductAd { get; set; }
         public DbSet<OrderReview> OrderReview { get; set; }
-        public DbSet<Models.AttributeValue> AttributeValue { get; set; }
-        public DbSet<Models.Attribute> Attribute { get; set; }
+        public DbSet<AttributeValue> AttributeValue { get; set; }
+        public DbSet<Attribute> Attribute { get; set; }
         public DbSet<ProductAttributeValue> ProductAttributeValue { get; set; }
         public DbSet<ShoppingCartProductHistory> ShoppingCartProductHistory { get; set; }
 
@@ -52,7 +53,7 @@ namespace EShop.Data
             builder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
             builder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
 
-            builder.Entity<Models.Attribute>()
+            builder.Entity<Attribute>()
                 .HasIndex(c => c.Name)
                 .IsUnique();
 
@@ -84,10 +85,10 @@ namespace EShop.Data
 
             builder.Entity<ProductDiscount>()
                 .HasAlternateKey(c => c.ProductId)
-                .HasName("AlternateKey_ProductId");          
-         
+                .HasName("AlternateKey_ProductId");
+
             builder.Entity<ProductAttributeValue>()
-                .HasAlternateKey(c => new { c.ProductId, c.AttributeValueId })
+                .HasAlternateKey(c => new {c.ProductId, c.AttributeValueId})
                 .HasName("AlternateKey_ProductId_AttributeValueId");
 
             //one-to-one mapping (unique)

@@ -1,67 +1,58 @@
-﻿using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading.Tasks;
+using EShop.Business.Interfaces;
 using MailKit.Net.Smtp;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
 
-namespace EShop.Business
+namespace EShop.Business.Services
 {
     // This class is used by the application to send email for account confirmation and password reset.
     // For more details see https://go.microsoft.com/fwlink/?LinkID=532713
     public class EmailSender : IEmailSender
     {
-        private string login;
-        private string password;
+        private readonly string _login;
+        private readonly string _password;
 
         public EmailSender(IConfiguration configuration)
         {
-            login = configuration["EmailCredentials:Login"];
-            password = configuration["EmailCredentials:Password"];
+            _login = configuration["EmailCredentials:Login"];
+            _password = configuration["EmailCredentials:Password"];
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
         {
-            try
+            //From address
+            var fromAddress = "gryffindor.shop@gmail.com";
+            var fromAddressTitle = "Gryffindor E-shop";
+            //To address
+            var ToAdressTitle = "Dear Client";
+
+            //SMTP Server
+            var smtpServer = "smtp.gmail.com";
+            //SMTP port number
+            var smtpPort = 587;
+
+            var mimeMessage = new MimeMessage();
+
+            mimeMessage.From.Add(new MailboxAddress(fromAddressTitle, fromAddress));
+            mimeMessage.To.Add(new MailboxAddress(ToAdressTitle, email));
+            mimeMessage.Subject = subject;
+            mimeMessage.Body = new TextPart("plain")
             {
-                //From address
-                string fromAddress = "gryffindor.shop@gmail.com";
-                string fromAddressTitle = "Gryffindor E-shop";
-                //To address
-                string ToAdressTitle = "Dear Client";
+                Text = message
+            };
 
-                //SMTP Server
-                string SmtpServer = "smtp.gmail.com";
-                //SMTP port number
-                int SmtpPort = 587;
-
-                var mimeMessage = new MimeMessage();
-
-                mimeMessage.From.Add(new MailboxAddress(fromAddressTitle, fromAddress));
-                mimeMessage.To.Add(new MailboxAddress(ToAdressTitle, email));
-                mimeMessage.Subject = subject;
-                mimeMessage.Body = new TextPart("plain")
-                {
-                    Text = message
-                };
-
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync(SmtpServer, SmtpPort, false);
-                    // Note: only needed if the SMTP server requires authentication  
-                    // Error 5.5.1 Authentication   
-                    await client.AuthenticateAsync(login, password);
-                    await client.SendAsync(mimeMessage);
-                    //Console.WriteLine("The mail has been sent successfully!");
-                    //Console.ReadLine();
-                    await client.DisconnectAsync(true);
-                    //return Task.CompletedTask;
-                }
-            }
-            catch (Exception ex)
+            using (var client = new SmtpClient())
             {
-                throw ex;
+                await client.ConnectAsync(smtpServer, smtpPort, false);
+                // Note: only needed if the SMTP server requires authentication  
+                // Error 5.5.1 Authentication   
+                await client.AuthenticateAsync(_login, _password);
+                await client.SendAsync(mimeMessage);
+                //Console.WriteLine("The mail has been sent successfully!");
+                //Console.ReadLine();
+                await client.DisconnectAsync(true);
+                //return Task.CompletedTask;
             }
         }
     }

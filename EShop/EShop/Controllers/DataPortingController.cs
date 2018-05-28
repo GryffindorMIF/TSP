@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using EShop.Business.Interfaces;
-using EShop.Data;
-using EShop.Models;
+using EShop.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,13 +20,8 @@ namespace EShop.Controllers
         public IActionResult Index()
         {
             if (TempData["Error"] != null)
-            {
                 ModelState.AddModelError(string.Empty, TempData["Error"].ToString());
-            }
-            else if (TempData["Success"] != null)
-            {
-                ViewBag.Success = TempData["Success"];
-            }
+            else if (TempData["Success"] != null) ViewBag.Success = TempData["Success"];
             return View();
         }
 
@@ -35,24 +29,19 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Export()
         {
-            byte[] exportData = await _dataPortingService.ExportProductData();
+            var exportData = await _dataPortingService.ExportProductData();
 
-            if (exportData != null)
-            {
-                return File(exportData, "application/octet-stream","exported_data.xlsx");
-            }
-            else
-            {
-                TempData["Error"] = "An error occured while trying to export product data";
-                return RedirectToAction("Index", "DataPorting");
-            }
+            if (exportData != null) return File(exportData, "application/octet-stream", "exported_data.xlsx");
+
+            TempData["Error"] = "An error occured while trying to export product data";
+            return RedirectToAction("Index", "DataPorting");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(DataImportViewModel model)
         {
-            ImportResult importResult = await _dataPortingService.ImportProductData(model.ImportFile);
+            var importResult = await _dataPortingService.ImportProductData(model.ImportFile);
 
 
             if (importResult == ImportResult.Successful)
@@ -61,13 +50,16 @@ namespace EShop.Controllers
             }
             else if (importResult == ImportResult.AlreadyRunning)
             {
-                ViewBag.AlreadyRunning = "An import operation is already running. Please wait until it finishes and try again.";
+                ViewBag.AlreadyRunning =
+                    "An import operation is already running. Please wait until it finishes and try again.";
                 return View("Index");
             }
             else
             {
-                TempData["Error"] = "An error occured while trying to import product data. Make sure the file is a valid product data Excel file and try again.";
+                TempData["Error"] =
+                    "An error occured while trying to import product data. Make sure the file is a valid product data Excel file and try again.";
             }
+
             return RedirectToAction("Index", "DataPorting");
         }
 
@@ -86,7 +78,5 @@ namespace EShop.Controllers
             TempData["Success"] = "Successfully wiped all product data.";
             return RedirectToAction("Index", "DataPorting");
         }
-
-
     }
 }

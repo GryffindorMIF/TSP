@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EShop.Models.EFModels.User;
 
-namespace EShop.Models
+namespace EShop.Models.ViewModels
 {
     public class UserInRoleViewModel
     {

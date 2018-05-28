@@ -1,10 +1,10 @@
-﻿@model DataImportViewModel
+﻿@model EShop.Models.ViewModels.DataImportViewModel
 @{
     ViewData["Title"] = "Import / Export";
 }
 
 <div class="row">
-    <br />
+    <br/>
     <span asp-validation-summary="All" class="text-danger"></span>
 </div>
 @if (ViewBag.Success != null)
@@ -36,7 +36,7 @@
         <h5>Import product data from an Excel file.</h5>
         <form asp-action="Import" enctype="multipart/form-data">
             <div class="form-group">
-                <label class="control-label">Import file: </label> <br />
+                <label class="control-label">Import file: </label> <br/>
                 <input asp-for="ImportFile" class="form-control">
             </div>
             <button type="submit" class="btn btn-warning">

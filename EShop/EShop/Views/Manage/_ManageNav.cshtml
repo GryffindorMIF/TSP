@@ -1,21 +1,30 @@
-﻿@using EShop.Views.Manage
+﻿@using EShop.Models.EFModels.User
 @inject SignInManager<ApplicationUser> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
 
 <ul class="nav nav-pills nav-stacked">
-    <li class="@ManageNavPages.IndexNavClass(ViewContext)"><a asp-action="Index">Profile</a></li>
-    <li class="@ManageNavPages.ChangePasswordNavClass(ViewContext)"><a asp-action="ChangePassword">Password</a></li>
-    @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+    <li class="@ManageNavPages.IndexNavClass(ViewContext)">
+        <a asp-action="Index">Profile</a>
+    </li>
+    <li class="@ManageNavPages.ChangePasswordNavClass(ViewContext)">
+        <a asp-action="ChangePassword">Password</a>
+    </li>
+    @if (!User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
     {
-        <li class="@ManageNavPages.ManageDeliveryAddressesNavClass(ViewContext)"><a asp-action="ManageDeliveryAddresses">Delivery Addresses</a></li>
-        <li class="@ManageNavPages.ManageCardInformationNavClass(ViewContext)"><a asp-action="ManageCardInformation">Card Information</a></li>
+        <li class="@ManageNavPages.ManageDeliveryAddressesNavClass(ViewContext)">
+            <a asp-action="ManageDeliveryAddresses">Delivery Addresses</a>
+        </li>
+        <li class="@ManageNavPages.ManageCardInformationNavClass(ViewContext)">
+            <a asp-action="ManageCardInformation">Card Information</a>
+        </li>
     }
     @if (hasExternalLogins)
     {
-        <li class="@ManageNavPages.ExternalLoginsNavClass(ViewContext)"><a asp-action="ExternalLogins">External logins</a></li>
+        <li class="@ManageNavPages.ExternalLoginsNavClass(ViewContext)">
+            <a asp-action="ExternalLogins">External logins</a>
+        </li>
     }
     <!-- <li class="@@ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)"><a asp-action="TwoFactorAuthentication">Two-factor authentication</a></li> -->
 </ul>
-

@@ -1,10 +1,13 @@
-﻿using EShop.Data;
-using EShop.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Data;
+using EShop.Models.EFModels.Attribute;
+using EShop.Models.EFModels.Product;
+using Microsoft.EntityFrameworkCore;
+using Attribute = EShop.Models.EFModels.Attribute.Attribute;
 
 namespace EShop.Business.Services
 {
@@ -78,76 +81,69 @@ namespace EShop.Business.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Decimal?> GetDiscountPrice(Product product)
+        public async Task<decimal?> GetDiscountPrice(Product product)
         {
             ProductDiscount discount = null;
 
             await Task.Run(() =>
             {
                 discount = (from pd in _context.ProductDiscount
-                            where pd.ProductId == product.Id
-                            select pd).FirstOrDefault();
+                    where pd.ProductId == product.Id
+                    select pd).FirstOrDefault();
             });
 
             if (discount != null) return discount.DiscountPrice;
-            else return null;
+            return null;
         }
 
         //Retrieve primary image link for every product in passed collection
-        public async Task<String[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true)
+        public async Task<string[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true)
         {
             //If it is primary images request, then links count should be products amount, otherwise - unknown yet 
-            String[] allImageLinks = isPrimary ? new String[products.Count] : new String[0];
+            var allImageLinks = isPrimary ? new string[products.Count] : new string[0];
 
             if (products.Count > 0) //To avoid null reference exception
-            {
                 await Task.Run(() =>
                 {
                     var listProducts = products.ToList();
-                    for (int i = 0; i < listProducts.Count; i++)
+                    for (var i = 0; i < listProducts.Count; i++)
                     {
-                        List<ProductImage> images = (from pi in _context.ProductImage
-                                                     where pi.IsPrimary == isPrimary
-                                                     where pi.Product.Id == listProducts[i].Id
-                                                     select pi).ToList();
+                        var index = i;
+                        var images = (from pi in _context.ProductImage
+                            where pi.IsPrimary == isPrimary
+                            where pi.Product.Id == listProducts[index].Id
+                            select pi).ToList();
                         if (isPrimary) //If request was made to get primary image(-s)
                         {
                             if (images.Count > 0)
-                            {
-                                allImageLinks[i] = images[0].ImageUrl;
-                            }
+                                allImageLinks[index] = images[0].ImageUrl;
                             else
-                            {
-                                allImageLinks[i] = "product-image-placeholder.jpg";
-                            }
+                                allImageLinks[index] = "product-image-placeholder.jpg";
                         }
-                        else if (!isPrimary && images.Count > 0) //In case request was made to get all secondary images links
+                        else if (images.Count > 0
+                        ) //In case request was made to get all secondary images links
                         {
-                            allImageLinks = new String[images.Count];
-                            for (int j = 0; j < images.Count; j++)
-                            {
-                                allImageLinks[j] = images[j].ImageUrl;
-                            }
+                            allImageLinks = new string[images.Count];
+                            for (var j = 0; j < images.Count; j++) allImageLinks[j] = images[j].ImageUrl;
                         }
                     }
                 });
-            }
             return allImageLinks;
         }
 
         public async Task<IList<ProductImage>> GetProductImages(int productId, bool isPrimary = true)
         {
-            List<ProductImage> images = new List<ProductImage>();
-            int result = 0;
+            var images = new List<ProductImage>();
+            var result = 0;
 
             await Task.Run(() =>
             {
                 try
                 {
                     images = (from pi in _context.ProductImage
-                              where pi.IsPrimary == isPrimary
-                              where pi.Product.Id == productId
-                              select pi).ToList();
+                        where pi.IsPrimary == isPrimary
+                        where pi.Product.Id == productId
+                        select pi).ToList();
                 }
                 catch (Exception)
                 {
@@ -177,8 +173,8 @@ namespace EShop.Business.Services
         public async Task<IList<ProductImage>> GetAllProductImages(int productId)
         {
             return await (from oi in _context.ProductImage
-                          where oi.Product.Id == productId
-                          select oi).ToListAsync();
+                where oi.Product.Id == productId
+                select oi).ToListAsync();
         }
 
         public async Task AddProductImage(ProductImage productImage)
@@ -189,17 +185,15 @@ namespace EShop.Business.Services
 
         public async Task DeleteProductImage(ProductImage productImage)
         {
-            await Task.Run(() =>
-            {
-                _context.Remove(productImage);
-            });
+            await Task.Run(() => { _context.Remove(productImage); });
             await _context.SaveChangesAsync();
         }
 
         //Retrieve all properties for given product by id asynchronous
         public async Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id)
         {
-            ICollection<ProductProperty> properties = await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync();
+            ICollection<ProductProperty> properties =
+                await _context.ProductProperty.Where(p => p.ProductId == id).ToListAsync();
             return properties;
         }
 
@@ -214,9 +208,9 @@ namespace EShop.Business.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteProductProperty(int Id)
+        public async Task DeleteProductProperty(int id)
         {
-            _context.Remove(await FindProductPropertyByIdAsync(Id));
+            _context.Remove(await FindProductPropertyByIdAsync(id));
             await _context.SaveChangesAsync();
         }
 
@@ -228,19 +222,17 @@ namespace EShop.Business.Services
             {
                 //filteredProducts = _context.Product.Where(p => p.Name.StartsWith(searchText)).ToList();
                 filteredProducts = _context.Product.ToList();
-                for (int i = filteredProducts.Count - 1; i > -1; i--)
+                for (var i = filteredProducts.Count - 1; i > -1; i--)
                 {
-                    bool remove = true;
+                    var remove = true;
 
                     if (filteredProducts[i].Name.ToLower().StartsWith(searchText.ToLower()))
                         remove = false;
 
-                    string[] nameArray = filteredProducts[i].Name.Split(' ');
-                    foreach (string part in nameArray)
-                    {
+                    var nameArray = filteredProducts[i].Name.Split(' ');
+                    foreach (var part in nameArray)
                         if (part.ToLower().StartsWith(searchText.ToLower()))
                             remove = false;
-                    }
                     if (remove)
                         filteredProducts.RemoveAt(i);
                 }
@@ -253,16 +245,16 @@ namespace EShop.Business.Services
             return await _context.ProductAd.ToListAsync();
         }
 
-        public async Task<ProductAd> GetProductAdById(int Id)
+        public async Task<ProductAd> GetProductAdById(int id)
         {
-            return await _context.ProductAd.FindAsync(Id);
+            return await _context.ProductAd.FindAsync(id);
         }
 
         public async Task<IList<ProductAd>> ListPossibleAdImages(int productId)
         {
             return await (from pai in _context.ProductAd
-                          where pai.Product.Id == productId
-                          select pai).ToListAsync();
+                where pai.Product.Id == productId
+                select pai).ToListAsync();
         }
 
         public async Task CreateProductAd(ProductAd productAd)
@@ -279,15 +271,10 @@ namespace EShop.Business.Services
 
         public async Task<ProductDiscount> GetDiscountByProductId(int productId)
         {
-            ProductDiscount discount = await (from pd in _context.ProductDiscount
-                                              where pd.ProductId == productId
-                                              select pd).FirstOrDefaultAsync();
+            var discount = await (from pd in _context.ProductDiscount
+                where pd.ProductId == productId
+                select pd).FirstOrDefaultAsync();
             return discount;
-        }
-
-        public async Task<ProductDiscount> GetDiscountById(int id)
-        {
-            return await _context.ProductDiscount.FindAsync(id);
         }
 
         public async Task<IList<ProductDiscount>> GetAllDiscounts()
@@ -309,27 +296,27 @@ namespace EShop.Business.Services
 
         public async Task<IList<AttributeValue>> GetAttributeValues(int id)
         {
-            List<AttributeValue> values = await (from a in _context.AttributeValue
-                                                 join pa in _context.ProductAttributeValue on id equals pa.ProductId
-                                                 where a.Id == pa.AttributeValueId
-                                                 select a).ToListAsync();
+            var values = await (from a in _context.AttributeValue
+                join pa in _context.ProductAttributeValue on id equals pa.ProductId
+                where a.Id == pa.AttributeValueId
+                select a).ToListAsync();
             return values;
         }
 
         public async Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId)
         {
             return await (from a in _context.AttributeValue
-                          join pc in _context.ProductCategory on categoryId equals pc.CategoryId
-                          join p in _context.Product on pc.ProductId equals p.Id
-                          join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
-                          join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
-                          where a.Id == av.Id
-                          select a).Distinct().ToListAsync();
+                join pc in _context.ProductCategory on categoryId equals pc.CategoryId
+                join p in _context.Product on pc.ProductId equals p.Id
+                join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
+                join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
+                where a.Id == av.Id
+                select a).Distinct().ToListAsync();
         }
 
-        public async Task<Models.Attribute> GetAttributeById(int id)
+        public async Task<Attribute> GetAttributeById(int id)
         {
-            Models.Attribute attribute = await _context.Attribute.FindAsync(id);
+            var attribute = await _context.Attribute.FindAsync(id);
             return attribute;
         }
 
@@ -337,6 +324,11 @@ namespace EShop.Business.Services
         {
             _context.Add(productCategory);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<ProductDiscount> GetDiscountById(int id)
+        {
+            return await _context.ProductDiscount.FindAsync(id);
         }
     }
 }

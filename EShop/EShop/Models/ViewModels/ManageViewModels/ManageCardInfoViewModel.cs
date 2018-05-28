@@ -1,4 +1,4 @@
-﻿namespace EShop.Models.ManageViewModels
+﻿namespace EShop.Models.ViewModels.ManageViewModels
 {
     public class ManageCardInfoViewModel
     {

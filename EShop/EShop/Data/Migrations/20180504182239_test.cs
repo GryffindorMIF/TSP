@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,25 +7,25 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_ProductDiscount_ProductId",
-                table: "ProductDiscount");
+                "IX_ProductDiscount_ProductId",
+                "ProductDiscount");
 
             migrationBuilder.AddUniqueConstraint(
-                name: "AlternateKey_ProductId",
-                table: "ProductDiscount",
-                column: "ProductId");
+                "AlternateKey_ProductId",
+                "ProductDiscount",
+                "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropUniqueConstraint(
-                name: "AlternateKey_ProductId",
-                table: "ProductDiscount");
+                "AlternateKey_ProductId",
+                "ProductDiscount");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductDiscount_ProductId",
-                table: "ProductDiscount",
-                column: "ProductId",
+                "IX_ProductDiscount_ProductId",
+                "ProductDiscount",
+                "ProductId",
                 unique: true);
         }
     }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EShop.Models.ProductProperty>
+﻿@model IEnumerable<EShop.Models.EFModels.Product.ProductProperty>
 
 @{
     ViewData["Title"] = "ManageProperties";
@@ -14,49 +14,51 @@
 </p>
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-        </tr>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Description)
+        </th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    <form asp-controller="Product" asp-action="RemoveProductProperty" asp-route-id="@item.Id">
-                        <button type="submit" class="btn btn-danger">
-                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Remove
-                        </button>
-                    </form>
-                    <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
-                    <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
-                    <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
-                </td>
-            </tr>
-        }
+    @foreach (var item in Model.Where(m => m.ProductId == Convert.ToInt32(ViewData["product_id"])))
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                <form asp-controller="Product" asp-action="RemoveProductProperty" asp-route-id="@item.Id">
+                    <button type="submit" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Remove
+                    </button>
+                </form>
+                <!-- <a asp-action="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
+                <!--<a asp-action="DeleteProperty" asp-route-propertyId="">Delete Property</a> -->
+                <!--<a asp-controller="DeleteProperty" asp-route-propertyId="item.Id">Delete Property</a> -->
+            </td>
+        </tr>
+    }
     </tbody>
 </table>
-<a asp-action="Edit" asp-route-id="@ViewData["product_id"]"><img src="~/images/backButton.png" style="width: 32px; height: 32px;"></a>
+<a asp-action="Edit" asp-route-id="@ViewData["product_id"]">
+    <img src="~/images/backButton.png" style="height: 32px; width: 32px;">
+</a>
 <!-- if (Convert.ToBoolean(ViewData["show_alert"]) == true)
 {
-    <div class="alert alert-success" role="alert">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
-        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-    </div>
+<div class="alert alert-success" role="alert">
+    <a href="#" class="close" data-dismiss="alert">&times;</a>
+    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+</div>
 } -->
 
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).ready(function() {
     });
 </script>

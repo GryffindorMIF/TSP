@@ -1,34 +1,35 @@
-﻿using EShop.Business;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using EShop.Business.Interfaces;
-using EShop.Models;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.User;
+using EShop.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace EShop.Controllers
 {
     [Authorize(Roles = "Customer")]
     public class CheckoutController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IShoppingCartService _shoppingCartService;
         private readonly IAddressManager _addressManager;
-        private readonly IOrderService _orderService;
         private readonly ICardInfoService _cardInfoService;
+        private readonly IOrderService _orderService;
+        private readonly IShoppingCartService _shoppingCartService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public CheckoutController
-            (
+        (
             UserManager<ApplicationUser> userManager,
             IShoppingCartService shoppingCartService,
             IAddressManager addressManager,
             IOrderService orderService,
             ICardInfoService cardInfoService
-            )
+        )
         {
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
@@ -37,43 +38,45 @@ namespace EShop.Controllers
             _cardInfoService = cardInfoService;
         }
 
-        [TempData]
-        public string StatusMessage { get; set; }
+        [TempData] public string StatusMessage { get; set; }
 
         public async Task<IActionResult> Checkout()
         {
-            var model = new CheckoutViewModel { StatusMessage = StatusMessage };
+            var model = new CheckoutViewModel {StatusMessage = StatusMessage};
             var user = await _userManager.GetUserAsync(User);
             var savedAddresses = await _addressManager.QueryAllSavedDeliveryAddresses(user);
-            ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
-            await _shoppingCartService.TransferSessionProducts(HttpContext, shoppingCart);
+            if (user.ShoppingCartId != null)
+            {
+                var shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int) user.ShoppingCartId);
+                await _shoppingCartService.TransferSessionProducts(HttpContext, shoppingCart);
 
-            model.Products = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+                model.Products =
+                    await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+            }
+
             using (var enumerator = model.Products.GetEnumerator())
             {
                 if (!enumerator.MoveNext())
                     return RedirectToAction("Index", "Home");
             }
 
-            model.savedAddresses = new List<SelectListItem>();
+            model.SavedAddresses = new List<SelectListItem>();
 
-            CardInfo savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+            var savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
 
             if (savedCardInfo != null)
             {
                 model.CardNumber = savedCardInfo.CardNumber;
-                model.Exp_Year = savedCardInfo.ExpYear;
-                model.Exp_Month = savedCardInfo.ExpMonth;
+                model.ExpYear = savedCardInfo.ExpYear;
+                model.ExpMonth = savedCardInfo.ExpMonth;
             }
 
-            foreach (DeliveryAddress da in savedAddresses)
-            {
-                model.savedAddresses.Add(new SelectListItem
+            foreach (var da in savedAddresses)
+                model.SavedAddresses.Add(new SelectListItem
                 {
                     Text = da.Zipcode,
                     Value = da.Zipcode
                 });
-            }
 
             return View(model);
         }
@@ -83,50 +86,56 @@ namespace EShop.Controllers
         [HttpPost]
         public async Task<IActionResult> MakePurchase(CheckoutViewModel model)
         {
+            /*
             if (!ModelState.IsValid)
             {
                 model.StatusMessage = "Please fill out all fields";
-                return View(model);
+                //return View(model);
+                return new NotFoundResult();
             }
+            */
 
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
             //Total cost is recalculated separately to prevent user meddling
-            int totalCost = await _shoppingCartService.CalculateTotalPriceCents(user, HttpContext.Session);
+            var totalCost = await _shoppingCartService.CalculateTotalPriceCents(user, HttpContext.Session);
 
-            string jsonPost =
+            var jsonPost =
                 "{\"amount\":" + totalCost +
                 ",\"number\": \"" + model.CardNumber +
                 "\",\"holder\": \"" + model.FirstName + " " + model.LastName +
-                "\",\"exp_year\": " + model.Exp_Year +
-                ",\"exp_month\": " + model.Exp_Month +
-                ",\"cvv\": \"" + model.CVV + "\"}";
+                "\",\"exp_year\": " + model.ExpYear +
+                ",\"exp_month\": " + model.ExpMonth +
+                ",\"cvv\": \"" + model.Cvv + "\"}";
 
-            DeliveryAddress confirmAddress = await _addressManager.FindAddressByZipcodeAsync(model.ZipConfirmation);
+            var confirmAddress = await _addressManager.FindAddressByZipcodeAsync(model.ZipConfirmation);
 
             if (confirmAddress != null) //If address exists
             {
-                int purchaseResult = await _orderService.Purchase(totalCost, jsonPost);
+                var purchaseResult = await _orderService.Purchase(totalCost, jsonPost);
 
                 if (purchaseResult == 201) //Payment successful
                 {
-                    ShoppingCart shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
-                    await _shoppingCartService.AssignNewShoppingCart(user);
-
-                    Order newOrder = new Order()
+                    if (user.ShoppingCartId != null)
                     {
-                        ShoppingCartId = shoppingCart.Id,
-                        UserId = user.Id,
-                        TotalPrice = (decimal)totalCost / 100,
-                        Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
-                            confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode,
-                        CardNumber = model.CardNumber,
-                        PurchaseDate = DateTime.Now,
-                        StatusCode = 1
-                    };
+                        var shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int) user.ShoppingCartId);
+                        await _shoppingCartService.AssignNewShoppingCart(user);
 
-                    await _orderService.CreateOrderAsync(newOrder);
-                    await _shoppingCartService.AddShoppingCartToHistory(shoppingCart);
+                        var newOrder = new Order
+                        {
+                            ShoppingCartId = shoppingCart.Id,
+                            UserId = user.Id,
+                            TotalPrice = (decimal) totalCost / 100,
+                            Address = confirmAddress.Country + ", " + confirmAddress.County + " county, " +
+                                      confirmAddress.City + " - " + confirmAddress.Address + ", " + confirmAddress.Zipcode,
+                            CardNumber = model.CardNumber,
+                            PurchaseDate = DateTime.Now,
+                            StatusCode = 1
+                        };
+
+                        await _orderService.CreateOrderAsync(newOrder);
+                        await _shoppingCartService.AddShoppingCartToHistory(shoppingCart);
+                    }
                 }
                 else if (purchaseResult == 400)
                 {
@@ -147,23 +156,23 @@ namespace EShop.Controllers
                 }
             }
 
-            if (model.checkbox)
+            if (model.Checkbox)
             {
-                CardInfo savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
+                var savedCardInfo = await _cardInfoService.GetCardInfoByUserId(user.Id);
                 if (savedCardInfo == null)
                 {
                     savedCardInfo = new CardInfo();
                     savedCardInfo.UserId = user.Id;
                     savedCardInfo.CardNumber = model.CardNumber;
-                    savedCardInfo.ExpYear = model.Exp_Year;
-                    savedCardInfo.ExpMonth = model.Exp_Month;
+                    savedCardInfo.ExpYear = model.ExpYear;
+                    savedCardInfo.ExpMonth = model.ExpMonth;
                     await _cardInfoService.CreateCardInfo(savedCardInfo);
                 }
                 else
                 {
                     savedCardInfo.CardNumber = model.CardNumber;
-                    savedCardInfo.ExpYear = model.Exp_Year;
-                    savedCardInfo.ExpMonth = model.Exp_Month;
+                    savedCardInfo.ExpYear = model.ExpYear;
+                    savedCardInfo.ExpMonth = model.ExpMonth;
                     await _cardInfoService.UpdateCardInfo(savedCardInfo);
                 }
             }

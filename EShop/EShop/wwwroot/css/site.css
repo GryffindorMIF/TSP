@@ -1,103 +1,93 @@
 ﻿/* font-awesome.min.css */
 /* star-rating */
-.checked {
-    color: orange;
-}
+.checked { color: orange; }
 
 .pagination > li.active > a, .pagination > li.active > a:hover {
     background: grey;
-    color: white;
     border-color: dimgrey;
+    color: white;
 }
 
-.pagination > li > a {
-    color: dimgrey;
-}
+.pagination > li > a { color: dimgrey; }
 
 body {
-    padding-top: 50px;
-    padding-bottom: 20px;
     font-family: Verdana, sans-serif;
     margin: 0;
+    padding-bottom: 20px;
+    padding-top: 50px;
 }
 
 /* Wrapping element */
+
 /* Set some basic padding to keep content from hitting the edges */
+
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
 }
 
 /* Carousel */
+
 .carousel-caption p {
     font-size: 20px;
     line-height: 1.4;
 }
 
 /* Make .svg files in the carousel display properly in older browsers */
-.carousel-inner .item img[src$=".svg"] {
-    width: 100%;
-}
+
+.carousel-inner .item img[src$=".svg"] { width: 100%; }
 
 /* QR code generator */
-#qrCode {
-    margin: 15px;
-}
+
+#qrCode { margin: 15px; }
 
 /* Hide/rearrange for smaller screens */
+
 @media screen and (max-width: 767px) {
     /* Hide captions */
-    .carousel-caption {
-        display: none;
-    }
+    .carousel-caption { display: none; }
 }
 
 .sidenav {
-    height: 100%;
-    width: auto;
-    min-width: 46px;
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    left: 0;
     background-color: #eeeeee;
+    height: 100%;
+    left: 0;
+    min-width: 46px;
     overflow-x: hidden;
-    padding-top: 50px;
     padding-left: 10px;
     padding-right: 10px;
+    padding-top: 50px;
+    position: fixed;
+    top: 0;
     transition: 0.5s;
+    width: auto;
+    z-index: 1;
 }
 
-.sidenav li {
-    margin: 0 0 3px 0;
-}
+.sidenav li { margin: 0 0 3px 0; }
 
-.labeled-input input[type="file"] {
-    display: none;
-}
+.labeled-input input[type="file"] { display: none; }
 
 .custom-file-upload {
-    border: 1px solid #ccc;
-    display: inline-block;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 12px;
-    text-align: center;
-    margin: 3px;
     background-color: white;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 12px;
+    margin: 3px;
+    padding: 6px 12px;
+    text-align: center;
 }
 
 .sidenav a {
-    padding: 0;
-    text-decoration: none;
     color: #818181;
     display: inline;
+    padding: 0;
+    text-decoration: none;
     width: auto;
 }
 
-.sidenav a:hover {
-    color: #0082ff;
-}
+.sidenav a:hover { color: #0082ff; }
 
 .main {
     margin-left: 46px;
@@ -105,20 +95,18 @@ body {
 }
 
 ul {
-    padding: 0;
     list-style-type: none;
+    padding: 0;
 }
 
-.modal {
-    text-align: center;
-}
+.modal { text-align: center; }
 
 @media screen and (min-width: 768px) {
     .modal:before {
-        display: inline-block;
-        vertical-align: middle;
         content: " ";
+        display: inline-block;
         height: 100%;
+        vertical-align: middle;
     }
 }
 
@@ -130,192 +118,143 @@ ul {
 
 .m-faqs {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-column-gap: 10px;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     width: 100%;
 }
 
 .m-faqs_item {
-    margin-bottom: 20px;
-    text-align: center;
     border: solid;
-    border-width: 1px;
     border-color: lightgrey;
+    border-width: 1px;
+    margin-bottom: 20px;
     padding: 10px;
+    text-align: center;
 }
 
-.m-faqs_item:hover {
-    border-color: black;
-}
+.m-faqs_item:hover { border-color: black; }
 
 .m-faqs_add_btn_container {
-    padding-bottom: 0;
     bottom: 0;
+    padding-bottom: 0;
 }
 
-.btn-add {
-    background-color: grey;
-}
+.btn-add { background-color: grey; }
 
-.btn-add:hover {
-    background-color: black;
-}
+.btn-add:hover { background-color: black; }
 
 .btn-add text {
     color: white;
     padding-left: 5px;
 }
 
-.vertical-separator{
-    display:inline-block;
-}
-/*For image enlargement modal*/
-@-webkit-keyframes zoom {
-    from {
-        -webkit-transform: scale(0)
-    }
+.vertical-separator { display: inline-block; }
 
-    to {
-        -webkit-transform: scale(1)
-    }
+/*For image enlargement modal*/
+
+@-webkit-keyframes zoom {
+    from { -webkit-transform: scale(0) }
+
+    to { -webkit-transform: scale(1) }
 }
 
 @keyframes zoom {
-    from {
-        transform: scale(0)
-    }
+    from { transform: scale(0) }
 
-    to {
-        transform: scale(1)
-    }
+    to { transform: scale(1) }
 }
 
-@media only screen and (max-width: 1500px){
-    #side-nav-content{
-        display: none;
-    }
+@media only screen and (max-width: 1500px) {
+    #side-nav-content { display: none; }
 }
 
 @media only screen and (max-width: 1200px) {
-    .modal-content {
-        width: 100%;
-    }
+    .modal-content { width: 100%; }
 
-    .m-faqs {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
+    .m-faqs { grid-template-columns: 1fr 1fr 1fr; }
 
-    .navbar-header {
-        float: none;
-    }
-    .navbar-left,.navbar-right {
-        float: none !important;
-    }
-    .navbar-toggle {
-        display: block;
-    }
+    .navbar-header { float: none; }
+
+    .navbar-left, .navbar-right { float: none !important; }
+
+    .navbar-toggle { display: block; }
+
     .navbar-collapse {
         border-top: 1px solid transparent;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
+
     .navbar-fixed-top {
-        top: 0;
         border-width: 0 0 1px;
+        top: 0;
     }
-    .navbar-collapse.collapse {
-        display: none!important;
-    }
+
+    .navbar-collapse.collapse { display: none !important; }
+
     .navbar-nav {
-        float: none!important;
+        float: none !important;
         margin-top: 7.5px;
     }
-    .navbar-nav>li {
-        float: none;
-    }
-    .navbar-nav>li>a {
-        padding-top: 10px;
+
+    .navbar-nav > li { float: none; }
+
+    .navbar-nav > li > a {
         padding-bottom: 10px;
+        padding-top: 10px;
     }
-    .collapse.in{
-        display:block !important;
-    }
+
+    .collapse.in { display: block !important; }
 }
 
 @media only screen and (max-width: 1000px) {
-    .modal-content {
-        width: 100%;
-    }
+    .modal-content { width: 100%; }
 
-    .m-faqs {
-        grid-template-columns: 1fr 1fr;
-    }
+    .m-faqs { grid-template-columns: 1fr 1fr; }
 }
 
 @media only screen and (max-width: 700px) {
-    .modal-content {
-        width: 100%;
-    }
+    .modal-content { width: 100%; }
 
-    .main {
-        text-align: center;
-    }
+    .main { text-align: center; }
 
-    .m-faqs {
-        grid-template-columns: 1fr;
-    }
-    .main-carousel {
-        display: none;
-    }
+    .m-faqs { grid-template-columns: 1fr; }
+
+    .main-carousel { display: none; }
 
     tr {
+        border: solid;
+        border-color: lightgrey;
+        border-width: 1px;
+
         display: flex;
         flex-wrap: wrap;
-        width: 100%;
-
-        border: solid;
-        border-width: 1px;
-        border-color: lightgrey;
-        padding: 10px;
         margin-top: 10px;
+        padding: 10px;
+        width: 100%;
     }
 
     td {
-      display: block;
-      width: 100%;
-      text-align: center;
+        display: block;
+        text-align: center;
+        width: 100%;
     }
 
-    td[colspan] {
-      width: 100%;
-    }
+    td[colspan] { width: 100%; }
 
-    thead {
-        display: none;
-    }
+    thead { display: none; }
 
-    .mobile-friendly-tag {
-        display: block !important;
-    }
+    .mobile-friendly-tag { display: block !important; }
 
-    td a {
-        display: block !important;
-    }
+    td a { display: block !important; }
 
-    .vertical-separator {
-        display: none !important;
-    }
+    .vertical-separator { display: none !important; }
 
-    .mobile-product-view {
-        display: block !important;
-    }
+    .mobile-product-view { display: block !important; }
 
-    .desktop-product-view {
-        display: none !important;
-    }
+    .desktop-product-view { display: none !important; }
 
     #cvv-modal p img {
-        width: 80%;
         height: 80%;
+        width: 80%;
     }
 }
-

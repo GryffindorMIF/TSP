@@ -1,11 +1,11 @@
-﻿using EShop.Data;
-using EShop.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Data;
+using EShop.Models.EFModels.Attribute;
+using EShop.Models.EFModels.Product;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Business.Services
 {
@@ -18,7 +18,7 @@ namespace EShop.Business.Services
             _context = context;
         }
 
-        public ICollection<EShop.Models.Attribute> GetAllAttributes()
+        public ICollection<Attribute> GetAllAttributes()
         {
             return _context.Attribute.ToList();
         }
@@ -33,7 +33,7 @@ namespace EShop.Business.Services
             return _context.ProductAttributeValue.ToList();
         }
 
-        public EShop.Models.Attribute FindAttributeById(int id)
+        public Attribute FindAttributeById(int id)
         {
             return _context.Attribute.Find(id);
         }
@@ -48,7 +48,7 @@ namespace EShop.Business.Services
             return _context.ProductAttributeValue.Find(id);
         }
 
-        public async Task<int> AddAttribute(EShop.Models.Attribute attribute)
+        public async Task<int> AddAttribute(Attribute attribute)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace EShop.Business.Services
             }
         }
 
-        public async Task<int> AddAttributeRange(ICollection<Models.Attribute> attributes)
+        public async Task<int> AddAttributeRange(ICollection<Attribute> attributes)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace EShop.Business.Services
             }
         }
 
-        public async Task<int> RemoveAttribute(EShop.Models.Attribute attribute)
+        public async Task<int> RemoveAttribute(Attribute attribute)
         {
             try
             {
@@ -93,14 +93,11 @@ namespace EShop.Business.Services
             }
         }
 
-        public async Task<int> RemoveAttributeRange(ICollection<Models.Attribute> attributes)
+        public async Task<int> RemoveAttributeRange(ICollection<Attribute> attributes)
         {
             try
             {
-                foreach (var attribute in attributes)
-                {
-                    _context.Attribute.Remove(attribute);
-                }
+                foreach (var attribute in attributes) _context.Attribute.Remove(attribute);
                 await _context.SaveChangesAsync();
 
                 return 0;
@@ -111,7 +108,7 @@ namespace EShop.Business.Services
             }
         }
 
-        public async Task<int> UpdateAttribute(EShop.Models.Attribute attribute)
+        public async Task<int> UpdateAttribute(Attribute attribute)
         {
             try
             {
@@ -175,10 +172,7 @@ namespace EShop.Business.Services
         {
             try
             {
-                foreach (var attrValue in attributeValues)
-                {
-                    _context.AttributeValue.Remove(attrValue);
-                }
+                foreach (var attrValue in attributeValues) _context.AttributeValue.Remove(attrValue);
                 await _context.SaveChangesAsync();
 
                 return 0;
@@ -253,10 +247,7 @@ namespace EShop.Business.Services
         {
             try
             {
-                foreach (var pav in pavs)
-                {
-                    _context.ProductAttributeValue.Remove(pav);
-                }
+                foreach (var pav in pavs) _context.ProductAttributeValue.Remove(pav);
                 await _context.SaveChangesAsync();
 
                 return 0;
@@ -284,22 +275,22 @@ namespace EShop.Business.Services
 
         public async Task<IList<AttributeValue>> GetProductAttributeValues(int productId)
         {
-            List<AttributeValue> values = await (from a in _context.AttributeValue
-                                                 join pa in _context.ProductAttributeValue on productId equals pa.ProductId
-                                                 where a.Id == pa.AttributeValueId
-                                                 select a).ToListAsync();
+            var values = await (from a in _context.AttributeValue
+                join pa in _context.ProductAttributeValue on productId equals pa.ProductId
+                where a.Id == pa.AttributeValueId
+                select a).ToListAsync();
             return values;
         }
 
         public async Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId)
         {
             return await (from a in _context.AttributeValue
-                          join pc in _context.ProductCategory on categoryId equals pc.CategoryId
-                          join p in _context.Product on pc.ProductId equals p.Id
-                          join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
-                          join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
-                          where a.Id == av.Id
-                          select a).Distinct().ToListAsync();
+                join pc in _context.ProductCategory on categoryId equals pc.CategoryId
+                join p in _context.Product on pc.ProductId equals p.Id
+                join pav in _context.ProductAttributeValue on p.Id equals pav.ProductId
+                join av in _context.AttributeValue on pav.AttributeValueId equals av.Id
+                where a.Id == av.Id
+                select a).Distinct().ToListAsync();
         }
     }
 }

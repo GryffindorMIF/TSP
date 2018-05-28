@@ -1,4 +1,4 @@
-﻿@model EShop.Models.ProductCategoryViewModel
+﻿@model EShop.Models.ViewModels.Product.ProductCategoryViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -7,40 +7,40 @@
 <h2>Create</h2>
 
 <h4>Product</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-6">
         <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Product.Name" class="control-label"></label>
-                <input asp-for="Product.Name" class="form-control" />
+                <input asp-for="Product.Name" class="form-control"/>
                 <span asp-validation-for="Product.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Product.Description" class="control-label"></label>
-                <input asp-for="Product.Description" class="form-control" />
+                <input asp-for="Product.Description" class="form-control"/>
                 <span asp-validation-for="Product.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Product.Price" class="control-label"></label>
-                <input asp-for="Product.Price" class="form-control" />
+                <input asp-for="Product.Price" class="form-control"/>
                 <span asp-validation-for="Product.Price" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label">Select categories (ctrl + click)</label> <br />
+                <label class="control-label">Select categories (ctrl + click)</label> <br/>
                 <select asp-for="IdsOfSelectedCategories" class="form-control" asp-items="Model.CategoryMultiSelectList"></select>
             </div>
             <div class="form-group">
-                <label class="control-label">Primary image (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
-                <input asp-for="PrimaryImage" class="form-control" />
+                <label class="control-label">Primary image (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br/>
+                <input asp-for="PrimaryImage" class="form-control"/>
             </div>
             <div class="form-group">
-                <label class="control-label">Other images (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br />
-                <input asp-for="OtherImages" class="form-control" multiple />
+                <label class="control-label">Other images (JPEG, GIF, PNG; max @ViewBag.UploadMaxMbSize MB): </label> <br/>
+                <input asp-for="OtherImages" class="form-control" multiple/>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Create" class="btn btn-default"/>
             </div>
         </form>
     </div>
@@ -53,16 +53,19 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
-    $(function () {
-        $('#btnTest').on('click', function () {
-            $.each($("input[type='checkbox']:checked"), function (i, chk) {
-                var hasValue = !!$('#lstTest > option[value="' + $(chk).val() + '"]').length;
-                if (!hasValue) $('#lstTest').append('<option value="' + $(chk).val() + '">' + $(chk).val() + '</option>');
+    $(function() {
+        $('#btnTest').on('click',
+            function() {
+                $.each($("input[type='checkbox']:checked"),
+                    function(i, chk) {
+                        var hasValue = !!$('#lstTest > option[value="' + $(chk).val() + '"]').length;
+                        if (!hasValue)
+                            $('#lstTest').append('<option value="' + $(chk).val() + '">' + $(chk).val() + '</option>');
+                    });
             });
-        });
     });
 </script>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

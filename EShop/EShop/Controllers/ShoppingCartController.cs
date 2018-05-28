@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using EShop.Business;
-using EShop.Data;
-using EShop.Models;
+﻿using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Extensions;
+using EShop.Models.EFModels.ShoppingCart;
+using EShop.Models.EFModels.User;
+using EShop.Models.PostModels;
+using EShop.Util;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using EShop.Util;
-using EShop.Extensions;
-using Microsoft.Extensions.Configuration;
 
 namespace EShop.Controllers
 {
@@ -21,11 +15,12 @@ namespace EShop.Controllers
     [DenyAccess(Roles = "Admin, SuperAdmin")]
     public class ShoppingCartController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IShoppingCartService _shoppingCartService;
         private readonly IProductService _productService;
+        private readonly IShoppingCartService _shoppingCartService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ShoppingCartController(UserManager<ApplicationUser> userManager, IShoppingCartService shoppingCartService, IProductService productService)
+        public ShoppingCartController(UserManager<ApplicationUser> userManager,
+            IShoppingCartService shoppingCartService, IProductService productService)
         {
             _userManager = userManager;
             _shoppingCartService = shoppingCartService;
@@ -34,9 +29,10 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ShoppingCart shoppingCart = await GetCartAsync();
+            var shoppingCart = await GetCartAsync();
 
-            var productsInCart = await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
+            var productsInCart =
+                await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
 
             return View(productsInCart);
         }
@@ -51,42 +47,44 @@ namespace EShop.Controllers
             if (user != null)
             {
                 if (user.ShoppingCartId != null)
-                    shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int)user.ShoppingCartId);
-                if (shoppingCart == null)
-                {
-                    await _shoppingCartService.AssignNewShoppingCart(user);
-                }
+                    shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int) user.ShoppingCartId);
+                if (shoppingCart == null) await _shoppingCartService.AssignNewShoppingCart(user);
             }
+
             return shoppingCart;
         }
+
         // AJAX action
         [HttpPost]
-        public async Task<IActionResult> AddProductToShoppingCart([FromBody]ProductToCartPostModel productToCartPostModel)// Encapsulated post model for AJAX request
+        public async Task<IActionResult> AddProductToShoppingCart(
+            [FromBody] ProductToCartPostModel productToCartPostModel) // Encapsulated post model for AJAX request
         {
-            Product product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
+            var product = await _productService.FindProductByIdAsync(productToCartPostModel.ProductId);
 
-            ShoppingCart shoppingCart = await GetCartAsync();
+            var shoppingCart = await GetCartAsync();
 
-            int resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart, productToCartPostModel.Quantity, HttpContext.Session);
-            return Json(resultCode);// AJAX handles pop-up modal based on this return
+            var resultCode = await _shoppingCartService.AddProductToShoppingCartAsync(product, shoppingCart,
+                productToCartPostModel.Quantity, HttpContext.Session);
+            return Json(resultCode); // AJAX handles pop-up modal based on this return
         }
 
         public async Task<IActionResult> ChangeShoppingCartProductCount(string productName, string operation)
         {
-            ShoppingCart shoppingCart = await GetCartAsync();
+            var shoppingCart = await GetCartAsync();
 
-            Product product = await _productService.FindProductByName(productName);
-            int resultCode = await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation, HttpContext.Session);
+            var product = await _productService.FindProductByName(productName);
+            await _shoppingCartService.ChangeShoppingCartProductCountAsync(product, shoppingCart, operation,
+                HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
         }
 
         public async Task<IActionResult> RemoveShoppingCartProduct(string productName)
         {
-            ShoppingCart shoppingCart = await GetCartAsync();
+            var shoppingCart = await GetCartAsync();
 
-            Product product = await _productService.FindProductByName(productName);
-            int resultCode = await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart, HttpContext.Session);
+            var product = await _productService.FindProductByName(productName);
+            await _shoppingCartService.RemoveShoppingCartProductAsync(product, shoppingCart, HttpContext.Session);
 
             return RedirectToAction("Index", "ShoppingCart");
         }

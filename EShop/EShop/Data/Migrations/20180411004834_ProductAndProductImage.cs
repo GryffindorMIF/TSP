@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,26 +8,25 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Product",
-                columns: table => new
+                "Product",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     Price = table.Column<decimal>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Product", x => x.Id);
-                });
+                constraints: table => { table.PrimaryKey("PK_Product", x => x.Id); });
 
             migrationBuilder.CreateTable(
-                name: "ProductImage",
-                columns: table => new
+                "ProductImage",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     ImageUrl = table.Column<string>(nullable: true),
                     ProductId = table.Column<int>(nullable: true)
                 },
@@ -37,26 +34,26 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_ProductImage", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductImage_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "Id",
+                        "FK_ProductImage_Product_ProductId",
+                        x => x.ProductId,
+                        "Product",
+                        "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductImage_ProductId",
-                table: "ProductImage",
-                column: "ProductId");
+                "IX_ProductImage_ProductId",
+                "ProductImage",
+                "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ProductImage");
+                "ProductImage");
 
             migrationBuilder.DropTable(
-                name: "Product");
+                "Product");
         }
     }
 }

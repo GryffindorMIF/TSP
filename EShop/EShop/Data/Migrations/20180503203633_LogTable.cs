@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,11 +9,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Logs",
-                columns: table => new
+                "Logs",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     Path = table.Column<string>(nullable: true),
                     Time = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
@@ -23,23 +23,23 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_Logs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Logs_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
+                        "FK_Logs_Users_UserId",
+                        x => x.UserId,
+                        "Users",
+                        "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Logs_UserId",
-                table: "Logs",
-                column: "UserId");
+                "IX_Logs_UserId",
+                "Logs",
+                "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Logs");
+                "Logs");
         }
     }
 }

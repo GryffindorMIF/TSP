@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace EShop.Models.ManageViewModels
+﻿namespace EShop.Models.ViewModels.ManageViewModels
 {
     public class TwoFactorAuthenticationViewModel
     {
@@ -12,6 +6,6 @@ namespace EShop.Models.ManageViewModels
 
         public int RecoveryCodesLeft { get; set; }
 
-        public bool Is2faEnabled { get; set; }
+        public bool Is2FaEnabled { get; set; }
     }
 }

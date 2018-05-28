@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,24 +7,24 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Order_ShoppingCart_ShoppingCartId",
-                table: "Order");
+                "FK_Order_ShoppingCart_ShoppingCartId",
+                "Order");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_OrderReview_Order_OrderId",
-                table: "OrderReview");
+                "FK_OrderReview_Order_OrderId",
+                "OrderReview");
 
             migrationBuilder.DropIndex(
-                name: "IX_OrderReview_OrderId",
-                table: "OrderReview");
+                "IX_OrderReview_OrderId",
+                "OrderReview");
 
             migrationBuilder.DropIndex(
-                name: "IX_Order_ShoppingCartId",
-                table: "Order");
+                "IX_Order_ShoppingCartId",
+                "Order");
 
             migrationBuilder.AddColumn<int>(
-                name: "Rating",
-                table: "OrderReview",
+                "Rating",
+                "OrderReview",
                 nullable: false,
                 defaultValue: 0);
         }
@@ -34,32 +32,32 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Rating",
-                table: "OrderReview");
+                "Rating",
+                "OrderReview");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderReview_OrderId",
-                table: "OrderReview",
-                column: "OrderId");
+                "IX_OrderReview_OrderId",
+                "OrderReview",
+                "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_ShoppingCartId",
-                table: "Order",
-                column: "ShoppingCartId");
+                "IX_Order_ShoppingCartId",
+                "Order",
+                "ShoppingCartId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Order_ShoppingCart_ShoppingCartId",
-                table: "Order",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_Order_ShoppingCart_ShoppingCartId",
+                "Order",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_OrderReview_Order_OrderId",
-                table: "OrderReview",
-                column: "OrderId",
-                principalTable: "Order",
+                "FK_OrderReview_Order_OrderId",
+                "OrderReview",
+                "OrderId",
+                "Order",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
         }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using EShop.Models.EFModels.Order;
 
-namespace EShop.Models
+namespace EShop.Models.ViewModels
 {
     public class OrderHistoryModel
     {

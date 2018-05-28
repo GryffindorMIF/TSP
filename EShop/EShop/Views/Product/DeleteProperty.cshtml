@@ -1,4 +1,4 @@
-﻿@model ProductProperty
+﻿@model EShop.Models.EFModels.Product.ProductProperty
 
 @{
     ViewData["Title"] = "DeleteProperty";
@@ -24,8 +24,8 @@
     </dl>
 
     <form asp-action="DeletePropertyConfirmed">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-default" /> |
+        <input type="hidden" asp-for="Id"/>
+        <input type="submit" value="Delete" class="btn btn-default"/> |
         <a asp-action="ManageProperties" asp-route-id="@Model.ProductId">Back to List</a>
     </form>
 </div>

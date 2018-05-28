@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,8 +7,8 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<byte[]>(
-                name: "RowVersion",
-                table: "Product",
+                "RowVersion",
+                "Product",
                 rowVersion: true,
                 nullable: true);
         }
@@ -18,8 +16,8 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "RowVersion",
-                table: "Product");
+                "RowVersion",
+                "Product");
         }
     }
 }

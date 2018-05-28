@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EShop.Models.ProductProperty>
+﻿@model IEnumerable<EShop.Models.EFModels.Product.ProductProperty>
 
 @{
     ViewData["Title"] = ViewBag.Product.Name;
@@ -7,7 +7,7 @@
 
 <head>
     <script type="text/javascript" src="~/js/image_preview.js"></script>
-    <link rel="stylesheet" href="~/css/image_modal.css" type="text/css" media="screen" /> <!--Css file for image modal-->
+    <link rel="stylesheet" href="~/css/image_modal.css" type="text/css" media="screen"/> <!--Css file for image modal-->
 </head>
 
 <!-- Pop-up modal on "Add" button click -->
@@ -15,7 +15,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <img src="~/images/success.png" width="30" height="30" /> &nbsp; Success!
+                <img src="~/images/success.png" width="30" height="30"/> &nbsp; Success!
 
                 <button id="modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -30,7 +30,7 @@
                         <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> View Shopping Cart
                     </button>
                 </form>
-                <br />
+                <br/>
                 <button id="modal-continue-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Continue Shopping</button>
             </div>
         </div>
@@ -41,7 +41,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
+                <img src="~/images/critical-alert.png" width="30" height="30"/> &nbsp; Ooops!
 
                 <button id="limit-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#limit-modal-id').fadeOut();">
                     <span aria-hidden="true">&times;</span>
@@ -75,7 +75,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <img src="~/images/critical-alert.png" width="30" height="30" /> &nbsp; Ooops!
+                <img src="~/images/critical-alert.png" width="30" height="30"/> &nbsp; Ooops!
 
                 <button id="quantity-modal-exit-btn" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#quantity-modal-id').fadeOut()">
                     <span aria-hidden="true">&times;</span>
@@ -98,100 +98,107 @@
 </div>
 
 
-
 @if (ViewBag.AttributeCategories != null && ViewBag.AttributeCategories.Count > 0)
 {
-    @section sidenav
-        {
-        <br />
-        <ul>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4>Refined by</h4>
-                </div>
-                <div class="panel-body">
-                    <div class="panel panel-default">
-                        @foreach (var attrCategory in ViewBag.AttributeCategories)
-                        {
-                            <div class="panel-heading">
-                                <text>
-                                    @if (attrCategory.IconUrl != null)
-                                    {
-                                        <li>
-                                            <h4>
-                                                <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20" />
-                                                @attrCategory.Name
-                                            </h4>
-                                        </li>
-                                    }
-                                    else
-                                    {
-                                        <li>
-                                            <h4>
-                                                <img src="~/images/category-icon.png" width="20" height="20" />
-                                                @attrCategory.Name
-                                            </h4>
-                                        </li>
-
-                                    }
-                                </text>
-                            </div>
-                            <div class="panel-body">
-                                @foreach (var attr in ViewBag.Attributes)
+@section sidenav
+{
+    <br/>
+    <ul>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>Refined by</h4>
+            </div>
+            <div class="panel-body">
+                <div class="panel panel-default">
+                    @foreach (var attrCategory in ViewBag.AttributeCategories)
+                    {
+                        <div class="panel-heading">
+                            <text>
+                                @if (attrCategory.IconUrl != null)
                                 {
-                                    if (attr.AttributeId == attrCategory.Id)
-                                    {
-                                        <text>
-                                        <li>@attr.Name</li>
-                                        </text>
-                                    }
+                                    <li>
+                                        <h4>
+                                            <img src="~/images/attribute-icons/@attrCategory.IconUrl" width="20" height="20"/>
+                                            @attrCategory.Name
+                                        </h4>
+                                    </li>
                                 }
-                            </div>
-                        }
-                    </div>
+                                else
+                                {
+                                    <li>
+                                        <h4>
+                                            <img src="~/images/category-icon.png" width="20" height="20"/>
+                                            @attrCategory.Name
+                                        </h4>
+                                    </li>
+                                }
+                            </text>
+                        </div>
+                        <div class="panel-body">
+                            @foreach (var attr in ViewBag.Attributes)
+                            {
+                                if (attr.AttributeId == attrCategory.Id)
+                                {
+                                    <text>
+                                        <li>@attr.Name</li>
+                                    </text>
+                                }
+                            }
+                        </div>
+                    }
                 </div>
             </div>
-        </ul>
-    }
-}
+        </div>
+    </ul>
+}}
 
 <div class="img_row">
     <p>
-        <h2><strong>@ViewBag.Product.Name</strong></h2>
-        @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+        <h2>
+            <strong>@ViewBag.Product.Name</strong>
+        </h2>
+        @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
         {
             <ul>
-                <li><a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a></li>
-                <li><a asp-controller="Product" asp-action="Delete" asp-route-id="@ViewBag.Product.Id">Delete</a></li>
+                <li>
+                    <a asp-controller="Product" asp-action="Edit" asp-route-id="@ViewBag.Product.Id">Edit</a>
+                </li>
+                <li>
+                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@ViewBag.Product.Id">Delete</a>
+                </li>
                 @if (ViewBag.Discount != null)
                 {
-                    <li><a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Remove discount</a></li>
+                    <li>
+                        <a asp-controller="Product" asp-action="RemoveDiscount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Remove discount</a>
+                    </li>
                 }
                 else
                 {
-                    <li><a asp-controller="Product" asp-action="Discount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Make discount</a></li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Discount" asp-route-page="" asp-route-productId="@ViewBag.Product.Id">Make discount</a>
+                    </li>
                 }
             </ul>
         }
     </p>
     <div class="desktop-product-view">
         <div class="img_column">
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px;">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px;">
         </div>
         <div>
             @if (ViewBag.Discount == null)
             {
-                <h3 style="margin-top: 70px; margin-left: 200px;">Current price is: €@ViewBag.Product.Price</h3>
+                <h3 style="margin-left: 200px; margin-top: 70px;">Current price is: €@ViewBag.Product.Price</h3>
             }
             else
             {
-                <h3 style="margin-top: 70px; margin-left: 200px;">
+                <h3 style="margin-left: 200px; margin-top: 70px;">
                     <ul>
                         <li>
                             Current price is:
-                            <img src="~/images/discount.png" height="40" width="40" />
+                            <img src="~/images/discount.png" height="40" width="40"/>
                             <strike>€@ViewBag.Product.Price</strike>
-                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                            <font style="color: red">€@ViewBag.Discount.DiscountPrice</font>
                         </li>
                         <li>
                             <h5>Discount ends in:</h5>
@@ -204,25 +211,26 @@
                     </ul>
                 </h3>
             }
-            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+            @if (!User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
             {
                 <div>
                     <form id="add-btn-form" style="margin-left: 200px;">
-                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
-                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
+                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required"/>
+                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required"/>
                         <button id="add-btn" type="submit" class="btn btn-add">
-                            <img src="~/images/shopping-cart.png" style="margin-bottom:1px" width="20" height="20" />
+                            <img src="~/images/shopping-cart.png" style="margin-bottom: 1px" width="20" height="20"/>
                             <text>Add to cart</text>
                         </button>
                     </form>
                 </div>
             }
-            <p style="margin-left: 200px;"><strong>Description:</strong> @ViewBag.Product.Description</p>
+            <p style="margin-left: 200px;">
+                <strong>Description:</strong> @ViewBag.Product.Description</p>
         </div>
     </div>
-    <div class="mobile-product-view" style="display:none;">
+    <div class="mobile-product-view" style="display: none;">
         <div>
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1)" class="img_hover-shadow img_cursor">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor">
         </div>
         <div>
             @if (ViewBag.Discount == null)
@@ -235,9 +243,9 @@
                     <ul>
                         <li>
                             Current price is:
-                            <img src="~/images/discount.png" height="40" width="40" />
+                            <img src="~/images/discount.png" height="40" width="40"/>
                             <strike>€@ViewBag.Product.Price</strike>
-                            <font style="color:red">€@ViewBag.Discount.DiscountPrice</font>
+                            <font style="color: red">€@ViewBag.Discount.DiscountPrice</font>
                         </li>
                         <li>
                             <h5>Discount ends in:</h5>
@@ -250,26 +258,28 @@
                     </ul>
                 </h3>
             }
-            @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
+            @if (!User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
             {
                 <div>
                     <form id="add-btn-form">
-                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required" />
-                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required" />
+                        <strong>Quantity &nbsp</strong><input id="quantity-id" type="number" size="2" min="1" value="1" required="required"/>
+                        <input id="hidden-id" type="hidden" size="2" value="@ViewBag.Product.Id" required="required"/>
                         <button id="add-btn" type="submit" class="btn btn-add">
-                            <img src="~/images/shopping-cart.png" style="margin-bottom:1px" width="20" height="20" />
+                            <img src="~/images/shopping-cart.png" style="margin-bottom: 1px" width="20" height="20"/>
                             <text>Add to cart</text>
                         </button>
                     </form>
                 </div>
             }
-            <p><strong>Description:</strong> @ViewBag.Product.Description</p>
+            <p>
+                <strong>Description:</strong> @ViewBag.Product.Description</p>
         </div>
     </div>
 </div>
 
 
-@{ int counter = 1; /*Counter for photos*/
+@{
+    var counter = 1; /*Counter for photos*/
     <!--Small photo previews-->
     <div class="img_row">
         @foreach (var image in ViewBag.SecondaryImages)
@@ -277,7 +287,7 @@
             <!--Image here-->
             <div class="img_column">
                 @{ counter += 1; }
-                <img src="~/images/products/@image.ImageUrl" alt="Secondary Image" style="width:90%; max-width:150px;" onclick="openModal();currentSlide(@counter)" class="img_hover-shadow img_cursor" />
+                <img src="~/images/products/@image.ImageUrl" alt="Secondary Image" style="max-width: 150px; width: 90%;" onclick="openModal();currentSlide(@counter);" class="img_hover-shadow img_cursor"/>
             </div>
         }
     </div>
@@ -290,24 +300,25 @@
     <div class="img_modal-content">
         <div class="imgSlides">
             <div class="img_numbertext">1 / @totalImages</div>
-            <img class="img_modal-style" src="~/images/products/@ViewData["primary_image"]" />
+            <img class="img_modal-style" src="~/images/products/@ViewData["primary_image"]"/>
         </div>
-        @{ int counter2 = 1;
+        @{
+            var counter2 = 1;
             foreach (var image in ViewBag.SecondaryImages)
             {
                 counter2 += 1;
                 <!--Image here-->
                 <div class="imgSlides">
                     <div class="img_numbertext">@counter2 / @totalImages</div>
-                    <img class="img_modal-style" src="~/images/products/@image.ImageUrl" />
+                    <img class="img_modal-style" src="~/images/products/@image.ImageUrl"/>
                 </div>
             }
         }
-        
+
         <!-- Next/previous controls -->
         <a class="img_prev" onclick="plusSlides(-1)">&#10094;</a>
         <a class="img_next" onclick="plusSlides(1)">&#10095;</a>
-        
+
 
         <!-- Caption text -->
         <div class="img_caption-container">
@@ -316,59 +327,59 @@
 
         <!-- Thumbnail image controls -->
         <div class="img_column">
-            <img class="img_demo img_cursor" style="width:100%; max-width:120px" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name" />
+            <img class="img_demo img_cursor" style="max-width: 120px; width: 100%;" src="~/images/products/@ViewData["primary_image"]" onclick="currentSlide(1)" alt="@ViewBag.Product.Name"/>
         </div>
         @{
-            int counter3 = 1;
+            var counter3 = 1;
             foreach (var image in ViewBag.SecondaryImages)
             {
                 counter3 += 1;
                 <!--Image here-->
                 <div class="img_column">
-                    <img class="img_demo img_cursor" style="width:100%; max-width:120px; height:100%" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3" />
+                    <img class="img_demo img_cursor" style="height: 100%; max-width: 120px; width: 100%;" src="~/images/products/@image.ImageUrl" onclick="currentSlide(@counter3)" alt="@ViewBag.Product.Name @counter3"/>
                 </div>
             }
         }
     </div>
 </div>
 
-@if (Model.Any())// jei egzistuoja properties
+@if (Model.Any()) // jei egzistuoja properties
 {
     <table class="table">
         <!--
         <thead>
-            <tr>
-                <th>
-                    Property
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
-            </tr>
+        <tr>
+            <th>
+                Property
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+        </tr>
         </thead>
-            -->
+        -->
         <thead>
-            <tr>
-                <th colspan="2">
-                    Characteristics
-                </th>
-            </tr>
+        <tr>
+            <th colspan="2">
+                Characteristics
+            </th>
+        </tr>
         </thead>
-        <div class="mobile-friendly-tag" style="display:none;">
+        <div class="mobile-friendly-tag" style="display: none;">
             <strong>Characteristics</strong>
         </div>
         <tbody>
-            @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
-            {
-                <tr>
-                    <td>
-                        <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                </tr>
-            }
+        @foreach (var item in Model.Where(m => m.ProductId == ViewBag.Product.Id)) //Convert.ToInt32(ViewData["product_id"])))
+        {
+            <tr>
+                <td>
+                    <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 }
@@ -378,94 +389,94 @@
 -->
 <!-- Scripts for shopping cart modal -->
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript">
+</script>
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).ready(function() {
 
         @if (ViewBag.Discount != null)
         {
             <text>
-            var x = setInterval(function() {
-            @{
-                    string endDate = ViewBag.Discount.Ends.ToString("yyyy-MM-ddTHH:mm:ss");
-                }
+                var x = setInterval(function() {
+                        @{
+                            string endDate = ViewBag.Discount.Ends.ToString("yyyy-MM-ddTHH:mm:ss");
+                        }
 
-                // Set the date we're counting down to
-                var countDownDate = new Date('@endDate').getTime();
-                // Get todays date and time
-                var now = new Date().getTime();
+                        // Set the date we're counting down to
+                        var countDownDate = new Date('@endDate').getTime();
+                        // Get todays date and time
+                        var now = new Date().getTime();
 
-                // Find the distance between now an the count down date
-                var distance = countDownDate - now;
+                        // Find the distance between now an the count down date
+                        var distance = countDownDate - now;
 
-                // Time calculations for days, hours, minutes and seconds
-                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        // Time calculations for days, hours, minutes and seconds
+                        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                // Output the result in an element with id="demo"
-                $("#discount-timer").html(days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
+                        // Output the result in an element with id="demo"
+                        $("#discount-timer").html(days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
 
-                // If the count down is over, write some text
-                if (distance < 0) {
-                    $("#discount-timer").html("EXPIRED");
-                }
-        }, 1000);
-        </text>
+                        // If the count down is over, write some text
+                        if (distance < 0) {
+                            $("#discount-timer").html("EXPIRED");
+                        }
+                    },
+                    1000);
+            </text>
         }
 
-            $('#modal-exit-btn, #modal-continue-btn').click(function () {
-                $('#add-modal-id').fadeOut();
+        $('#modal-exit-btn, #modal-continue-btn').click(function() {
+            $('#add-modal-id').fadeOut();
         });
         //Below is code that responds for "add to cart" button operation
         /**/
         /**/
-@{
-<text>
-        /**/
-        /**/
-        $('#add-btn').click(function (e) {
-
-            e.preventDefault();// prevents page refreshing
-
-            // Arguments we pass to controller's action method
-            var ProductToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
-                ProductId: $('#hidden-id').val(),
-                Quantity: $('#quantity-id').val()
-            }
-
-            $.ajax({
-                type: 'POST',
+        @{
+            <text>
                 /**/
                 /**/
-                url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
-        /**/
-        /**/
-        data: JSON.stringify(ProductToCartPostModel),
-        dataType: 'json',
-        contentType: "application/json",
-        success: function (response) {
-            if (response == 0) {
-                $('#add-modal-id').fadeIn();
-            }
-            else if (response == 1) {
-                //TODO: handle failure sent from controller (modify modal box)
-                $('#quantity-modal-id').fadeIn();
-            }
-            else if (response == 2) {// limit reached
-                $('#limit-modal-id').fadeIn();
-            }
-        },
-        failure: function (response) {
-            //TODO: handle AJAX request failure
+                $('#add-btn').click(function(e) {
+
+                    e.preventDefault(); // prevents page refreshing
+
+                    // Arguments we pass to controller's action method
+                    var productToCartPostModel = { // must match ~/Models/PostModels/ProductToCartPostModel.cs
+                        ProductId: $('#hidden-id').val(),
+                        Quantity: $('#quantity-id').val()
+                    };
+
+                    $.ajax({
+                        type: 'POST',
+                        /**/
+                        /**/
+                        url: '@Url.Action("AddProductToShoppingCart", "ShoppingCart")',
+                        /**/
+                        /**/
+                        data: JSON.stringify(productToCartPostModel),
+                        dataType: 'json',
+                        contentType: "application/json",
+                        success: function(response) {
+                            if (response === 0) {
+                                $('#add-modal-id').fadeIn();
+                            } else if (response === 1) {
+                                //TODO: handle failure sent from controller (modify modal box)
+                                $('#quantity-modal-id').fadeIn();
+                            } else if (response === 2) { // limit reached
+                                $('#limit-modal-id').fadeIn();
+                            }
+                        },
+                        failure: function() {
+                            //TODO: handle AJAX request failure
+                        }
+                    });
+                });
+/**/
+/**/
+            </text>
         }
-    });
-});
-/**/
-/**/
-</text>
-}
         /**/
         /**/
     });
