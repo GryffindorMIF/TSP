@@ -48,7 +48,6 @@ namespace EShop.Controllers
             if (user.ShoppingCartId != null)
             {
                 var shoppingCart = await _shoppingCartService.FindShoppingCartByIdAsync((int) user.ShoppingCartId);
-                await _shoppingCartService.TransferSessionProducts(HttpContext, shoppingCart);
 
                 model.Products =
                     await _shoppingCartService.QueryAllShoppingCartProductsAsync(shoppingCart, HttpContext.Session);
