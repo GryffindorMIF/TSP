@@ -59,10 +59,10 @@
 
 /* The Close Button */
 .img_close {
-    color: red;
-    position: fixed;
-    top: 10%;
-    right: 12%;
+    color: white;
+    position: absolute;
+    top: 60px;
+    right: 10%;
     font-size: 35px;
     font-weight: bold;
     z-index: 5;
@@ -170,5 +170,11 @@ img.img_hover-shadow {
 @media only screen and (max-width: 700px) {
     .img_next, .img_prev {
         display: none;
+    }
+
+    .img_close {
+        color: red;
+        top: 50px;
+        right: 3%;
     }
 }
