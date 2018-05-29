@@ -260,8 +260,12 @@ namespace EShop.Business.Services
 
         public async Task<Category> GetCategoryById(int? id)
         {
-            var category = await _context.Category.FindAsync(id);
-            return category;
+            if (id != null)
+            {
+                var category = await _context.Category.FindAsync(id);
+                return category;
+            }
+            else return null;
         }
 
         public async Task<Category> GetCategoryByName(string name)

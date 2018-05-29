@@ -52,7 +52,7 @@ namespace EShop.Business.Services
                             Price = p.Price,
                             Quantity = scp.Quantity,
                             TotalPrice = scp.Quantity * p.Price,
-                            ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Id).ImageUrl
+                            ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Id && pi.IsPrimary).ImageUrl
                         };
                 });
             }
@@ -67,7 +67,7 @@ namespace EShop.Business.Services
                         Price = p.Product.Price,
                         Quantity = p.Count,
                         TotalPrice = p.Count * p.Product.Price,
-                        ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Product.Id)?.ImageUrl
+                        ImageUrl = _context.ProductImage.FirstOrDefault(pi => pi.Product.Id == p.Product.Id && pi.IsPrimary)?.ImageUrl
                     }).AsQueryable();
             }
 
