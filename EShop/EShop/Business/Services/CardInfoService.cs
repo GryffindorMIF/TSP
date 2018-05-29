@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using EShop.Business.Interfaces;
 using EShop.Data;
-using EShop.Models;
+using EShop.Models.EFModels.Order;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Business.Services
@@ -18,40 +19,38 @@ namespace EShop.Business.Services
 
         public async Task<int> CreateCardInfo(CardInfo cardInfo)
         {
-            int resultCode = 1; //Error
+            var resultCode = 1; //Error
             if (cardInfo != null)
-            {
                 try
                 {
                     await _context.AddAsync(cardInfo);
                     await _context.SaveChangesAsync();
                     resultCode = 0; //Success
                 }
-                catch (System.Exception)
+                catch (Exception)
                 {
                     resultCode = 1;
                 }
-            }
+
             return resultCode;
         }
 
         public async Task<int> DeleteCardInfo(int cardInfoId)
         {
-            int resultCode = 1; //Error
-            CardInfo cardInfo = await GetCardInfoById(cardInfoId);
-            if (cardInfo != null)
+            var resultCode = 1; //Error
+            var cardInfo = await GetCardInfoById(cardInfoId);
+            if (cardInfo == null) return resultCode;
+            try
             {
-                try
-                {
-                    _context.Remove(cardInfo);
-                    await _context.SaveChangesAsync();
-                    resultCode = 0; //Success
-                }
-                catch (System.Exception)
-                {
-                    resultCode = 1;
-                }
+                _context.Remove(cardInfo);
+                await _context.SaveChangesAsync();
+                resultCode = 0; //Success
             }
+            catch (Exception)
+            {
+                resultCode = 1;
+            }
+
             return resultCode;
         }
 
@@ -67,20 +66,19 @@ namespace EShop.Business.Services
 
         public async Task<int> UpdateCardInfo(CardInfo newCardInfo)
         {
-            int resultCode = 1; //Error
-            if (newCardInfo != null)
+            var resultCode = 1; //Error
+            if (newCardInfo == null) return resultCode;
+            try
             {
-                try
-                {
-                    _context.Update(newCardInfo);
-                    await _context.SaveChangesAsync();
-                    resultCode = 0; //Success
-                }
-                catch (System.Exception)
-                {
-                    resultCode = 1;
-                }
+                _context.Update(newCardInfo);
+                await _context.SaveChangesAsync();
+                resultCode = 0; //Success
             }
+            catch (Exception)
+            {
+                resultCode = 1;
+            }
+
             return resultCode;
         }
     }

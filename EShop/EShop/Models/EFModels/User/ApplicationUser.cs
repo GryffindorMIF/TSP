@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
-namespace EShop.Models
+namespace EShop.Models.EFModels.User
 {
     // Extension of table: Users
     public class ApplicationUser : IdentityUser
@@ -14,7 +9,6 @@ namespace EShop.Models
         public bool IsSuspended { get; set; }
         public bool IsAdmin { get; set; }
 
-        [ForeignKey("ShoppingCartId")]
-        public int? ShoppingCartId { get; set; }
+        [ForeignKey("ShoppingCartId")] public int? ShoppingCartId { get; set; }
     }
 }

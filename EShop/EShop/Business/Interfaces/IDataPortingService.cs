@@ -1,19 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace EShop.Business.Interfaces
 {
-    public enum ImportResult { Successful, Unsuccesful, AlreadyRunning }
+    public enum ImportResult
+    {
+        Successful,
+        Unsuccesful,
+        AlreadyRunning
+    }
 
     public interface IDataPortingService
     {
         Task WipeProductDataAsync();
         Task<ImportResult> ImportProductData(IFormFile file);
         Task<byte[]> ExportProductData();
-
     }
 }

@@ -1,33 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Business.Services;
+using EShop.Data;
+using EShop.Models.EFModels.User;
+using EShop.Util;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using EShop.Data;
-using EShop.Models;
-using EShop.Business;
-using System.Diagnostics;
-using EShop.Business.Services;
-using EShop.Business.Interfaces;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Logging;
-using EShop.Util;
 
 namespace EShop
 {
     public class Startup
     {
-        private string _contentRootPath;
+        private readonly string _contentRootPath;
         private RequestFileLogger _logger;
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            _contentRootPath = env.ContentRootPath;// Get dynamic database path (depends on local machine)
+            _contentRootPath = env.ContentRootPath; // Get dynamic database path (depends on local machine)
             Configuration = configuration;
         }
 
@@ -37,18 +32,13 @@ namespace EShop
         public void ConfigureServices(IServiceCollection services)
         {
             // Construct connection string based on dynamic database path
-            string connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
             if (connectionString.Contains("%CONTENTROOTPATH%"))
-            {
                 connectionString = connectionString.Replace("%CONTENTROOTPATH%", _contentRootPath);
-            }
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            services.ConfigureApplicationCookie(options =>
-            {
-                options.AccessDeniedPath = "/Account/Login";
-            });
+            services.ConfigureApplicationCookie(options => { options.AccessDeniedPath = "/Account/Login"; });
 
             services.AddIdentity<ApplicationUser, IdentityRole>(o =>
                 {
@@ -62,9 +52,7 @@ namespace EShop
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddSession(options => {
-                options.IdleTimeout = TimeSpan.FromSeconds(300);
-            });
+            services.AddSession(options => { options.IdleTimeout = TimeSpan.FromSeconds(300); });
 
 
             var corsBuilder = new CorsPolicyBuilder();
@@ -74,10 +62,7 @@ namespace EShop
             //corsBuilder.WithOrigins("http://localhost:44355");
             corsBuilder.AllowCredentials();
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("EShopCorsPolicy", corsBuilder.Build());
-            });
+            services.AddCors(options => { options.AddPolicy("EShopCorsPolicy", corsBuilder.Build()); });
 
             // Add application services. (For dependency injection)
             services.AddTransient<IEmailSender, EmailSender>();
@@ -106,7 +91,8 @@ namespace EShop
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime, IConfiguration configuration)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
+            IApplicationLifetime applicationLifetime, IConfiguration configuration)
         {
             applicationLifetime.ApplicationStopping.Register(OnShutdown);
             if (env.IsDevelopment())
@@ -143,8 +129,8 @@ namespace EShop
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    "default",
+                    "{controller=Home}/{action=Index}/{id?}");
             });
         }
 

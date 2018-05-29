@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using EShop.Business;
+using EShop.Business.Interfaces;
 
-namespace EShop.Business
+namespace EShop.Extensions
 {
     public static class EmailSenderExtensions
     {
@@ -18,7 +14,7 @@ namespace EShop.Business
         public static Task SendEmailForgotPasswordAsync(this IEmailSender emailSender, string email, string link)
         {
             return emailSender.SendEmailAsync(email, "Reset Password",
-                   $"Please reset your account password by clicking this link or copying it to browser address field: {link}");
+                $"Please reset your account password by clicking this link or copying it to browser address field: {link}");
         }
     }
 }

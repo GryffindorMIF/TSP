@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,24 +8,23 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Attribute",
-                columns: table => new
+                "Attribute",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Attribute", x => x.Id);
-                });
+                constraints: table => { table.PrimaryKey("PK_Attribute", x => x.Id); });
 
             migrationBuilder.CreateTable(
-                name: "AttributeValue",
-                columns: table => new
+                "AttributeValue",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     AttributeCategoryId = table.Column<int>(nullable: false),
                     Name = table.Column<string>(nullable: true)
                 },
@@ -35,19 +32,20 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_AttributeValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AttributeValue_Attribute_AttributeCategoryId",
-                        column: x => x.AttributeCategoryId,
-                        principalTable: "Attribute",
-                        principalColumn: "Id",
+                        "FK_AttributeValue_Attribute_AttributeCategoryId",
+                        x => x.AttributeCategoryId,
+                        "Attribute",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "CategoryAttribute",
-                columns: table => new
+                "CategoryAttribute",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     AttributeCategoryId = table.Column<int>(nullable: false),
                     CategoryId = table.Column<int>(nullable: false)
                 },
@@ -55,25 +53,26 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_CategoryAttribute", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CategoryAttribute_AttributeValue_AttributeCategoryId",
-                        column: x => x.AttributeCategoryId,
-                        principalTable: "AttributeValue",
-                        principalColumn: "Id",
+                        "FK_CategoryAttribute_AttributeValue_AttributeCategoryId",
+                        x => x.AttributeCategoryId,
+                        "AttributeValue",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CategoryAttribute_Category_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Category",
-                        principalColumn: "Id",
+                        "FK_CategoryAttribute_Category_CategoryId",
+                        x => x.CategoryId,
+                        "Category",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductAttributeValue",
-                columns: table => new
+                "ProductAttributeValue",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     AttributeId = table.Column<int>(nullable: false),
                     ProductId = table.Column<int>(nullable: false)
                 },
@@ -81,58 +80,58 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_ProductAttributeValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductAttributeValue_AttributeValue_AttributeId",
-                        column: x => x.AttributeId,
-                        principalTable: "AttributeValue",
-                        principalColumn: "Id",
+                        "FK_ProductAttributeValue_AttributeValue_AttributeId",
+                        x => x.AttributeId,
+                        "AttributeValue",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductAttributeValue_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "Id",
+                        "FK_ProductAttributeValue_Product_ProductId",
+                        x => x.ProductId,
+                        "Product",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttributeValue_AttributeCategoryId",
-                table: "AttributeValue",
-                column: "AttributeCategoryId");
+                "IX_AttributeValue_AttributeCategoryId",
+                "AttributeValue",
+                "AttributeCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryAttribute_AttributeCategoryId",
-                table: "CategoryAttribute",
-                column: "AttributeCategoryId");
+                "IX_CategoryAttribute_AttributeCategoryId",
+                "CategoryAttribute",
+                "AttributeCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryAttribute_CategoryId",
-                table: "CategoryAttribute",
-                column: "CategoryId");
+                "IX_CategoryAttribute_CategoryId",
+                "CategoryAttribute",
+                "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductAttributeValue_AttributeId",
-                table: "ProductAttributeValue",
-                column: "AttributeId");
+                "IX_ProductAttributeValue_AttributeId",
+                "ProductAttributeValue",
+                "AttributeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductAttributeValue_ProductId",
-                table: "ProductAttributeValue",
-                column: "ProductId");
+                "IX_ProductAttributeValue_ProductId",
+                "ProductAttributeValue",
+                "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CategoryAttribute");
+                "CategoryAttribute");
 
             migrationBuilder.DropTable(
-                name: "ProductAttributeValue");
+                "ProductAttributeValue");
 
             migrationBuilder.DropTable(
-                name: "AttributeValue");
+                "AttributeValue");
 
             migrationBuilder.DropTable(
-                name: "Attribute");
+                "Attribute");
         }
     }
 }

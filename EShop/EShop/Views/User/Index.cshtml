@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EShop.Models.UserInRoleViewModel>
+﻿@model IEnumerable<EShop.Models.ViewModels.UserInRoleViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -9,108 +9,110 @@
 <ul>
     @foreach (var role in ViewBag.CurrentUserRoles)
     {
-        <li><font color="red">@role</font></li>
+        <li>
+            <font color="red">@role</font>
+        </li>
     }
 </ul>
 
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.User.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Role)
-            </th>
-            <th>
-                Suspended
-            </th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.User.Email)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Role)
+        </th>
+        <th>
+            Suspended
+        </th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                @if (item.User.UserName != this.User.Identity.Name)
-                {
-                    <td>
-                        <div class="mobile-friendly-tag" style="display:none;">
-                            <strong>Email</strong>
-                        </div>
-
-                        @Html.DisplayFor(modelItem => item.User.Email)
-                    </td>
-                    <td>
-                        <div class="mobile-friendly-tag" style="display:none;">
-                            <strong>Role</strong>
-                        </div>
-
-                        @Html.DisplayFor(modelItem => item.Role)
-                    </td>
-                }
-                else
-                {
-                    <td>
-                        <div class="mobile-friendly-tag" style="display:none;">
-                            <strong>Email</strong>
-                        </div>
-
-                        <font color="red">@Html.DisplayFor(modelItem => item.User.Email)</font>
-                    </td>
-                    <td>
-                        <div class="mobile-friendly-tag" style="display:none;">
-                            <strong>Role</strong>
-                        </div>
-
-                        <font color="red">@Html.DisplayFor(modelItem => item.Role)</font>
-                    </td>
-                }
+    @foreach (var item in Model)
+    {
+        <tr>
+            @if (item.User.UserName != User.Identity.Name)
+            {
                 <td>
-                    <div class="mobile-friendly-tag" style="display:none;">
-                        <strong>Suspended</strong>
+                    <div class="mobile-friendly-tag" style="display: none;">
+                        <strong>Email</strong>
                     </div>
-                    @if (item.User.UserName != this.User.Identity.Name)
-                    {
-                        @if (item.Role != "SuperAdmin")
-                        {
-                            @Html.DisplayFor(modelItem => item.User.IsSuspended)
-                        }
-                    }
+
+                    @Html.DisplayFor(modelItem => item.User.Email)
                 </td>
                 <td>
-                    @if (item.User.UserName != this.User.Identity.Name)
-                    {
-                        @if (item.Role != "SuperAdmin")
-                        {
-                            <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a> 
-                            <div class="vertical-separator">|</div>
+                    <div class="mobile-friendly-tag" style="display: none;">
+                        <strong>Role</strong>
+                    </div>
 
-                            if (ViewBag.CurrentUserRoles.Contains("SuperAdmin"))
-                            {
-                                if (!item.User.IsAdmin)
-                                {
-                                    <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
-                                }
-                                else
-                                {
-                                    <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
-                                } 
-                                <div class="vertical-separator">|</div>
-                            }
-                            if (!item.User.IsSuspended)
-                            {
-                                <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
-                            }
-                            else
-                            {
-                                <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
-                            }
-                        }
-                    }
+                    @Html.DisplayFor(modelItem => item.Role)
                 </td>
-            </tr>
-        }
+            }
+            else
+            {
+                <td>
+                    <div class="mobile-friendly-tag" style="display: none;">
+                        <strong>Email</strong>
+                    </div>
+
+                    <font color="red">@Html.DisplayFor(modelItem => item.User.Email)</font>
+                </td>
+                <td>
+                    <div class="mobile-friendly-tag" style="display: none;">
+                        <strong>Role</strong>
+                    </div>
+
+                    <font color="red">@Html.DisplayFor(modelItem => item.Role)</font>
+                </td>
+            }
+            <td>
+                <div class="mobile-friendly-tag" style="display: none;">
+                    <strong>Suspended</strong>
+                </div>
+                @if (item.User.UserName != User.Identity.Name)
+                {
+                    if (item.Role != "SuperAdmin")
+                     {
+                         @Html.DisplayFor(modelItem => item.User.IsSuspended)
+                     }
+                }
+            </td>
+            <td>
+                @if (item.User.UserName != User.Identity.Name)
+                {
+                    if (item.Role != "SuperAdmin")
+                     {
+                         <a asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+                         <div class="vertical-separator">|</div>
+
+                         if (ViewBag.CurrentUserRoles.Contains("SuperAdmin"))
+                         {
+                             if (!item.User.IsAdmin)
+                             {
+                                 <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="true">Make admin</a>
+                             }
+                             else
+                             {
+                                 <a asp-action="ManageAdminPrivileges" asp-route-id="@item.User.Id" asp-route-grantPrivileges="false">Remove admin</a>
+                             }
+                             <div class="vertical-separator">|</div>
+                         }
+                         if (!item.User.IsSuspended)
+                         {
+                             <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="true">Suspend</a>
+                         }
+                         else
+                         {
+                             <a asp-action="ManageAccountSuspension" asp-route-id="@item.User.Id" asp-route-suspendAccount="false">Restore</a>
+                         }
+                     }
+                }
+            </td>
+        </tr>
+    }
     </tbody>
 </table>
 

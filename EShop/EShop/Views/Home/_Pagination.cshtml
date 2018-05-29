@@ -21,7 +21,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
-                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
+                   asp-route-attributeName="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -44,14 +44,16 @@
             </li>
         }
         <!-- Page buttons -->
-        @for (int i = 0; i < ViewBag.PageCount; i++)
+        @for (var i = 0; i < ViewBag.PageCount; i++)
         {
             if (i == ViewBag.CurrentPageNumber)
             {
                 <text>
-                <li class="page-item active">
-                    <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
-                </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">
+                            @i <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
                 </text>
             }
             else if (ViewBag.IsSearch == true)
@@ -63,21 +65,23 @@
                        asp-route-pageCount="@ViewBag.PageCount"
                        asp-route-pageNumber="@i"
                        class="page-link" aria-label="Previous"
-                       onclick="$('#loading-modal').fadeIn()">@i</a>
+                       onclick="$('#loading-modal').fadeIn()">
+                        @i</a>
                 </li>
             }
             else
             {
                 <li class="page-item">
                     <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
-                       asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
+                       asp-route-attributeName="@ViewBag.SelectedAttributeValueName"
                        asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                        asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                        asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
                        asp-route-pageNumber="@i"
                        asp-route-pageCount="@ViewBag.PageCount"
                        class="page-link"
-                       onclick="$('#loading-modal').fadeIn()">@i</a>
+                       onclick="$('#loading-modal').fadeIn()">
+                        @i</a>
                 </li>
             }
         }
@@ -101,7 +105,7 @@
         {
             <li class="page-item">
                 <a asp-controller="Home" asp-action="LoadPage" asp-route-categoryId="@ViewBag.CurrentCategoryId"
-                   asp-route-attributeName ="@ViewBag.SelectedAttributeValueName"
+                   asp-route-attributeName="@ViewBag.SelectedAttributeValueName"
                    asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
                    asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
                    asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
@@ -117,12 +121,12 @@
         else
         {
             <text>
-            <li class="page-item disabled">
-                <a href="#" class="page-link" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Next</span>
-                </a>
-            </li>
+                <li class="page-item disabled">
+                    <a href="#" class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
             </text>
         }
     </ul>

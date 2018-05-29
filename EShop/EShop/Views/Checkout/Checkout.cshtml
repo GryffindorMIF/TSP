@@ -1,4 +1,4 @@
-﻿@model CheckoutViewModel
+﻿@model EShop.Models.ViewModels.CheckoutViewModel
 
 @{
     ViewData["Title"] = "Checkout";
@@ -43,7 +43,7 @@
         <tbody>
             @if (Model != null)
             {
-                @foreach (var item in Model.Products.Select((value, index) => new { Value = value, Index = index }))
+                foreach (var item in Model.Products.Select((value, index) => new { Value = value, Index = index }))
                 {
                     totalCost += item.Value.TotalPrice;
                     <tr>
@@ -67,7 +67,7 @@
 
     <hr>
 
-    @if (!String.IsNullOrEmpty(Model.StatusMessage))
+    if (!String.IsNullOrEmpty(Model.StatusMessage))
     {
         <div class="alert alert-danger alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -83,7 +83,7 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group" id="zip_confirmation">
                     <label asp-for="ZipConfirmation">Confirm Address:</label>
-                    @Html.DropDownList("ZipConfirmation", Model.savedAddresses, new { @class = "form-control" })
+                    @Html.DropDownList("ZipConfirmation", Model.SavedAddresses, new { @class = "form-control" })
                     <a asp-controller="Manage" asp-action="ManageDeliveryAddresses"><font color="blue">Add new address</font></a>
                 </div>
                 <div class="form-group FirstName">
@@ -105,18 +105,18 @@
                     <input type="hidden" value="false" name="checkbox">
                 </div>
                 <div class="form-group CVV">
-                    <label asp-for="CVV">Card CVV</label>
-                    <input asp-for="CVV" class="form-control" placeholder="000" maxlength="3" type="number" />
-                    <span asp-validation-for="CVV" class="text-danger"></span>
+                    <label asp-for="Cvv">Card CVV</label>
+                    <input asp-for="Cvv" class="form-control" placeholder="000" maxlength="3" type="number" />
+                    <span asp-validation-for="Cvv" class="text-danger"></span>
                     <a href="#" onclick="$('#cvv-modal').fadeIn()"><font color="blue">What is CVV?</font></a>
                 </div>
                 <div class="form-group" id="expiration-date">
                     <div class="row">
                         <div class="col-sm-6">
-                            @Html.DropDownList("Exp_Year", Enumerable.Range(DateTime.Now.Year, 10).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Year", new { @class = "form-control" })
+                            @Html.DropDownList("ExpYear", Enumerable.Range(DateTime.Now.Year, 10).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Year", new { @class = "form-control" })
                         </div>
                         <div class="col-sm-6">
-                            @Html.DropDownList("Exp_Month", Enumerable.Range(1, 12).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Month", new { @class = "form-control" })
+                            @Html.DropDownList("ExpMonth", Enumerable.Range(1, 12).Select(x => new SelectListItem { Text = x.ToString() }), "Expiry Month", new { @class = "form-control" })
                         </div>
                     </div>
                 </div>

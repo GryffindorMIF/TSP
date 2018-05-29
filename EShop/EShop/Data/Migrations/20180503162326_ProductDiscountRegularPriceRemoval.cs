@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,15 +7,15 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "RegularPrice",
-                table: "ProductDiscount");
+                "RegularPrice",
+                "ProductDiscount");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<decimal>(
-                name: "RegularPrice",
-                table: "ProductDiscount",
+                "RegularPrice",
+                "ProductDiscount",
                 nullable: false,
                 defaultValue: 0m);
         }

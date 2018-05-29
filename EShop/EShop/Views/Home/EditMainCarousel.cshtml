@@ -1,4 +1,5 @@
-﻿@model EShop.Models.ProductAdViewModel
+﻿@using EShop.Models.EFModels.Product
+@model EShop.Models.ViewModels.Product.ProductAdViewModel
 
 @{
     ViewData["Title"] = "EditMainCarousel";
@@ -12,14 +13,14 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label class="control-label">Select ad image</label>
-                <input type="file" asp-for="ProductAdImage" class="form-control" />
+                <input type="file" asp-for="ProductAdImage" class="form-control"/>
             </div>
             <div class="form-group">
                 <label class="control-label">Select related product</label>
                 <select asp-for="SelectedProductId" class="form-control" asp-items="@Model.ProductSelectList"></select>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Create" class="btn btn-default"/>
             </div>
         </form>
     </div>
@@ -29,7 +30,8 @@
             <hr>
             @if (ViewBag.ProductAds.Count > 0)
             {
-                <label class="control-label">Ads </label><br>
+                <label class="control-label">Ads </label>
+                <br>
             }
             <ul>
                 @foreach (ProductAd ad in ViewBag.ProductAds)
@@ -49,13 +51,13 @@
 
                     <select asp-for="IdsOfSelectedAdsToRemove"
                             class="form-control"
-                            asp-items="@Model.AdsToRemoveSelectList"></select>
+                            asp-items="@Model.AdsToRemoveSelectList">
+                    </select>
                 </div>
                 <div class="form-group">
-                    <input type="submit" value="Remove" class="btn btn-danger" />
+                    <input type="submit" value="Remove" class="btn btn-danger"/>
                 </div>
             </form>
         </div>
     </div>
 </div>
-

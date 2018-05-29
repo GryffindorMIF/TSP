@@ -1,4 +1,4 @@
-﻿@model ManageDeliveryAddressesViewModel
+﻿@model EShop.Models.ViewModels.ManageViewModels.ManageDeliveryAddressesViewModel
 @{
     ViewData["Title"] = "Manage Delivery Addresses";
     ViewData.AddActivePage(ManageNavPages.ManageDeliveryAddresses);
@@ -12,27 +12,27 @@
         <form method="post">
             <div class="form-group">
                 <label asp-for="Country"></label>
-                <input asp-for="Country" class="form-control" />
+                <input asp-for="Country" class="form-control"/>
                 <span asp-validation-for="Country" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="County"></label>
-                <input asp-for="County" class="form-control" />
+                <input asp-for="County" class="form-control"/>
                 <span asp-validation-for="County" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="City"></label>
-                <input asp-for="City" class="form-control" />
+                <input asp-for="City" class="form-control"/>
                 <span asp-validation-for="City" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Address"></label>
-                <input asp-for="Address" class="form-control" />
+                <input asp-for="Address" class="form-control"/>
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Zipcode"></label>
-                <input asp-for="Zipcode" class="form-control" />
+                <input asp-for="Zipcode" class="form-control"/>
                 <span asp-validation-for="Zipcode" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-default">Add New Address</button>
@@ -42,15 +42,13 @@
     <div class="col-md-6">
         <label asp-for="Zipcode"></label>
         <form asp-controller="Manage" asp-action="RemoveSavedAddress" method="post">
-            <select class="form-control" asp-for="RemovalZipcode" asp-items="Model.savedAddresses" required></select>
-            <br /><button type="submit" class="btn btn-danger">Remove Selected Address</button>
+            <select class="form-control" asp-for="RemovalZipcode" asp-items="Model.SavedAddresses" required></select>
+            <br/><button type="submit" class="btn btn-danger">Remove Selected Address</button>
         </form>
     </div>
 </div>
 
-@section Scripts 
+@section Scripts
 {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
-
-

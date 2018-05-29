@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,12 +7,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "FirstName",
-                table: "Users");
+                "FirstName",
+                "Users");
 
             migrationBuilder.AddColumn<bool>(
-                name: "IsSuspended",
-                table: "Users",
+                "IsSuspended",
+                "Users",
                 nullable: false,
                 defaultValue: false);
         }
@@ -22,12 +20,12 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsSuspended",
-                table: "Users");
+                "IsSuspended",
+                "Users");
 
             migrationBuilder.AddColumn<string>(
-                name: "FirstName",
-                table: "Users",
+                "FirstName",
+                "Users",
                 nullable: true);
         }
     }

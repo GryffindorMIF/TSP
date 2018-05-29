@@ -1,6 +1,5 @@
 ﻿using EShop.Business.Interfaces;
 using EShop.Data;
-using EShop.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.User;
 
 namespace EShop.Business.Services
 {
@@ -23,7 +24,7 @@ namespace EShop.Business.Services
 
         public async Task<int> AddOrderReviewAsync(Order order, OrderReview review)
         {
-            int returnCode = 1;
+            int returnCode;
             try
             {
                 _context.OrderReview.Add(review);
@@ -40,10 +41,9 @@ namespace EShop.Business.Services
             return returnCode;
         }
 
-        public async Task<Order> FindOrderByIdAsync(int Id)
+        public async Task<Order> FindOrderByIdAsync(int id)
         {
-            Order order = null;
-            order = await _context.Order.FindAsync(Id);
+            var order = await _context.Order.FindAsync(id);
             return order;
         }
 
@@ -69,17 +69,16 @@ namespace EShop.Business.Services
                                       RowVersion = o.RowVersion
                                   };
                 });
-            return (savedOrders.ToList().AsQueryable());
+            return (((savedOrders ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException()).ToList().AsQueryable());
         }
 
         public ICollection<Order> GetAllOrdersByPage(ApplicationUser user, int pageNumber, int ordersPerPage)
         {
             if (user != null)
             {
-                ICollection<Order> orders = null;
-                    orders = (from o in _context.Order
-                              where o.User.Id == user.Id
-                              select o).Skip(pageNumber * ordersPerPage).Take(ordersPerPage).ToList();
+                ICollection<Order> orders = (from o in _context.Order
+                    where o.User.Id == user.Id
+                    select o).Skip(pageNumber * ordersPerPage).Take(ordersPerPage).ToList();
                 return orders;
             }
             else throw new ArgumentException();
@@ -87,12 +86,9 @@ namespace EShop.Business.Services
 
         public int GetOrdersPageCount(ApplicationUser user, int ordersPerPage)
         {
-            int ordersTotalCount;
-            int pageCount = 0;
+            var ordersTotalCount = _context.Order.Where(o => o.User.Id == user.Id).Count();
 
-            ordersTotalCount =  _context.Order.Where(o => o.User.Id == user.Id).Count();
-
-            pageCount = ordersTotalCount / ordersPerPage;
+            var pageCount = ordersTotalCount / ordersPerPage;
 
             if (ordersTotalCount % ordersPerPage != 0)
             {
@@ -132,12 +128,9 @@ namespace EShop.Business.Services
 
         public int GetAdminOrdersPageCount(int ordersPerPage)
         {
-            int ordersTotalCount;
-            int pageCount = 0;
+            var ordersTotalCount = _context.Order.Count();
 
-            ordersTotalCount = _context.Order.Count();
-
-            pageCount = ordersTotalCount / ordersPerPage;
+            var pageCount = ordersTotalCount / ordersPerPage;
 
             if (ordersTotalCount % ordersPerPage != 0)
             {
@@ -146,14 +139,13 @@ namespace EShop.Business.Services
             return pageCount;
         }
 
-        public async Task<int> ChangeOrderConfirmationAsync(int Id, bool confirm, byte[] rowVersion)
+        public async Task<int> ChangeOrderConfirmationAsync(int id, bool confirm, byte[] rowVersion)
         {
-            int returnCode = 1;
+            int returnCode;
 
             try
             {
-                Order order = null;
-                order = await _context.Order.FindAsync(Id);
+                var order = await _context.Order.FindAsync(id);
 
                _context.Entry(order).Property("RowVersion").OriginalValue = rowVersion;
 
@@ -180,7 +172,7 @@ namespace EShop.Business.Services
 
         public async Task<int> CreateOrderAsync(Order order)
         {
-            int returnCode = 1;
+            int returnCode;
             try
             {
                 _context.Order.Add(order);
@@ -194,10 +186,9 @@ namespace EShop.Business.Services
             return returnCode;
         }
 
-        public async Task<OrderReview> FindOrderReviewAsync(int OrderId)
+        public async Task<OrderReview> FindOrderReviewAsync(int orderId)
         {
-            OrderReview orderReview = null;
-            orderReview = await _context.OrderReview.Where(or => or.OrderId == OrderId).FirstOrDefaultAsync();
+            var orderReview = await _context.OrderReview.Where(or => or.OrderId == orderId).FirstOrDefaultAsync();
             return orderReview;
         }
 

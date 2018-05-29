@@ -1,4 +1,4 @@
-﻿@model EShop.Models.ManageAttributesViewModel
+﻿@model EShop.Models.ViewModels.ManageAttributesViewModel
 @{
     ViewData["Title"] = "Index";
 }
@@ -12,11 +12,11 @@
             <form asp-action="CreateAttribute">
                 <li>
                     <label>Attribute name</label>
-                    <input required name="name" class="form-control" type="text" />
+                    <input required name="name" class="form-control" type="text"/>
                 </li>
                 <li>
                     <a>
-                        <button type="submit" class="btn btn-info btn-xs" style="margin-top:10px;">Create</button>
+                        <button type="submit" class="btn btn-info btn-xs" style="margin-top: 10px;">Create</button>
                     </a>
                 </li>
             </form>
@@ -28,15 +28,16 @@
                 <li>
                     <label>Select attribute</label>
                     <select required asp-for="SelectedAttributeId"
-                            asp-items="@Model.AttributeSelectList" class="form-control"></select>
+                            asp-items="@Model.AttributeSelectList" class="form-control">
+                    </select>
                 </li>
                 <li>
                     <label>Value</label>
-                    <input required name="name" class="form-control" type="text" />
+                    <input required name="name" class="form-control" type="text"/>
                 </li>
                 <li>
                     <a>
-                        <button class="btn btn-info btn-xs" style="margin-top:10px;">Create</button>
+                        <button class="btn btn-info btn-xs" style="margin-top: 10px;">Create</button>
                     </a>
                 </li>
             </form>
@@ -62,7 +63,7 @@
                 </li>
                 <li>
                     <a>
-                        <button type="submit" class="btn btn-success btn-xs" style="margin-top:10px;">Link</button>
+                        <button type="submit" class="btn btn-success btn-xs" style="margin-top: 10px;">Link</button>
                     </a>
                 </li>
             </form>
@@ -80,12 +81,13 @@
                 <li>
                     <select required asp-items="@Model.AttributeyMultiSelectList"
                             asp-for="IdsOfSelectedAttributesToRemove"
-                            class="form-control"></select>
+                            class="form-control">
+                    </select>
                 </li>
 
                 <li>
                     <a>
-                        <button type="submit" class="btn btn-danger btn-xs" style="margin-top:10px;">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-xs" style="margin-top: 10px;">Delete</button>
                     </a>
                 </li>
             </form>
@@ -103,11 +105,12 @@
                 <li>
                     <select required class="form-control"
                             asp-items="@Model.AttributeValuesMultiSelectList"
-                            asp-for="IdsOfSelectedAttributeValues"></select>
+                            asp-for="IdsOfSelectedAttributeValues">
+                    </select>
                 </li>
                 <li>
                     <a>
-                        <button type="submit" class="btn btn-danger btn-xs" style="margin-top:10px;">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-xs" style="margin-top: 10px;">Delete</button>
                     </a>
                 </li>
             </form>
@@ -127,7 +130,7 @@
                 </li>
                 <li>
                     <a>
-                        <button type="submit" class="btn btn-warning btn-xs" style="margin-top:10px;">Unlink</button>
+                        <button type="submit" class="btn btn-warning btn-xs" style="margin-top: 10px;">Unlink</button>
                     </a>
                 </li>
             </form>

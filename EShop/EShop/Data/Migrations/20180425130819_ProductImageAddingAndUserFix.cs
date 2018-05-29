@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,14 +7,14 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "Users",
+                "ShoppingCartId",
+                "Users",
                 nullable: true,
                 oldClrType: typeof(int));
 
             migrationBuilder.AddColumn<bool>(
-                name: "IsPrimary",
-                table: "ProductImage",
+                "IsPrimary",
+                "ProductImage",
                 nullable: false,
                 defaultValue: false);
         }
@@ -24,12 +22,12 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsPrimary",
-                table: "ProductImage");
+                "IsPrimary",
+                "ProductImage");
 
             migrationBuilder.AlterColumn<int>(
-                name: "ShoppingCartId",
-                table: "Users",
+                "ShoppingCartId",
+                "Users",
                 nullable: false,
                 oldClrType: typeof(int),
                 oldNullable: true);

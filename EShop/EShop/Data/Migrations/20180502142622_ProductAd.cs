@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,11 +8,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ProductAd",
-                columns: table => new
+                "ProductAd",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     AdImageUrl = table.Column<string>(nullable: true),
                     ProductId = table.Column<int>(nullable: false)
                 },
@@ -22,41 +21,41 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_ProductAd", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductAd_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "Id",
+                        "FK_ProductAd_Product_ProductId",
+                        x => x.ProductId,
+                        "Product",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryCategory_CategoryId",
-                table: "CategoryCategory",
-                column: "CategoryId");
+                "IX_CategoryCategory_CategoryId",
+                "CategoryCategory",
+                "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryCategory_ParentCategoryId",
-                table: "CategoryCategory",
-                column: "ParentCategoryId");
+                "IX_CategoryCategory_ParentCategoryId",
+                "CategoryCategory",
+                "ParentCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductAd_ProductId",
-                table: "ProductAd",
-                column: "ProductId");
+                "IX_ProductAd_ProductId",
+                "ProductAd",
+                "ProductId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_CategoryCategory_Category_CategoryId",
-                table: "CategoryCategory",
-                column: "CategoryId",
-                principalTable: "Category",
+                "FK_CategoryCategory_Category_CategoryId",
+                "CategoryCategory",
+                "CategoryId",
+                "Category",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_CategoryCategory_Category_ParentCategoryId",
-                table: "CategoryCategory",
-                column: "ParentCategoryId",
-                principalTable: "Category",
+                "FK_CategoryCategory_Category_ParentCategoryId",
+                "CategoryCategory",
+                "ParentCategoryId",
+                "Category",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -64,23 +63,23 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_CategoryCategory_Category_CategoryId",
-                table: "CategoryCategory");
+                "FK_CategoryCategory_Category_CategoryId",
+                "CategoryCategory");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_CategoryCategory_Category_ParentCategoryId",
-                table: "CategoryCategory");
+                "FK_CategoryCategory_Category_ParentCategoryId",
+                "CategoryCategory");
 
             migrationBuilder.DropTable(
-                name: "ProductAd");
+                "ProductAd");
 
             migrationBuilder.DropIndex(
-                name: "IX_CategoryCategory_CategoryId",
-                table: "CategoryCategory");
+                "IX_CategoryCategory_CategoryId",
+                "CategoryCategory");
 
             migrationBuilder.DropIndex(
-                name: "IX_CategoryCategory_ParentCategoryId",
-                table: "CategoryCategory");
+                "IX_CategoryCategory_ParentCategoryId",
+                "CategoryCategory");
         }
     }
 }

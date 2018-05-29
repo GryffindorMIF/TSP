@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+using EShop.Models.EFModels.Attribute;
 
-namespace EShop.Models
+namespace EShop.Models.EFModels.Product
 {
     public class ProductAttributeValue : IEquatable<ProductAttributeValue>
     {
@@ -20,9 +18,7 @@ namespace EShop.Models
         [ForeignKey("AttributeValueId")]
         public virtual AttributeValue AttributeValue { get; set; }
 
-        [Required]
-        [ForeignKey("ProductId")]
-        public virtual Product Product { get; set; }
+        [Required] [ForeignKey("ProductId")] public virtual Product Product { get; set; }
 
         public bool Equals(ProductAttributeValue other)
         {

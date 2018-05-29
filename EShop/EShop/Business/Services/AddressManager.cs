@@ -1,10 +1,10 @@
-﻿using EShop.Business.Interfaces;
-using EShop.Data;
-using EShop.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Data;
+using EShop.Models.EFModels.Order;
+using EShop.Models.EFModels.User;
 
 namespace EShop.Business.Services
 {
@@ -18,12 +18,12 @@ namespace EShop.Business.Services
             _context = context;
         }
 
-        public async Task<DeliveryAddress> FindAddressByZipcodeAsync(string Zipcode)
+        public async Task<DeliveryAddress> FindAddressByZipcodeAsync(string zipcode)
         {
             DeliveryAddress address = null;
             await Task.Run(() =>
             {
-                address = _context.DeliveryAddress.Where(da => da.Zipcode == Zipcode).FirstOrDefault();
+                address = _context.DeliveryAddress.FirstOrDefault(da => da.Zipcode == zipcode);
             });
             return address;
         }
@@ -35,16 +35,16 @@ namespace EShop.Business.Services
                 await Task.Run(() =>
                 {
                     savedAddresses = from da in _context.DeliveryAddress
-                                     where da.User.Id == user.Id
-                                     select new DeliveryAddress
-                                     {
-                                         Country = da.Country,
-                                         County = da.County,
-                                         City = da.City,
-                                         Address = da.Address,
-                                         Zipcode = da.Zipcode,
-                                         User = da.User
-                                     };
+                        where da.User.Id == user.Id
+                        select new DeliveryAddress
+                        {
+                            Country = da.Country,
+                            County = da.County,
+                            City = da.City,
+                            Address = da.Address,
+                            Zipcode = da.Zipcode,
+                            User = da.User
+                        };
                 });
             return savedAddresses;
         }
@@ -57,22 +57,18 @@ namespace EShop.Business.Services
 
         public async Task<int> RemoveDeliveryAddressAsync(ApplicationUser user, DeliveryAddress addressOnDeathrow)
         {
-            int returnCode = 1;
+            var returnCode = 1;
 
             await Task.Run(() =>
             {
                 try
                 {
-                    DeliveryAddress deliveryAddress = _context.DeliveryAddress
-                            .Where(da => da.Zipcode == addressOnDeathrow.Zipcode && da.User.Id == user.Id).FirstOrDefault();
+                    var deliveryAddress = _context.DeliveryAddress.FirstOrDefault(da => da.Zipcode == addressOnDeathrow.Zipcode && da.User.Id == user.Id);
 
-                    _context.Remove(deliveryAddress);
+                    _context.Remove(deliveryAddress ?? throw new InvalidOperationException());
 
                     var t2 = Task.Run(
-                        async () =>
-                        {
-                            await _context.SaveChangesAsync();
-                        });
+                        async () => { await _context.SaveChangesAsync(); });
                     t2.Wait();
                     returnCode = 0; //All is good
                 }

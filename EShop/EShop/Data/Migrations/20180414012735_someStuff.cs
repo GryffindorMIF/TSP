@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,26 +7,26 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users");
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users");
 
             migrationBuilder.DropIndex(
-                name: "IX_Users_ShoppingCartId",
-                table: "Users");
+                "IX_Users_ShoppingCartId",
+                "Users");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateIndex(
-                name: "IX_Users_ShoppingCartId",
-                table: "Users",
-                column: "ShoppingCartId");
+                "IX_Users_ShoppingCartId",
+                "Users",
+                "ShoppingCartId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Users_ShoppingCart_ShoppingCartId",
-                table: "Users",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_Users_ShoppingCart_ShoppingCartId",
+                "Users",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }

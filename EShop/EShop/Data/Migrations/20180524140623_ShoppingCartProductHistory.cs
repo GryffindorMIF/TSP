@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,11 +8,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ShoppingCartProductHistory",
-                columns: table => new
+                "ShoppingCartProductHistory",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     ProductDescription = table.Column<string>(nullable: true),
                     ProductName = table.Column<string>(nullable: true),
                     ProductPrice = table.Column<decimal>(nullable: false),
@@ -26,23 +25,23 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_ShoppingCartProductHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ShoppingCartProductHistory_ShoppingCart_ShoppingCartId",
-                        column: x => x.ShoppingCartId,
-                        principalTable: "ShoppingCart",
-                        principalColumn: "Id",
+                        "FK_ShoppingCartProductHistory_ShoppingCart_ShoppingCartId",
+                        x => x.ShoppingCartId,
+                        "ShoppingCart",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ShoppingCartProductHistory_ShoppingCartId",
-                table: "ShoppingCartProductHistory",
-                column: "ShoppingCartId");
+                "IX_ShoppingCartProductHistory_ShoppingCartId",
+                "ShoppingCartProductHistory",
+                "ShoppingCartId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ShoppingCartProductHistory");
+                "ShoppingCartProductHistory");
         }
     }
 }

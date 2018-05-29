@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,33 +7,33 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropPrimaryKey(
-                name: "PK_ProductDetails",
-                table: "ProductDetails");
+                "PK_ProductDetails",
+                "ProductDetails");
 
             migrationBuilder.RenameTable(
-                name: "ProductDetails",
+                "ProductDetails",
                 newName: "ProductProperty");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_ProductProperty",
-                table: "ProductProperty",
-                column: "Id");
+                "PK_ProductProperty",
+                "ProductProperty",
+                "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropPrimaryKey(
-                name: "PK_ProductProperty",
-                table: "ProductProperty");
+                "PK_ProductProperty",
+                "ProductProperty");
 
             migrationBuilder.RenameTable(
-                name: "ProductProperty",
+                "ProductProperty",
                 newName: "ProductDetails");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_ProductDetails",
-                table: "ProductDetails",
-                column: "Id");
+                "PK_ProductDetails",
+                "ProductDetails",
+                "Id");
         }
     }
 }

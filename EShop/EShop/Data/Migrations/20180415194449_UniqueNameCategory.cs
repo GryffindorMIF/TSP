@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,16 +7,16 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Category",
+                "Name",
+                "Category",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldNullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Category_Name",
-                table: "Category",
-                column: "Name",
+                "IX_Category_Name",
+                "Category",
+                "Name",
                 unique: true,
                 filter: "[Name] IS NOT NULL");
         }
@@ -26,12 +24,12 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_Category_Name",
-                table: "Category");
+                "IX_Category_Name",
+                "Category");
 
             migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Category",
+                "Name",
+                "Category",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldNullable: true);

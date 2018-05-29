@@ -18,13 +18,15 @@ namespace EShop
                 var context = services.GetRequiredService<ApplicationDbContext>();
                 context.Database.Migrate();
             }
-            
+
             host.Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            return WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();
+        }
     }
 }

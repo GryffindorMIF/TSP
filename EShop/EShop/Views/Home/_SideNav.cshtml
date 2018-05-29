@@ -1,7 +1,10 @@
-﻿</br>
+﻿@using EShop.Models.EFModels.Category
+</br>
 @if (ViewBag.CurrentCategoryName == null)
 {
-    <h5><a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">All</a></h5>
+    <h5>
+        <a asp-action="Index" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath" onclick="$('#loading-modal').fadeIn()">All</a>
+    </h5>
 }
 else
 {
@@ -30,15 +33,17 @@ else
             {
                 <text>Category</text>
 
+                <!--
                 <button class="btn btn-xs btn-primary" disabled>
                     <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
                 </button>
+                -->
 
-                if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {
                     <ul>
                         <li>
-                            <br />
+                            <br/>
                             <button type="button" class="btn btn-success btn-block btn-xs" onclick="$('#add-child-modal').fadeIn();">
                                 <span class="glyphicon glyphicon-plus"></span> Sub-category
                             </button>
@@ -50,17 +55,19 @@ else
             {
                 <text>@ViewBag.CurrentCategoryName</text>
 
-                <form style="display: inline-block" asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
-                    <button type="submit" class="btn btn-xs btn-primary" onclick="$('#loading-modal').fadeIn()">
-                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
-                    </button>
-                </form>
+                <!--
+        <form style="display: inline-block" asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
+            <button type="submit" class="btn btn-xs btn-primary" onclick="$('#loading-modal').fadeIn()">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
+            </button>
+        </form>
+                -->
 
-                if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
+                if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {
                     <ul>
                         <li>
-                            <br />
+                            <br/>
                             <button id="add-child-btn" type="button" class="btn btn-block btn-success btn-xs" onclick="$('#add-child-modal').fadeIn();">
                                 <span class="glyphicon glyphicon-plus"></span> Sub-category
                             </button>
@@ -105,95 +112,95 @@ else
 
 @if (ViewBag.CurrentCategoryName != null)
 {
-    @if(ViewBag.Attributes != null && ViewBag.Attributes.Count > 0)
-    { 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4>Refine by</h4>
-            </div>
-                <ul>
-                    <div class="panel-body">
-                        @foreach (var attribute in ViewBag.Attributes)
-                        {
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <text>
-                                        <li>
-                                            <h4>
-                                                @if (attribute != null)
-                                                {
-                                                    if (attribute.IconUrl != null)
-                                                    {
-                                                        <img src="~/images/attribute-icons/@attribute.IconUrl" width="20" height="20" /><text> </text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <img src="~/images/category-icon.png" width="20" height="20" /><text> </text>
-                                                    }
-                                                    @attribute.Name
-                                                    if (User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
-                                                    {
-                                                        <form id="attr-img-form" asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
-                                                            <input name="attributeId" value="@attribute.Id" hidden />
-                                                            <label for="file-upload">
-                                                                <label for="file-upload" class="custom-file-upload">
-                                                                    <i class="fa fa-cloud-upload"></i> Image upload
-                                                                </label>
-                                                                <div class="labeled-input">
-                                                                    <input id="file-upload" type="file" name="file" onchange="$('#attr-img-form').submit();" />
-                                                                </div>
-                                                            </label>
-                                                        </form>
-                                                    }
-                                                }
-                                            </h4>
+    if (ViewBag.Attributes != null && ViewBag.Attributes.Count > 0)
+     {
+         <div class="panel panel-default">
+             <div class="panel-heading">
+                 <h4>Refine by</h4>
+             </div>
+             <ul>
+                 <div class="panel-body">
+                     @foreach (var attribute in ViewBag.Attributes)
+                     {
+                         <div class="panel panel-default">
+                             <div class="panel-heading">
+                                 <text>
+                                     <li>
+                                         <h4>
+                                             @if (attribute != null)
+                                             {
+                                                 if (attribute.IconUrl != null)
+                                                 {
+                                                     <img src="~/images/attribute-icons/@attribute.IconUrl" width="20" height="20"/>
+                                                     <text> </text>
+                                                 }
+                                                 else
+                                                 {
+                                                     <img src="~/images/category-icon.png" width="20" height="20"/>
+                                                     <text> </text>
+                                                 }
+                                                 @attribute.Name
+                                                 if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                                                 {
+                                                     <form id="attr-img-form" asp-controller="Attribute" asp-action="AddIcon" method="post" enctype="multipart/form-data">
+                                                         <input name="attributeId" value="@attribute.Id" hidden/>
+                                                         <label for="file-upload">
+                                                             <label for="file-upload" class="custom-file-upload">
+                                                                 <i class="fa fa-cloud-upload"></i> Image upload
+                                                             </label>
+                                                             <div class="labeled-input">
+                                                                 <input id="file-upload" type="file" name="file" onchange="$('#attr-img-form').submit();"/>
+                                                             </div>
+                                                         </label>
+                                                     </form>
+                                                 }
+                                             }
+                                         </h4>
 
-                                        </li>
-                                    </text>
-                                </div>
-                                <div class="panel-body">
-                                    <ul>
-                                        @foreach (var attrVal in ViewBag.AttributeValues)
-                                        {
-                                            if (attrVal != null && attribute != null)
-                                            {
-                                                if (attrVal.AttributeId == attribute.Id)
-                                                {
+                                     </li>
+                                 </text>
+                             </div>
+                             <div class="panel-body">
+                                 <ul>
+                                     @foreach (var attrVal in ViewBag.AttributeValues)
+                                     {
+                                         if (attrVal != null && attribute != null)
+                                         {
+                                             if (attrVal.AttributeId == attribute.Id)
+                                             {
+                                                 <text>
+                                                     <li>
+                                                         <a asp-action="FilterByAttributes"
+                                                            asp-route-attributeName="@attrVal.Name"
+                                                            asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                                                            asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
+                                                            asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
+                                                            asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
+                                                            asp-route-pageNumber="@ViewBag.PageNumber"
+                                                            asp-route-pageCount="@ViewBag.PageCount">
 
-                                                <text>
-                                                    <li>
-                                                        <a asp-action="FilterByAttributes"
-                                                           asp-route-attributeName="@attrVal.Name"
-                                                           asp-route-categoryId="@ViewBag.CurrentCategoryId"
-                                                           asp-route-parentCategoryId="@ViewBag.ParentCategoryId"
-                                                           asp-route-topLevelCategories="@ViewBag.TopLevelCategories"
-                                                           asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath"
-                                                           asp-route-pageNumber="@ViewBag.PageNumber"
-                                                           asp-route-pageCount="@ViewBag.PageCount">
+                                                             <span class="glyphicon glyphicon-chevron-right"></span>
 
-                                                            <span class="glyphicon glyphicon-chevron-right"></span>
-
-                                                            @if (attrVal.Name == ViewBag.SelectedAttributeValueName)
-                                                            {
-                                                                <font color="blue">@attrVal.Name</font>
-                                                            }
-                                                            else
-                                                            {
-                                                                @attrVal.Name
-                                                            }
-                                                        </a>
-                                                    </li>
-                                                </text>
-                                                }
-                                            }
-                                        }
-                                    </ul>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </ul>
-        </div>
-    }
+                                                             @if (attrVal.Name == ViewBag.SelectedAttributeValueName)
+                                                             {
+                                                                 <font color="blue">@attrVal.Name</font>
+                                                             }
+                                                             else
+                                                             {
+                                                                 @attrVal.Name
+                                                             }
+                                                         </a>
+                                                     </li>
+                                                 </text>
+                                             }
+                                         }
+                                     }
+                                 </ul>
+                             </div>
+                         </div>
+                     }
+                 </div>
+             </ul>
+         </div>
+     }
 }
-

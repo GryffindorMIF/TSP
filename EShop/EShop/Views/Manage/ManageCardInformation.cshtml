@@ -1,4 +1,4 @@
-﻿@model ManageCardInfoViewModel
+﻿@model EShop.Models.ViewModels.ManageViewModels.ManageCardInfoViewModel
 @{
     ViewData["Title"] = "Manage Card Information";
     ViewData.AddActivePage(ManageNavPages.ManageCardInformation);
@@ -12,12 +12,12 @@
         @if (Model.CardNumber != null)
         {
             <form asp-controller="Manage" asp-action="RemoveSavedCardInformation" method="post">
-                <br /><button type="submit" class="btn btn-danger">Remove Data: @Model.CardNumber</button>
+                <br/><button type="submit" class="btn btn-danger">Remove Data: @Model.CardNumber</button>
             </form>
         }
         else
         {
-            <h5 style="color:red">
+            <h5 style="color: red">
                 No saved credit card information.
                 You may choose to save card information during purchase.
             </h5>
@@ -26,7 +26,6 @@
 </div>
 
 @section Scripts
-    {
+{
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
-

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using EShop.Models.EFModels.Attribute;
 
-namespace EShop.Models
+namespace EShop.Models.ViewModels.Home
 {
     public class AttributeListViewModel
     {

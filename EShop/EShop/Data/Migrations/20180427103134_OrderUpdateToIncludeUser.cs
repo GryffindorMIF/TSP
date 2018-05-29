@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,21 +7,21 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "UserId",
-                table: "Order",
+                "UserId",
+                "Order",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_UserId",
-                table: "Order",
-                column: "UserId");
+                "IX_Order_UserId",
+                "Order",
+                "UserId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Order_Users_UserId",
-                table: "Order",
-                column: "UserId",
-                principalTable: "Users",
+                "FK_Order_Users_UserId",
+                "Order",
+                "UserId",
+                "Users",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.NoAction);
         }
@@ -31,16 +29,16 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Order_Users_UserId",
-                table: "Order");
+                "FK_Order_Users_UserId",
+                "Order");
 
             migrationBuilder.DropIndex(
-                name: "IX_Order_UserId",
-                table: "Order");
+                "IX_Order_UserId",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "Order");
+                "UserId",
+                "Order");
         }
     }
 }

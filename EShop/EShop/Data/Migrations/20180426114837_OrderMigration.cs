@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,47 +9,48 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "TotalPrice",
-                table: "Order",
+                "TotalPrice",
+                "Order",
                 nullable: false,
                 oldClrType: typeof(decimal));
 
             migrationBuilder.AddColumn<int>(
-                name: "AddressId",
-                table: "Order",
+                "AddressId",
+                "Order",
                 nullable: false,
                 defaultValue: 0);
 
             migrationBuilder.AddColumn<string>(
-                name: "CardNumber",
-                table: "Order",
+                "CardNumber",
+                "Order",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<DateTime>(
-                name: "ConfirmationDate",
-                table: "Order",
+                "ConfirmationDate",
+                "Order",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.AddColumn<DateTime>(
-                name: "PurchaseDate",
-                table: "Order",
+                "PurchaseDate",
+                "Order",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.AddColumn<int>(
-                name: "ShoppingCartId",
-                table: "Order",
+                "ShoppingCartId",
+                "Order",
                 nullable: false,
                 defaultValue: 0);
 
             migrationBuilder.CreateTable(
-                name: "CardInfo",
-                columns: table => new
+                "CardInfo",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     CardNumber = table.Column<string>(nullable: false),
                     ExpMonth = table.Column<int>(nullable: false),
                     ExpYear = table.Column<int>(nullable: false),
@@ -60,19 +60,20 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_CardInfo", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CardInfo_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
+                        "FK_CardInfo_Users_UserId",
+                        x => x.UserId,
+                        "Users",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DeliveryAddress",
-                columns: table => new
+                "DeliveryAddress",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     Address = table.Column<string>(nullable: false),
                     City = table.Column<string>(nullable: false),
                     Country = table.Column<string>(nullable: false),
@@ -84,46 +85,46 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_DeliveryAddress", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DeliveryAddress_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
+                        "FK_DeliveryAddress_Users_UserId",
+                        x => x.UserId,
+                        "Users",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_AddressId",
-                table: "Order",
-                column: "AddressId");
+                "IX_Order_AddressId",
+                "Order",
+                "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_ShoppingCartId",
-                table: "Order",
-                column: "ShoppingCartId");
+                "IX_Order_ShoppingCartId",
+                "Order",
+                "ShoppingCartId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CardInfo_UserId",
-                table: "CardInfo",
-                column: "UserId");
+                "IX_CardInfo_UserId",
+                "CardInfo",
+                "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeliveryAddress_UserId",
-                table: "DeliveryAddress",
-                column: "UserId");
+                "IX_DeliveryAddress_UserId",
+                "DeliveryAddress",
+                "UserId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Order_DeliveryAddress_AddressId",
-                table: "Order",
-                column: "AddressId",
-                principalTable: "DeliveryAddress",
+                "FK_Order_DeliveryAddress_AddressId",
+                "Order",
+                "AddressId",
+                "DeliveryAddress",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Order_ShoppingCart_ShoppingCartId",
-                table: "Order",
-                column: "ShoppingCartId",
-                principalTable: "ShoppingCart",
+                "FK_Order_ShoppingCart_ShoppingCartId",
+                "Order",
+                "ShoppingCartId",
+                "ShoppingCart",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
         }
@@ -131,50 +132,50 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Order_DeliveryAddress_AddressId",
-                table: "Order");
+                "FK_Order_DeliveryAddress_AddressId",
+                "Order");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Order_ShoppingCart_ShoppingCartId",
-                table: "Order");
+                "FK_Order_ShoppingCart_ShoppingCartId",
+                "Order");
 
             migrationBuilder.DropTable(
-                name: "CardInfo");
+                "CardInfo");
 
             migrationBuilder.DropTable(
-                name: "DeliveryAddress");
+                "DeliveryAddress");
 
             migrationBuilder.DropIndex(
-                name: "IX_Order_AddressId",
-                table: "Order");
+                "IX_Order_AddressId",
+                "Order");
 
             migrationBuilder.DropIndex(
-                name: "IX_Order_ShoppingCartId",
-                table: "Order");
+                "IX_Order_ShoppingCartId",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "AddressId",
-                table: "Order");
+                "AddressId",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "CardNumber",
-                table: "Order");
+                "CardNumber",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "ConfirmationDate",
-                table: "Order");
+                "ConfirmationDate",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "PurchaseDate",
-                table: "Order");
+                "PurchaseDate",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "ShoppingCartId",
-                table: "Order");
+                "ShoppingCartId",
+                "Order");
 
             migrationBuilder.AlterColumn<decimal>(
-                name: "TotalPrice",
-                table: "Order",
+                "TotalPrice",
+                "Order",
                 nullable: false,
                 oldClrType: typeof(int));
         }

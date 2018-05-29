@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -9,20 +7,20 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Order_DeliveryAddress_AddressId",
-                table: "Order");
+                "FK_Order_DeliveryAddress_AddressId",
+                "Order");
 
             migrationBuilder.DropIndex(
-                name: "IX_Order_AddressId",
-                table: "Order");
+                "IX_Order_AddressId",
+                "Order");
 
             migrationBuilder.DropColumn(
-                name: "AddressId",
-                table: "Order");
+                "AddressId",
+                "Order");
 
             migrationBuilder.AddColumn<string>(
-                name: "Address",
-                table: "Order",
+                "Address",
+                "Order",
                 nullable: false,
                 defaultValue: "");
         }
@@ -30,25 +28,25 @@ namespace EShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Address",
-                table: "Order");
+                "Address",
+                "Order");
 
             migrationBuilder.AddColumn<int>(
-                name: "AddressId",
-                table: "Order",
+                "AddressId",
+                "Order",
                 nullable: false,
                 defaultValue: 0);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_AddressId",
-                table: "Order",
-                column: "AddressId");
+                "IX_Order_AddressId",
+                "Order",
+                "AddressId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Order_DeliveryAddress_AddressId",
-                table: "Order",
-                column: "AddressId",
-                principalTable: "DeliveryAddress",
+                "FK_Order_DeliveryAddress_AddressId",
+                "Order",
+                "AddressId",
+                "DeliveryAddress",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
         }

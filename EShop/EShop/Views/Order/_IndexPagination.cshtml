@@ -23,13 +23,15 @@
             </li>
         }
         <!-- Page buttons -->
-        @for (int i = 0; i < ViewBag.PageCount; i++)
+        @for (var i = 0; i < ViewBag.PageCount; i++)
         {
             if (i == ViewBag.CurrentPageNumber)
             {
                 <text>
                     <li class="page-item active">
-                        <a class="page-link" href="#">@i <span class="sr-only">(current)</span></a>
+                        <a class="page-link" href="#">
+                            @i <span class="sr-only">(current)</span>
+                        </a>
                     </li>
                 </text>
             }
@@ -69,5 +71,3 @@
         }
     </ul>
 </div>
-
-

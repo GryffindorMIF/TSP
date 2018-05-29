@@ -1,18 +1,18 @@
-﻿using EShop.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using EShop.Models.EFModels.Attribute;
+using EShop.Models.EFModels.Product;
 
-namespace EShop.Business
+namespace EShop.Business.Interfaces
 {
     public interface IProductService
     {
-        Task<Decimal?> GetDiscountPrice(Product product);
+        Task<decimal?> GetDiscountPrice(Product product);
 
         //Product Images
         //For many products (used in Home/Index)
-        Task<String[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true);
+        Task<string[]> GetProductsImagesLinks(ICollection<Product> products, bool isPrimary = true);
+
         //For one product (used in Home/ProductPage)
         Task<IList<ProductImage>> GetProductImages(int productId, bool isPrimary = true);
         Task<IList<ProductImage>> GetAllProductImages(int productId);
@@ -33,12 +33,12 @@ namespace EShop.Business
         Task<ProductProperty> FindProductPropertyByIdAsync(int id);
         Task<ICollection<ProductProperty>> GetAllPropertiesByProductIdAsync(int id);
         Task CreateProductProperty(ProductProperty productProperty);
-        Task DeleteProductProperty(int Id);
+        Task DeleteProductProperty(int id);
 
         //Product Ads
         Task CreateProductAd(ProductAd productAd);
         Task DeleteProductAd(ProductAd productAd);
-        Task<ProductAd> GetProductAdById(int Id);
+        Task<ProductAd> GetProductAdById(int id);
         Task<IList<ProductAd>> GetProductAds();
         Task<IList<ProductAd>> ListPossibleAdImages(int productId);
 
@@ -49,7 +49,7 @@ namespace EShop.Business
         Task DeleteDiscount(ProductDiscount discount);
 
         //Product Attributes
-        Task<Models.Attribute> GetAttributeById(int id);
+        Task<Attribute> GetAttributeById(int id);
         Task<IList<AttributeValue>> GetAttributeValues(int id);
         Task<IList<AttributeValue>> GetAttributeValuesInCategory(int categoryId);
 

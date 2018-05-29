@@ -1,72 +1,78 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace EShop.Util
 {
     public class RequestFileLogger : IDisposable
     {
-        private static RequestFileLogger logger = null;
-        private static readonly object _lock = new object();
+        private static RequestFileLogger _logger;
+        private static readonly object Lock = new object();
+        private readonly string _fileName;
+        private readonly string _folderPath;
 
-        public static RequestFileLogger GetRequestFileLogger(IConfiguration configuration)
-        {
-            lock (_lock)
-            {
-                if (logger == null)
-                    logger = new RequestFileLogger(configuration);
-            }
-            return logger;
-        }
-        
-        private StringBuilder sb;
-        private string folderPath;
-        private string fileName;
-        private string timeFormatting;
+        private readonly StringBuilder _sb;
+        private readonly string _timeFormatting;
 
         private RequestFileLogger(IConfiguration configuration)
         {
-            sb = new StringBuilder(512 * 1024);
+            _sb = new StringBuilder(512 * 1024);
 
-            folderPath = configuration["RequestLoggingConfig:FolderPath"];
-            if (string.IsNullOrWhiteSpace(folderPath))
-                folderPath = AppDomain.CurrentDomain.BaseDirectory + '\\';
+            _folderPath = configuration["RequestLoggingConfig:FolderPath"];
+            if (string.IsNullOrWhiteSpace(_folderPath))
+                _folderPath = AppDomain.CurrentDomain.BaseDirectory + '\\';
 
-            fileName = configuration["RequestLoggingConfig:FileName"];
-            if (string.IsNullOrWhiteSpace(fileName))
-                fileName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + " LOG " + DateTime.Now.ToString("yyyy-MM-dd HH;mm;ss") + ".txt";
+            _fileName = configuration["RequestLoggingConfig:FileName"];
+            if (string.IsNullOrWhiteSpace(_fileName))
+                _fileName = Assembly.GetExecutingAssembly().GetName().Name + " LOG " +
+                           DateTime.Now.ToString("yyyy-MM-dd HH;mm;ss") + ".txt";
 
-            timeFormatting = configuration["RequestLoggingConfig:TimeFormatting"];
-            if (string.IsNullOrWhiteSpace(timeFormatting))
-                timeFormatting = "MMMdd HH:mm:ss.fff";
+            _timeFormatting = configuration["RequestLoggingConfig:TimeFormatting"];
+            if (string.IsNullOrWhiteSpace(_timeFormatting))
+                _timeFormatting = "MMMdd HH:mm:ss.fff";
+        }
+
+        public void Dispose()
+        {
+            lock (Lock)
+            {
+                Flush();
+            }
+        }
+
+        public static RequestFileLogger GetRequestFileLogger(IConfiguration configuration)
+        {
+            lock (Lock)
+            {
+                if (_logger == null)
+                    _logger = new RequestFileLogger(configuration);
+            }
+
+            return _logger;
         }
 
         public void WriteLine(string userName, string method, string path)
         {
-            lock (_lock)
+            lock (Lock)
             {
-                sb.Append(DateTime.Now.ToString(timeFormatting)).Append('|').Append(userName).Append(',').Append(method).Append(',').AppendLine(path);
-                if (sb.Length * 2 > sb.Capacity)
+                _sb.Append(DateTime.Now.ToString(_timeFormatting)).Append('|').Append(userName).Append(',').Append(method)
+                    .Append(',').AppendLine(path);
+                if (_sb.Length * 2 > _sb.Capacity)
                     Flush();
             }
         }
 
         private void Flush()
         {
-            Directory.CreateDirectory(folderPath);
-            using (var writer = File.AppendText(folderPath + fileName))
-                writer.Write(sb.ToString());
-            sb.Length = 0;
-        }
+            Directory.CreateDirectory(_folderPath);
+            using (var writer = File.AppendText(_folderPath + _fileName))
+            {
+                writer.Write(_sb.ToString());
+            }
 
-        public void Dispose()
-        {
-            lock (_lock)
-                Flush();
+            _sb.Length = 0;
         }
     }
 }

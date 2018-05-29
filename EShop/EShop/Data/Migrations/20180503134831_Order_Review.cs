@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace EShop.Data.Migrations
 {
@@ -10,11 +8,12 @@ namespace EShop.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "OrderReview",
-                columns: table => new
+                "OrderReview",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     CustomerComment = table.Column<string>(nullable: true),
                     OrderId = table.Column<int>(nullable: false),
                     UserId = table.Column<string>(nullable: false)
@@ -23,34 +22,34 @@ namespace EShop.Data.Migrations
                 {
                     table.PrimaryKey("PK_OrderReview", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrderReview_Order_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Order",
-                        principalColumn: "Id",
+                        "FK_OrderReview_Order_OrderId",
+                        x => x.OrderId,
+                        "Order",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderReview_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
+                        "FK_OrderReview_Users_UserId",
+                        x => x.UserId,
+                        "Users",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderReview_OrderId",
-                table: "OrderReview",
-                column: "OrderId");
+                "IX_OrderReview_OrderId",
+                "OrderReview",
+                "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderReview_UserId",
-                table: "OrderReview",
-                column: "UserId");
+                "IX_OrderReview_UserId",
+                "OrderReview",
+                "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "OrderReview");
+                "OrderReview");
         }
     }
 }

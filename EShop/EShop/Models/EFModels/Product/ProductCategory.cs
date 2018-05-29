@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace EShop.Models
+namespace EShop.Models.EFModels.Product
 {
     public class ProductCategory : IEquatable<ProductCategory>
     {
@@ -14,12 +11,12 @@ namespace EShop.Models
         public int Id { get; set; }
 
         public int ProductId { get; set; }
-        [ForeignKey("ProductId")]
-        public virtual Product Product { get; set; }
+
+        [ForeignKey("ProductId")] public virtual Product Product { get; set; }
 
         public int CategoryId { get; set; }
-        [ForeignKey("CategoryId")]
-        public virtual Category Category { get; set; }
+
+        [ForeignKey("CategoryId")] public virtual Category.Category Category { get; set; }
 
         public bool Equals(ProductCategory other)
         {

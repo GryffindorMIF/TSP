@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Models.PostModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EShop.Models;
-using EShop.Business;
-using Microsoft.AspNetCore.Authorization;
 
-namespace EShop.Views
+namespace EShop.Controllers
 {
     [Authorize(Roles = "Admin, SuperAdmin")]
     public class CategoryController : Controller
@@ -17,35 +17,32 @@ namespace EShop.Views
         {
             _navigationService = navigationService;
         }
-
+        /*
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            ICollection<CategoryViewModel> recursiveMenu = await _navigationService.BuildRecursiveMenuAsync();
+            var recursiveMenu = await _navigationService.BuildRecursiveMenuAsync();
             return View(recursiveMenu);
 
             //return View(await _context.Category.ToListAsync());
         }
-
-        // AJAX
+        */
         [HttpPost]
         public async Task<IActionResult> RenameCategory([FromBody] CategoryNewNamePostModel postModel)
         {
             try
             {
-                Category category = await _navigationService.GetCategoryById(postModel.CategoryId);
+                await _navigationService.GetCategoryById(postModel.CategoryId);
 
                 if (postModel.RowVersion == null)
-                {
-                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.NewName, postModel.NewDescription);
-                }
+                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.NewName,
+                        postModel.NewDescription);
                 else
-                {
-                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.RowVersion, postModel.NewName, postModel.NewDescription);
-                }
+                    await _navigationService.RenameCategory(postModel.CategoryId, postModel.RowVersion,
+                        postModel.NewName, postModel.NewDescription);
 
 
-                return Json(0);// success
+                return Json(0); // success
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -53,7 +50,7 @@ namespace EShop.Views
             }
             catch
             {
-                return Json(1);// exception
+                return Json(1); // exception
             }
         }
 
@@ -63,13 +60,13 @@ namespace EShop.Views
         {
             try
             {
-                await _navigationService.DeleteCategory(postModel.CategoryId);
+                await _navigationService.DeleteCategory(postModel.CategoryId, postModel.Cascade, postModel.ReferenceOnly, postModel.ParentCategoryId);
 
-                return Json(0);// success
+                return Json(0); // success
             }
             catch
             {
-                return Json(1);// exception
+                return Json(1); // exception
             }
         }
 
@@ -79,13 +76,20 @@ namespace EShop.Views
         {
             try
             {
-                await _navigationService.AddCategory(postModel.ParentCategoryId, postModel.CategoryName, postModel.CategoryDescription);
-
+                if (postModel.ExistingCategoryId == null && postModel.CategoryName != null &&
+                    postModel.CategoryDescription != null)
+                {
+                    await _navigationService.AddCategory(postModel.ParentCategoryId, postModel.CategoryName, postModel.CategoryDescription);
+                }
+                else
+                {
+                    if(await _navigationService.AddSubCategory(postModel.ParentCategoryId, (int) postModel.ExistingCategoryId) == 1)
+                        throw new Exception();
+                }
                 return Json(0); //success
             }
             catch
             {
-    
                 return Json(1); //exception
             }
         }
@@ -94,7 +98,7 @@ namespace EShop.Views
         public async Task<IActionResult> AddTopLevelCategory(string name, string description)
         {
             await _navigationService.AddTopLevelCategory(name, description);
-            return RedirectToAction("Index", "Home");//success
+            return RedirectToAction("Index", "Home"); //success
         }
     }
 }

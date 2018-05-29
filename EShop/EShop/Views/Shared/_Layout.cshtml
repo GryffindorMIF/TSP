@@ -1,20 +1,20 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - EShop</title>
 
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css"/>
+        <link rel="stylesheet" href="~/css/site.css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
               asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"/>
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
     </environment>
 </head>
 <body>
@@ -35,23 +35,23 @@
                 <ul class="nav navbar-nav">
                     @if (!this.User.IsInRole("Admin") && !this.User.IsInRole("SuperAdmin"))
                     {
-                        <li>
-                            <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
-                                <img src="~/images/shopping-cart.png" width="24" height="24" /> Shopping cart
-                            </a>
-                        </li>
+                    <li>
+                        <a asp-area="" asp-controller="ShoppingCart" asp-action="Index">
+                            <img src="~/images/shopping-cart.png" width="20" height="20" /> Shopping cart
+                        </a>
+                    </li>
                     }
                     <!--Make order only appear to non-anonymous customers-->
                     @if (this.User.IsInRole("Customer"))
                     {
-                        <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
+                    <li><a asp-area="" asp-controller="Order" asp-action="Index">Order History</a></li>
                     }
                     @if (this.User.IsInRole("Admin") || this.User.IsInRole("SuperAdmin"))
                     {
-                        <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Orders</a></li>
-                        <li><a asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
-                        <li><a asp-area="" asp-controller="Attribute" asp-action="Index">Attributes</a></li>
-                        <li><a asp-area="" asp-controller="DataPorting" asp-action="Index">Product data</a></li>
+                    <li><a asp-area="" asp-controller="Order" asp-action="AdminView">Orders</a></li>
+                    <li><a asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
+                    <li><a asp-area="" asp-controller="Attribute" asp-action="Index">Attributes</a></li>
+                    <li><a asp-area="" asp-controller="DataPorting" asp-action="Index">Product data</a></li>
                     }
                 </ul>
                 <div class="col-sm-3 col-md-3 pull-right">
@@ -65,12 +65,12 @@
         <div class="sidenav">
             @if (IsSectionDefined("sidenav"))
             {
-                <div id="sidenav-toggle-btn">
-                    @Html.Partial("_SideNavToggleBtn")
-                </div>
-                <div id="side-nav-content">
-                    @RenderSection("sidenav", false)
-                </div>
+            <div id="sidenav-toggle-btn">
+                @Html.Partial("_SideNavToggleBtn")
+            </div>
+            <div id="side-nav-content">
+                @RenderSection("sidenav", false)
+            </div>
             }
         </div>
         <div class="main">
@@ -84,7 +84,7 @@
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js">
-            <</script>
+        </script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
@@ -102,15 +102,14 @@
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
-    @RenderSection("Scripts", required: false)
+    @RenderSection("Scripts", false)
     @Html.Partial("Modals/_ShoppingCartSessionModal")
 </body>
 </html>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-        if ($('#side-nav-content').is(':empty'))
-        {
-            $('#sidenav-toggle-btn').hide();
-        }
+    if ($('#side-nav-content').is(':empty')) {
+        $('#sidenav-toggle-btn').hide();
+    }
 </script>

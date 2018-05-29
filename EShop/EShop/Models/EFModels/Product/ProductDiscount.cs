@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace EShop.Models
+namespace EShop.Models.EFModels.Product
 {
-    public class ProductDiscount: IEquatable<ProductDiscount>
+    public class ProductDiscount : IEquatable<ProductDiscount>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -22,9 +19,8 @@ namespace EShop.Models
         [DisplayFormat(DataFormatString = "{yyyy-MM-dd HH:mm:ss}", ApplyFormatInEditMode = true)]
         public DateTime Ends { get; set; }
 
-        [Required]
-        [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        [Required] [ForeignKey("Product")] public int ProductId { get; set; }
+
         public virtual Product Product { get; set; }
 
         public bool Equals(ProductDiscount other)
@@ -33,4 +29,3 @@ namespace EShop.Models
         }
     }
 }
-

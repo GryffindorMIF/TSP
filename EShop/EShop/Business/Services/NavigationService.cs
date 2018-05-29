@@ -1,13 +1,15 @@
-﻿using EShop.Data;
-using EShop.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EShop.Business.Interfaces;
+using EShop.Data;
+using EShop.Models.EFModels.Category;
+using EShop.Models.EFModels.Product;
+using EShop.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
-namespace EShop.Business
+namespace EShop.Business.Services
 {
     public class NavigationService : INavigationService
     {
@@ -18,55 +20,75 @@ namespace EShop.Business
             _context = context;
         }
 
+        public async Task<int> AddSubCategory(int? parentCatId, int childCatId)
+        {
+            try
+            {
+                var cc = new CategoryCategory
+                {
+                    Category = await _context.Category.FindAsync(childCatId),
+                    ParentCategory = parentCatId == null ? null : await _context.Category.FindAsync(parentCatId)
+                };
+                if (parentCatId != null && await _context.CategoryCategory.CountAsync(catc => catc.CategoryId == cc.Category.Id && catc.ParentCategoryId == cc.ParentCategory.Id) != 0) throw new Exception();
+                if (parentCatId == null && await _context.CategoryCategory.CountAsync(catc => catc.CategoryId == cc.Category.Id && catc.ParentCategoryId == null) != 0) throw new Exception();
+
+                _context.Add(cc);
+                await _context.SaveChangesAsync();
+                return 0;
+            }
+            catch (Exception)
+            {
+                return 1;
+            }
+        }
         public async Task<ICollection<Product>> GetProductsInCategoryAsync(Category category)
         {
             ICollection<Product> productsInCategory = null;
             await Task.Run(() =>
             {
                 productsInCategory = (from p in _context.Product
-                                      join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                      where pc.CategoryId == category.Id
-                                      select p).ToList();
+                    join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                    where pc.CategoryId == category.Id
+                    select p).ToList();
             });
             return productsInCategory;
         }
 
-        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage)
+        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber,
+            int productsPerPage)
         {
             ICollection<Product> productsInCategory = null;
 
             await Task.Run(() =>
             {
                 if (category != null)
-                {
                     productsInCategory = (from p in _context.Product
-                                          join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                          where pc.CategoryId == category.Id
-                                          select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
-                }
+                        join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                        where pc.CategoryId == category.Id
+                        select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
                 else
-                {
-                    productsInCategory = _context.Product.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
-                }
+                    productsInCategory = _context.Product.Skip(pageNumber * productsPerPage).Take(productsPerPage)
+                        .ToList();
             });
 
             return productsInCategory;
         }
 
-        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber, int productsPerPage, string attributeName)
+        public async Task<ICollection<Product>> GetProductsInCategoryByPageAsync(Category category, int pageNumber,
+            int productsPerPage, string attributeName)
         {
             ICollection<Product> productsInCategory = null;
 
             await Task.Run(() =>
             {
                 productsInCategory = (from p in _context.Product
-                                      from a in _context.AttributeValue
-                                      join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                      join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
-                                      where pc.CategoryId == category.Id
-                                      where pa.AttributeValueId == a.Id
-                                      where a.Name == attributeName
-                                      select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                    from a in _context.AttributeValue
+                    join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                    join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
+                    where pc.CategoryId == category.Id
+                    where pa.AttributeValueId == a.Id
+                    where a.Name == attributeName
+                    select p).Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
             });
 
             return productsInCategory;
@@ -75,63 +97,48 @@ namespace EShop.Business
         public async Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage)
         {
             int productsTotalCount;
-            int pageCount = 0;
+            var pageCount = 0;
 
             await Task.Run(() =>
             {
                 if (category != null)
-                {
                     productsTotalCount = (from p in _context.Product
-                                          join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                          where pc.CategoryId == category.Id
-                                          select p).Count();
-                }
+                        join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                        where pc.CategoryId == category.Id
+                        select p).Count();
                 else
-                {
                     productsTotalCount = _context.Product.Count();
-                }
 
                 pageCount = productsTotalCount / productsPerPage;
 
-                if (productsTotalCount % productsPerPage != 0)
-                {
-                    pageCount++;
-                }
-
+                if (productsTotalCount % productsPerPage != 0) pageCount++;
             });
             return pageCount;
         }
 
-        public async Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage, string attributeName)
+        public async Task<int> GetProductsInCategoryPageCount(Category category, int productsPerPage,
+            string attributeName)
         {
             int productsTotalCount;
-            int pageCount = 0;
+            var pageCount = 0;
 
             await Task.Run(() =>
             {
                 if (category != null)
-                {
                     productsTotalCount = (from p in _context.Product
-                                          from a in _context.AttributeValue
-                                          join pc in _context.ProductCategory on p.Id equals pc.ProductId
-                                          join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
-                                          where pc.CategoryId == category.Id
-                                          where pa.AttributeValueId == a.Id
-                                          where a.Name == attributeName
-                                          select p).Count();
-                }
+                        from a in _context.AttributeValue
+                        join pc in _context.ProductCategory on p.Id equals pc.ProductId
+                        join pa in _context.ProductAttributeValue on p.Id equals pa.ProductId
+                        where pc.CategoryId == category.Id
+                        where pa.AttributeValueId == a.Id
+                        where a.Name == attributeName
+                        select p).Count();
                 else
-                {
                     productsTotalCount = _context.Product.Count();
-                }
 
                 pageCount = productsTotalCount / productsPerPage;
 
-                if (productsTotalCount % productsPerPage != 0)
-                {
-                    pageCount++;
-                }
-
+                if (productsTotalCount % productsPerPage != 0) pageCount++;
             });
             return pageCount;
         }
@@ -142,10 +149,10 @@ namespace EShop.Business
             await Task.Run(() =>
             {
                 topLevelCategories = (from cc in _context.CategoryCategory
-                                      from c in _context.Category
-                                      where cc.ParentCategoryId == null
-                                      where c.Id == cc.CategoryId
-                                      select c).ToList();
+                    from c in _context.Category
+                    where cc.ParentCategoryId == null
+                    where c.Id == cc.CategoryId
+                    select c).ToList();
             });
             return topLevelCategories;
         }
@@ -158,83 +165,81 @@ namespace EShop.Business
         public async Task<IList<ProductCategory>> GetProductCategories(int productId)
         {
             return await (from pc in _context.ProductCategory
-                          where pc.ProductId == productId
-                          select pc).ToListAsync();
+                where pc.ProductId == productId
+                select pc).ToListAsync();
         }
 
         public async Task<List<Category>> GetChildCategoriesAsync(Category parentCategory)
         {
             if (parentCategory == null)
             {
-                Debug.WriteLine("Nullexception occurred");
-                StackTrace stackTrace = new StackTrace();
-
-                // Get calling method name
-                Debug.WriteLine(stackTrace);
+                return await GetTopLevelCategoriesAsync();
             }
+
             List<Category> childCategories = null;
             await Task.Run(() =>
             {
                 childCategories = (from cc in _context.CategoryCategory
-                                   from c in _context.Category
-                                   where cc.ParentCategoryId == parentCategory.Id
-                                   where c.Id == cc.CategoryId
-                                   select c).ToList();
+                    from c in _context.Category
+                    where cc.ParentCategoryId == parentCategory.Id
+                    where c.Id == cc.CategoryId
+                    select c).ToList();
             });
             return childCategories;
         }
 
         public async Task<ICollection<CategoryViewModel>> BuildRecursiveMenuAsync()
         {
-            List<Category> topLevelCategories = await GetTopLevelCategoriesAsync();
+            var topLevelCategories = await GetTopLevelCategoriesAsync();
             ICollection<CategoryViewModel> categoryViewModels = new List<CategoryViewModel>();
 
             foreach (var topLevelCategory in topLevelCategories)
             {
-                CategoryViewModel categoryViewModel = new CategoryViewModel()
+                var categoryViewModel = new CategoryViewModel
                 {
                     Category = topLevelCategory,
                     SubCategories = await BuildRecursiveSubMenuAsync(topLevelCategory)
                 };
                 categoryViewModels.Add(categoryViewModel);
             }
+
             return categoryViewModels;
         }
 
         public async Task<ICollection<CategoryViewModel>> BuildRecursiveSubMenuAsync(Category parentCategory)
         {
-            List<Category> childCategories = await GetChildCategoriesAsync(parentCategory);
+            var childCategories = await GetChildCategoriesAsync(parentCategory);
             ICollection<CategoryViewModel> categoryViewModels = new List<CategoryViewModel>();
 
             if (childCategories.Count > 0)
-            {
                 foreach (var childCategory in childCategories)
                 {
-                    CategoryViewModel categoryViewModel = new CategoryViewModel()
+                    var categoryViewModel = new CategoryViewModel
                     {
                         Category = childCategory,
-                        SubCategories = await BuildRecursiveSubMenuAsync(childCategory)// recursion
+                        SubCategories = await BuildRecursiveSubMenuAsync(childCategory) // recursion
                     };
                     categoryViewModels.Add(categoryViewModel);
                 }
-            }
+
             return categoryViewModels;
         }
 
         public async Task<ICollection<Category>> GetParentCategoriesAsync(Category childCategory)
         {
             ICollection<int?> parentCategoriesIds = await (from cc in _context.CategoryCategory
-                                                           where cc.CategoryId == childCategory.Id
-                                                           select cc.ParentCategoryId).ToListAsync();
+                where cc.CategoryId == childCategory.Id
+                select cc.ParentCategoryId).ToListAsync();
 
             ICollection<Category> parentCategories = new List<Category>();
 
-            foreach (int? parentCategoryId in parentCategoriesIds)
+            foreach (var parentCategoryId in parentCategoriesIds)
             {
                 Category parentCategory = null;
                 if (parentCategoryId != null) parentCategory = await _context.Category.FindAsync(parentCategoryId);
                 if (parentCategory != null) parentCategories.Add(parentCategory);
             }
+
             return parentCategories;
         }
 
@@ -242,45 +247,60 @@ namespace EShop.Business
         {
             await Task.Run(() =>
             {
-                string[] pathSegments = uri.Split("/");
+                var pathSegments = uri.Split("/");
                 uri = "";
-                for (int i = 0; i < pathSegments.Length - 1; i++)
-                {
-                    if (i == 0) uri += pathSegments[i];
-                    else uri += ("/" + pathSegments[i]);
-                }
+                for (var i = 0; i < pathSegments.Length - 1; i++)
+                    if (i == 0)
+                        uri += pathSegments[i];
+                    else
+                        uri += "/" + pathSegments[i];
             });
             return uri;
         }
 
-        public async Task<Category> GetCategoryById(int? Id)
+        public async Task<Category> GetCategoryById(int? id)
         {
-            Category category = await _context.Category.FindAsync(Id);
-            return category;
+            if (id != null)
+            {
+                var category = await _context.Category.FindAsync(id);
+                return category;
+            }
+            else return null;
         }
 
         public async Task<Category> GetCategoryByName(string name)
         {
-            Category category = await (from c in _context.Category
-                                       where c.Name == name
-                                       select c).FirstAsync();// category name is unique
-            return category;
+            try
+            {
+                var category = await (from c in _context.Category
+                    where c.Name == name
+                    select c).FirstAsync(); // category name is unique
+                return category;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public async Task AddCategory(int? parentId, string name, string description)
         {
-            int? parentCategoryId = parentId;
-            string newCategoryName = name;
-            string newCategoryDesc = description;
-            Category newCategory = new Category();
-            newCategory.Name = newCategoryName;
-            newCategory.Description = newCategoryDesc;
+            var parentCategoryId = parentId;
+            var newCategoryName = name;
+            var newCategoryDesc = description;
+            var newCategory = new Category
+            {
+                Name = newCategoryName,
+                Description = newCategoryDesc
+            };
             _context.Add(newCategory);
             await _context.SaveChangesAsync();
 
-            CategoryCategory newCategoryToCategory = new CategoryCategory();
-            newCategoryToCategory.CategoryId = newCategory.Id;
-            newCategoryToCategory.ParentCategoryId = parentCategoryId;
+            var newCategoryToCategory = new CategoryCategory
+            {
+                CategoryId = newCategory.Id,
+                ParentCategoryId = parentCategoryId
+            };
             _context.Add(newCategoryToCategory);
 
             await _context.SaveChangesAsync();
@@ -288,19 +308,22 @@ namespace EShop.Business
 
         public async Task AddTopLevelCategory(string name, string description)
         {
-            Category newCategory = new Category();
-            newCategory.Name = name;
-            newCategory.Description = description;
+            var newCategory = new Category
+            {
+                Name = name,
+                Description = description
+            };
             _context.Add(newCategory);
             await _context.SaveChangesAsync();
 
-            CategoryCategory newCategoryToCategory = new CategoryCategory();
-            newCategoryToCategory.CategoryId = newCategory.Id;
-            newCategoryToCategory.ParentCategoryId = null;
+            var newCategoryToCategory = new CategoryCategory
+            {
+                CategoryId = newCategory.Id,
+                ParentCategoryId = null
+            };
             _context.Add(newCategoryToCategory);
 
             await _context.SaveChangesAsync();
-
         }
 
         public async Task<ProductCategory> GetProductCategoryById(int id)
@@ -325,13 +348,21 @@ namespace EShop.Business
             await _context.SaveChangesAsync();
         }
 
-        public async Task RenameCategory(int Id, string rowVersion, string newName, string newDescription)
+        public async Task RenameCategory(int id, string rowVersion, string newName, string newDescription)
         {
-            Category category = await GetCategoryById(Id);
+            var category = await GetCategoryById(id);
 
             _context.Entry(category).Property("RowVersion").OriginalValue = Convert.FromBase64String(rowVersion);
 
-            var test = Convert.FromBase64String(rowVersion);
+            category.Name = newName;
+            category.Description = newDescription;
+            _context.Update(category);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RenameCategory(int id, string newName, string newDescription)
+        {
+            var category = await GetCategoryById(id);
 
             category.Name = newName;
             category.Description = newDescription;
@@ -339,60 +370,65 @@ namespace EShop.Business
             await _context.SaveChangesAsync();
         }
 
-        public async Task RenameCategory(int Id, string newName, string newDescription)
+        public async Task DeleteCategory(int categoryId, bool cascade, bool refOnly, int? parentCategoryId)
         {
-            Category category = await GetCategoryById(Id);
-
-            category.Name = newName;
-            category.Description = newDescription;
-            _context.Update(category);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteCategory(int Id)
-        {
-            Category category = await GetCategoryById(Id);
-
-            await DeleteSubcategories(category);// recursive method
-
-            _context.Remove(category);
-
-            ICollection<CategoryCategory> categoryCategories = await _context.CategoryCategory.Where(cc => cc.CategoryId == category.Id).ToListAsync();
-            foreach (var cc in categoryCategories)
+            try
             {
-                _context.Remove(cc);
-            }
+                var category = await GetCategoryById(categoryId);
 
-            await _context.SaveChangesAsync();
+                if (cascade)
+                {
+                    await DeleteSubcategories(category, true); // recursive method
+
+                    ICollection<CategoryCategory> categoryCategories =
+                        await _context.CategoryCategory.Where(cc => cc.CategoryId == category.Id).ToListAsync();
+                    foreach (var cc in categoryCategories) _context.Remove(cc);
+
+                    _context.Remove(category);
+                }
+                else if (refOnly)
+                {
+                    var cc = await _context.CategoryCategory.FirstOrDefaultAsync(catC =>
+                        catC.ParentCategory.Id == parentCategoryId && catC.Category.Id == categoryId);
+                    _context.Remove(cc);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                //Ignored
+            }
         }
 
-        private async Task<int> DeleteSubcategories(Category category)
+        private async Task<int> DeleteSubcategories(Category category, bool cascade)
         {
-            if (category != null) try
+            if (category != null)
+                try
                 {
                     ICollection<Category> subCategories = await GetChildCategoriesAsync(category);
                     foreach (var subCategory in subCategories)
-                    {
-                        if (await DeleteSubcategories(subCategory) == 0)// recursion
+                        if (await DeleteSubcategories(subCategory, cascade) == 0) // recursion
                         {
-                            ICollection<CategoryCategory> categoryCategories = await _context.CategoryCategory.Where(cc => cc.CategoryId == subCategory.Id).ToListAsync();
-                            foreach (var cc in categoryCategories)
-                            {
-                                _context.Remove(cc);
-                            }
-                            _context.Remove(subCategory);
+                            ICollection<CategoryCategory> categoryCategories = await _context.CategoryCategory
+                                .Where(cc => cc.CategoryId == subCategory.Id).ToListAsync();
+                            foreach (var cc in categoryCategories) _context.Remove(cc);
+                            if(cascade) _context.Remove(subCategory);
                             await _context.SaveChangesAsync();
                         }
-                        else return 1; //error
-                    }
+                        else
+                        {
+                            return 1; //error
+                        }
+
                     return 0; //has no more sub-categories: OK
                 }
                 catch (Exception)
                 {
                     return 1; //error
                 }
-            else
-                return 1;
+
+            return 1;
         }
     }
 }

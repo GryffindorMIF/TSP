@@ -20,7 +20,385 @@ namespace EShop.Data.Migrations
                 .HasAnnotation("ProductVersion", "2.0.2-rtm-10011")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("EShop.Models.ApplicationUser", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Attribute.Attribute", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("IconUrl");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.ToTable("Attribute");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Attribute.AttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeId");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.ToTable("AttributeValue");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Category.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("Name");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.ToTable("Category");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Category.CategoryCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("CategoryId");
+
+                    b.Property<int?>("ParentCategoryId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.ToTable("CategoryCategory");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Order.CardInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired();
+
+                    b.Property<string>("ExpMonth")
+                        .IsRequired();
+
+                    b.Property<string>("ExpYear")
+                        .IsRequired();
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CardInfo");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Order.DeliveryAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Address")
+                        .IsRequired();
+
+                    b.Property<string>("City")
+                        .IsRequired();
+
+                    b.Property<string>("Country")
+                        .IsRequired();
+
+                    b.Property<string>("County")
+                        .IsRequired();
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.Property<string>("Zipcode")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DeliveryAddress");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Order.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Address")
+                        .IsRequired();
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired();
+
+                    b.Property<DateTime>("ConfirmationDate");
+
+                    b.Property<DateTime>("PurchaseDate");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<int?>("ShoppingCartId")
+                        .IsRequired();
+
+                    b.Property<int>("StatusCode");
+
+                    b.Property<decimal>("TotalPrice");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Order");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Order.OrderReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("CustomerComment");
+
+                    b.Property<int?>("OrderId")
+                        .IsRequired();
+
+                    b.Property<int>("Rating");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrderReview");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description")
+                        .IsRequired();
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.Property<decimal>("Price");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Product");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductAd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("AdImageUrl");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAd");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductAttributeValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AttributeValueId");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("ProductId", "AttributeValueId")
+                        .HasName("AlternateKey_ProductId_AttributeValueId");
+
+                    b.HasIndex("AttributeValueId");
+
+                    b.ToTable("ProductAttributeValue");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("CategoryId");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductCategory");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductDiscount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("DiscountPrice");
+
+                    b.Property<DateTime>("Ends");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("ProductId")
+                        .HasName("AlternateKey_ProductId");
+
+                    b.ToTable("ProductDiscount");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ImageUrl");
+
+                    b.Property<bool>("IsPrimary");
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImage");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductProperty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20);
+
+                    b.Property<int>("ProductId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductProperty");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.ShoppingCart.ShoppingCart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShoppingCart");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.ShoppingCart.ShoppingCartProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ProductId");
+
+                    b.Property<int>("Quantity");
+
+                    b.Property<int>("ShoppingCartId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ShoppingCartId");
+
+                    b.ToTable("ShoppingCartProduct");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.ShoppingCart.ShoppingCartProductHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ProductDescription");
+
+                    b.Property<string>("ProductName");
+
+                    b.Property<decimal>("ProductPrice");
+
+                    b.Property<string>("ProductPrimaryImageUrl");
+
+                    b.Property<int>("ProductQuantity");
+
+                    b.Property<int>("ShoppingCartId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShoppingCartId");
+
+                    b.ToTable("ShoppingCartProductHistory");
+                });
+
+            modelBuilder.Entity("EShop.Models.EFModels.User.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -75,385 +453,6 @@ namespace EShop.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("EShop.Models.Attribute", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("IconUrl");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
-
-                    b.ToTable("Attribute");
-                });
-
-            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AttributeId");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttributeId");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
-
-                    b.ToTable("AttributeValue");
-                });
-
-            modelBuilder.Entity("EShop.Models.CardInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired();
-
-                    b.Property<string>("ExpMonth")
-                        .IsRequired();
-
-                    b.Property<string>("ExpYear")
-                        .IsRequired();
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CardInfo");
-                });
-
-            modelBuilder.Entity("EShop.Models.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
-
-                    b.ToTable("Category");
-                });
-
-            modelBuilder.Entity("EShop.Models.CategoryCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("CategoryId");
-
-                    b.Property<int?>("ParentCategoryId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("ParentCategoryId");
-
-                    b.ToTable("CategoryCategory");
-                });
-
-            modelBuilder.Entity("EShop.Models.DeliveryAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address")
-                        .IsRequired();
-
-                    b.Property<string>("City")
-                        .IsRequired();
-
-                    b.Property<string>("Country")
-                        .IsRequired();
-
-                    b.Property<string>("County")
-                        .IsRequired();
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.Property<string>("Zipcode")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DeliveryAddress");
-                });
-
-            modelBuilder.Entity("EShop.Models.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address")
-                        .IsRequired();
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired();
-
-                    b.Property<DateTime>("ConfirmationDate");
-
-                    b.Property<DateTime>("PurchaseDate");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
-
-                    b.Property<int?>("ShoppingCartId")
-                        .IsRequired();
-
-                    b.Property<int>("StatusCode");
-
-                    b.Property<decimal>("TotalPrice");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Order");
-                });
-
-            modelBuilder.Entity("EShop.Models.OrderReview", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("CustomerComment");
-
-                    b.Property<int?>("OrderId")
-                        .IsRequired();
-
-                    b.Property<int>("Rating");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OrderReview");
-                });
-
-            modelBuilder.Entity("EShop.Models.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(100);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100);
-
-                    b.Property<decimal>("Price");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Product");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductAd", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("AdImageUrl");
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductAd");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AttributeValueId");
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("ProductId", "AttributeValueId")
-                        .HasName("AlternateKey_ProductId_AttributeValueId");
-
-                    b.HasIndex("AttributeValueId");
-
-                    b.ToTable("ProductAttributeValue");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("CategoryId");
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductCategory");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<decimal>("DiscountPrice");
-
-                    b.Property<DateTime>("Ends");
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("ProductId")
-                        .HasName("AlternateKey_ProductId");
-
-                    b.ToTable("ProductDiscount");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ImageUrl");
-
-                    b.Property<bool>("IsPrimary");
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductImage");
-                });
-
-            modelBuilder.Entity("EShop.Models.ProductProperty", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(200);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(20);
-
-                    b.Property<int>("ProductId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductProperty");
-                });
-
-            modelBuilder.Entity("EShop.Models.ShoppingCart", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ShoppingCart");
-                });
-
-            modelBuilder.Entity("EShop.Models.ShoppingCartProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("ProductId");
-
-                    b.Property<int>("Quantity");
-
-                    b.Property<int>("ShoppingCartId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("ShoppingCartId");
-
-                    b.ToTable("ShoppingCartProduct");
-                });
-
-            modelBuilder.Entity("EShop.Models.ShoppingCartProductHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ProductDescription");
-
-                    b.Property<string>("ProductName");
-
-                    b.Property<decimal>("ProductPrice");
-
-                    b.Property<string>("ProductPrimaryImageUrl");
-
-                    b.Property<int>("ProductQuantity");
-
-                    b.Property<int>("ShoppingCartId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShoppingCartId");
-
-                    b.ToTable("ShoppingCartProductHistory");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -564,116 +563,116 @@ namespace EShop.Data.Migrations
                     b.ToTable("UserTokens");
                 });
 
-            modelBuilder.Entity("EShop.Models.AttributeValue", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Attribute.AttributeValue", b =>
                 {
-                    b.HasOne("EShop.Models.Attribute", "Attribute")
+                    b.HasOne("EShop.Models.EFModels.Attribute.Attribute", "Attribute")
                         .WithMany()
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.CategoryCategory", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Category.CategoryCategory", b =>
                 {
-                    b.HasOne("EShop.Models.Category", "Category")
+                    b.HasOne("EShop.Models.EFModels.Category.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("EShop.Models.Category", "ParentCategory")
+                    b.HasOne("EShop.Models.EFModels.Category.Category", "ParentCategory")
                         .WithMany()
                         .HasForeignKey("ParentCategoryId");
                 });
 
-            modelBuilder.Entity("EShop.Models.DeliveryAddress", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Order.DeliveryAddress", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.Order", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Order.Order", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.OrderReview", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Order.OrderReview", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser", "User")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductAd", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductAd", b =>
                 {
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductAttributeValue", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductAttributeValue", b =>
                 {
-                    b.HasOne("EShop.Models.AttributeValue", "AttributeValue")
+                    b.HasOne("EShop.Models.EFModels.Attribute.AttributeValue", "AttributeValue")
                         .WithMany()
                         .HasForeignKey("AttributeValueId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductCategory", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductCategory", b =>
                 {
-                    b.HasOne("EShop.Models.Category", "Category")
+                    b.HasOne("EShop.Models.EFModels.Category.Category", "Category")
                         .WithMany("ProductCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithMany("ProductCategories")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductDiscount", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductDiscount", b =>
                 {
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithOne("ProductDiscount")
-                        .HasForeignKey("EShop.Models.ProductDiscount", "ProductId")
+                        .HasForeignKey("EShop.Models.EFModels.Product.ProductDiscount", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ProductImage", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.Product.ProductImage", b =>
                 {
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ShoppingCartProduct", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.ShoppingCart.ShoppingCartProduct", b =>
                 {
-                    b.HasOne("EShop.Models.Product", "Product")
+                    b.HasOne("EShop.Models.EFModels.Product.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
+                    b.HasOne("EShop.Models.EFModels.ShoppingCart.ShoppingCart", "ShoppingCart")
                         .WithMany()
                         .HasForeignKey("ShoppingCartId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("EShop.Models.ShoppingCartProductHistory", b =>
+            modelBuilder.Entity("EShop.Models.EFModels.ShoppingCart.ShoppingCartProductHistory", b =>
                 {
-                    b.HasOne("EShop.Models.ShoppingCart", "ShoppingCart")
+                    b.HasOne("EShop.Models.EFModels.ShoppingCart.ShoppingCart", "ShoppingCart")
                         .WithMany()
                         .HasForeignKey("ShoppingCartId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -689,7 +688,7 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -697,7 +696,7 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -710,7 +709,7 @@ namespace EShop.Data.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("EShop.Models.ApplicationUser")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -718,7 +717,7 @@ namespace EShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("EShop.Models.ApplicationUser")
+                    b.HasOne("EShop.Models.EFModels.User.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

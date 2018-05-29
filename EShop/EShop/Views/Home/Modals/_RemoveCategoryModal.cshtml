@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <p align="center">
-                    <img src="~/images/remove.png" width="30" height="30" /> &nbsp;
+                    <img src="~/images/remove.png" width="30" height="30"/> &nbsp;
                     Remove "@ViewBag.CurrentCategoryName" category
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#remove-modal').hide();">
                         <span aria-hidden="true">&times;</span>
@@ -15,8 +15,16 @@
                     <strong>Ooops!</strong><text id="remove-error-message"></text>
                 </div>
                 <div class="alert alert-danger" role="alert">
-                    <strong>Warning!</strong> This will also delete all sub-categories!
+                    <strong>Warning!</strong> If you check "Full delete", this will permanently delete selected category and its sub-categories!
                 </div>
+                <p align="center">
+                    <label for="checkBox">Full delete</label>
+                    <input id="checkBox" type="checkbox" checked>
+                </p>
+                <p align="center">
+                    <label for="refCheckBox">Reference only delete</label>
+                    <input id="refCheckBox" type="checkbox">
+                </p>
                 <p align="center">
                     Are you sure you want to perform this action?
                 </p>
@@ -31,29 +39,51 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
-    $('#remove-category-modal-btn').click(function () {
-
-        var CategoryPostModel = {
-            CategoryId: "@ViewBag.CurrentCategoryId"
+    $('#checkBox').change(function() {
+        if ($("#checkBox").is(':checked')) {
+            $("#refCheckBox").prop("checked", false);
+            $("#checkBox").prop("checked", true);
+        } else {
+            $("#checkBox").prop("checked", false);
+            $("#refCheckBox").prop("checked", true);
         }
+    });
+
+    $('#refCheckBox').change(function() {
+        if ($("#refCheckBox").is(':checked')) {
+            $("#checkBox").prop("checked", false);
+            $("#refCheckBox").prop("checked", true);
+        } else {
+            $("#refCheckBox").prop("checked", false);
+            $("#checkBox").prop("checked", true);
+        }
+    });
+
+    $('#remove-category-modal-btn').click(function () {
+        var categoryPostModel = {
+            CategoryId: "@ViewBag.CurrentCategoryId",
+            Cascade: $("#checkBox").is(':checked'),
+            ReferenceOnly: $("#refCheckBox").is(':checked'),
+            ParentCategoryId: "@ViewBag.ParentCategoryId"
+        };
 
         $.ajax({
             type: 'POST',
             url: '@Url.Action("DeleteCategory", "Category")',
-            data: JSON.stringify(CategoryPostModel),
+            data: JSON.stringify(categoryPostModel),
             dataType: 'json',
             contentType: "application/json",
-            success: function (response) {
-                if (response == 0) {
+            success: function(response) {
+                if (response === 0) {
                     $('#remove-modal').hide();
-                    window.location = '@Url.Action("Index", "Home")'// TODO: return to parent category instead of home/index
-                }
-                else if (response == 1) {
+                    window.location =
+                        '@Url.Action("Index", "Home")'; // TODO: return to parent category instead of home/index
+                } else if (response === 1) {
                     $('#remove-error-modal').attr('hidden', false);
                     $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
                 }
             },
-            failure: function (response) {
+            failure: function() {
                 $('#remove-error-modal').attr('hidden', false);
                 $('#remove-error-message').text(" Some unexpected error occured. Please try again!");
             }

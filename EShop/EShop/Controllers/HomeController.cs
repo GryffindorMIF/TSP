@@ -2,84 +2,90 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using EShop.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using EShop.Business;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Hosting;
+using EShop.Business.Interfaces;
+using EShop.Models.EFModels.Attribute;
+using EShop.Models.EFModels.Category;
+using EShop.Models.EFModels.Product;
+using EShop.Models.ViewModels;
+using EShop.Models.ViewModels.Home;
+using EShop.Models.ViewModels.Product;
 using EShop.Util;
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
+using Attribute = EShop.Models.EFModels.Attribute.Attribute;
 
 namespace EShop.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly INavigationService _navigationService;
+        private const int StartingPageNumber = 0;
         private readonly IHostingEnvironment _appEnvironment;
-        private readonly IProductService _productService;
         private readonly IAttributeService _attributeService;
+        private readonly INavigationService _navigationService;
+        private readonly IProductService _productService;
+        private readonly int _productsPerPage;
+        private readonly int _uploadMaxByteSize;
 
-        private readonly int uploadMaxByteSize;
-        private readonly int productsPerPage;
-
-        private const int startingPageNumber = 0;
-
-        public HomeController(UserManager<ApplicationUser> userManager, INavigationService navigationService, IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService, IAttributeService attributeService)
+        public HomeController(INavigationService navigationService,
+            IConfiguration configuration, IHostingEnvironment appEnvironment, IProductService productService,
+            IAttributeService attributeService)
         {
-            _userManager = userManager;
             _navigationService = navigationService;
             _appEnvironment = appEnvironment;
             _productService = productService;
             _attributeService = attributeService;
 
-            if (!int.TryParse(configuration["PaginationConfig:ProductsPerPage"], out productsPerPage))
-            {
-                throw new InvalidOperationException("Invalid PaginationConfig:ProductsPerPage in appsettings.json. Not an int value.");
-            }
-            if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out uploadMaxByteSize))
-            {
-                throw new InvalidOperationException("Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
-            }
+            if (!int.TryParse(configuration["PaginationConfig:ProductsPerPage"], out _productsPerPage))
+                throw new InvalidOperationException(
+                    "Invalid PaginationConfig:ProductsPerPage in appsettings.json. Not an int value.");
+            if (!int.TryParse(configuration["FileManagerConfig:UploadMaxByteSize"], out _uploadMaxByteSize))
+                throw new InvalidOperationException(
+                    "Invalid FileManagerConfig:UploadMaxByteSize in appsettings.json. Not an int value.");
         }
 
         // GET, POST
         [AllowAnonymous]
-        public async Task<IActionResult> Index(bool isSearch = false, string searchText = "", int? categoryId = null, bool backToParentCategory = false, string absoluteNavigationPath = null, string navigateToCategoryNamed = null)
+        public async Task<IActionResult> Index(bool isSearch = false, string searchText = "", int? categoryId = null,
+            bool backToParentCategory = false, string absoluteNavigationPath = null,
+            string navigateToCategoryNamed = null)
         {
-            ViewBag.CurrentPageNumber = startingPageNumber;
+            ViewBag.CurrentPageNumber = StartingPageNumber;
             ViewBag.PreviousPageNumber = null;
             ViewBag.NextPageNumber = 1;
             ViewBag.SearchText = searchText; //Used for search pagination :(
             ViewBag.IsSearch = isSearch; //Used for search pagination :(
 
             Category currentCategory = null;
-            ICollection<Product> productsToView = null;// products to return in current page
             ICollection<Product> filteredProducts = null; //Used for search
 
             if (isSearch)
                 filteredProducts = await _productService.SearchForProducts(searchText);
-            ICollection<Category> selectableCategories = null;// navigation menu
+            ICollection<Category> selectableCategories; // navigation menu
 
+            ICollection<Product> productsToView; // products to return in current page
             if (categoryId == null)
             {
-                if (navigateToCategoryNamed == null)// (GET)
+                if (navigateToCategoryNamed == null) // (GET)
                 {
                     // build menu
                     selectableCategories = await _navigationService.GetTopLevelCategoriesAsync();
 
                     //ViewBag.ParentCategoryId = null;
                     //ViewBag.AbsoluteNavigationPath = null;
-                    ViewBag.CurrentCategoryId = categoryId;
+                    ViewBag.CurrentCategoryId = null;
 
                     if (!isSearch)
-                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
-                    else productsToView = filteredProducts.Skip(startingPageNumber * productsPerPage).Take(productsPerPage).ToList();
+                        productsToView =
+                            await _navigationService.GetProductsInCategoryByPageAsync(null, StartingPageNumber,
+                                _productsPerPage);
+                    else
+                        productsToView = filteredProducts.Skip(StartingPageNumber * _productsPerPage)
+                            .Take(_productsPerPage).ToList();
                 }
-                else// (POST) specific path segment selected ([segment]/.../...)
+                else // (POST) specific path segment selected ([segment]/.../...)
                 {
                     // get that category by name
                     currentCategory = await _navigationService.GetCategoryByName(navigateToCategoryNamed);
@@ -88,125 +94,159 @@ namespace EShop.Controllers
                     selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
 
                     // products to return
-                    productsToView = await _navigationService.GetProductsInCategoryByPageAsync(currentCategory, startingPageNumber, productsPerPage);
+                    productsToView =
+                        await _navigationService.GetProductsInCategoryByPageAsync(currentCategory, StartingPageNumber,
+                            _productsPerPage);
 
                     // get parent category by absoluteNavigationPath
-                    string[] pathSegments = absoluteNavigationPath.Split("/");
-                    pathSegments = pathSegments.Skip(1).ToArray();// remove empty segment ([empty segment]/[some segment]/...)
-
-                    int parentCategoryIndexInPath = Array.IndexOf(pathSegments, navigateToCategoryNamed);
-                    string newAbsoluteNavigationPath = null;
-                    string parentCategoryName = null;
-
-                    await Task.Run(() =>
+                    if (absoluteNavigationPath != null)
                     {
-                        for (int i = 0; i < pathSegments.Count(); i++)
+                        var pathSegments = absoluteNavigationPath.Split("/");
+                        pathSegments =
+                            pathSegments.Skip(1).ToArray(); // remove empty segment ([empty segment]/[some segment]/...)
+
+                        var parentCategoryIndexInPath = Array.IndexOf(pathSegments, navigateToCategoryNamed);
+                        string newAbsoluteNavigationPath = null;
+                        string parentCategoryName = null;
+
+                        await Task.Run(() =>
                         {
-                            if (i == parentCategoryIndexInPath) parentCategoryName = pathSegments[i];
-                            if (i <= parentCategoryIndexInPath) newAbsoluteNavigationPath += ("/" + pathSegments[i]);
-                        }
-                    });
+                            for (var i = 0; i < pathSegments.Count(); i++)
+                            {
+                                if (i == parentCategoryIndexInPath) parentCategoryName = pathSegments[i];
+                                if (i <= parentCategoryIndexInPath) newAbsoluteNavigationPath += "/" + pathSegments[i];
+                            }
+                        });
 
-                    Category parentCategory = await _navigationService.GetCategoryByName(parentCategoryName);
+                        var parentCategory = await _navigationService.GetCategoryByName(parentCategoryName);
 
-                    ViewBag.ParentCategoryId = parentCategory.Id;
-                    ViewBag.AbsoluteNavigationPath = newAbsoluteNavigationPath;
-                    ViewBag.CurrentCategoryName = parentCategory.Name;
+                        ViewBag.ParentCategoryId = parentCategory.Id;
+                        ViewBag.AbsoluteNavigationPath = newAbsoluteNavigationPath;
+                        ViewBag.CurrentCategoryName = parentCategory.Name;
+                    }
+
                     ViewBag.CurrentCategoryId = currentCategory.Id;
                 }
             }
-            else// (POST) backward and forward navigation
+            else // forward navigation
             {
                 currentCategory = await _navigationService.GetCategoryById(categoryId);
-
-                if (backToParentCategory)// Backward navigation
+                /*
+                if (backToParentCategory) // Backward navigation
                 {
                     absoluteNavigationPath = await _navigationService.RemoveLastUriSegmentAsync(absoluteNavigationPath);
                     ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
 
-                    selectableCategories = null;// navigation menu
                     Category parentCategory = null;
 
                     // categories may have multiple parent-categories
-                    ICollection<Category> parentCategories = await _navigationService.GetParentCategoriesAsync(currentCategory);
+                    var parentCategories = await _navigationService.GetParentCategoriesAsync(currentCategory);
 
-                    if (!parentCategories.Any())// already a top-level category
+                    if (!parentCategories.Any()) // already a top-level category
                     {
                         selectableCategories = await _navigationService.GetTopLevelCategoriesAsync();
 
                         ViewBag.ParentCategoryId = null;
-                        ViewBag.CurrentCategoryId = currentCategory.Id;
+                        //ViewBag.CurrentCategoryId = currentCategory.Id;
+                        ViewBag.CurrentCategoryId = null;
                         ViewBag.AbsoluteNavigationPath = null;
                         ViewBag.CurrentCategoryName = null;
 
-                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
+                        productsToView =
+                            await _navigationService.GetProductsInCategoryByPageAsync(null, StartingPageNumber,
+                                _productsPerPage);
 
                         // for later page count calculation
                         currentCategory = null;
                     }
-                    else// not a top-level category
+                    else // not a top-level category
                     {
-                        foreach (Category pCategory in parentCategories)
-                        {
+                        foreach (var pCategory in parentCategories)
                             // search for parent-category based on absoluteNavigationPath last segment
                             if (pCategory.Name.Equals(absoluteNavigationPath.Split('/').Last()))
                             {
                                 parentCategory = pCategory;
                                 break;
                             }
-                        }
+
                         // build menu
                         selectableCategories = await _navigationService.GetChildCategoriesAsync(parentCategory);
 
-                        ViewBag.CurrentCategoryName = parentCategory.Name;
-                        ViewBag.ParentCategoryId = parentCategory.Id;
-                        ViewBag.CurrentCategoryId = parentCategory.Id;
+                        if (parentCategory != null)
+                        {
+                            ViewBag.CurrentCategoryName = parentCategory.Name;
+                            ViewBag.ParentCategoryId = parentCategory.Id;
+                            ViewBag.CurrentCategoryId = parentCategory.Id;
 
-                        // products to return
-                        productsToView = await _navigationService.GetProductsInCategoryByPageAsync(parentCategory, startingPageNumber, productsPerPage);
+                            productsToView =
+                                await _navigationService.GetProductsInCategoryByPageAsync(parentCategory,
+                                    StartingPageNumber, _productsPerPage);
 
-                        // for later page count calculation
-                        currentCategory = parentCategory;
+                            // for later page count calculation
+                            currentCategory = parentCategory;
+                        }
+                        else
+                        {
+                            // products to return
+                            productsToView =
+                                await _navigationService.GetProductsInCategoryByPageAsync(null,
+                                    StartingPageNumber, _productsPerPage);
+
+                            currentCategory = null;
+                        }
                     }
                 }
                 else // Forward navigation
                 {
+                */
+                    var parentCategoryName = "";
+
+                    if (absoluteNavigationPath != null)
+                    {
+                        parentCategoryName = absoluteNavigationPath.Split('/').Last().Trim();
+                        if (parentCategoryName.Equals("")) parentCategoryName = null;
+                    }
+                    else parentCategoryName = null;
+
+                    var parentCategory = await _navigationService.GetCategoryByName(parentCategoryName);
+
                     // Add new segment to absoluteNavigationPath
-                    absoluteNavigationPath += ("/" + currentCategory.Name);
+                    absoluteNavigationPath += "/" + currentCategory.Name;
                     ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
 
                     // build menu
-                    selectableCategories = selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
+                    selectableCategories = await _navigationService.GetChildCategoriesAsync(currentCategory);
 
                     ViewBag.CurrentCategoryName = currentCategory.Name;
-                    ViewBag.ParentCategoryId = categoryId;
+                    ViewBag.ParentCategoryId = parentCategory?.Id;
                     ViewBag.CurrentCategoryId = currentCategory.Id;
 
                     // products to return
-                    if (categoryId == null) productsToView = await _navigationService.GetProductsInCategoryByPageAsync(null, startingPageNumber, productsPerPage);
-                    else productsToView = await _navigationService.GetProductsInCategoryByPageAsync(currentCategory, startingPageNumber, productsPerPage);
-                }
+                    productsToView =
+                        await _navigationService.GetProductsInCategoryByPageAsync(currentCategory,
+                            StartingPageNumber, _productsPerPage);
+                //}
             }
 
-            int pageCount = 0;
+            int pageCount;
             if (!isSearch)
-                pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, productsPerPage);
+            {
+                pageCount = await _navigationService.GetProductsInCategoryPageCount(currentCategory, _productsPerPage);
+            }
             else //If search
             {
-                pageCount = filteredProducts.Count / productsPerPage;
-                if (filteredProducts.Count % productsPerPage != 0)
-                {
-                    pageCount++;
-                }
+                pageCount = filteredProducts.Count / _productsPerPage;
+                if (filteredProducts.Count % _productsPerPage != 0) pageCount++;
             }
+
             ViewBag.PageCount = pageCount;
 
-            if (startingPageNumber + 1 < pageCount) ViewBag.NextPageNumber = startingPageNumber + 1;
+            if (StartingPageNumber + 1 < pageCount) ViewBag.NextPageNumber = StartingPageNumber + 1;
             else ViewBag.NextPageNumber = null;
 
             ViewBag.TopLevelCategories = selectableCategories;
 
-            String[] allPrimaryImageLinks = await _productService.GetProductsImagesLinks(productsToView);
+            var allPrimaryImageLinks = await _productService.GetProductsImagesLinks(productsToView);
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
@@ -214,21 +254,30 @@ namespace EShop.Controllers
             ViewBag.ProductAds = productAds;
 
             //------- discountai ------------//
-            DiscountListViewModel dlvm = await GetDiscountList(productsToView);
+            var dlvm = await GetDiscountList(productsToView);
             ViewBag.HasDiscountList = dlvm.HasDiscountList;
             ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
             ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
 
             //------- atributai ------------//
-            AttributeListViewModel alvm = await GetAttributeListInCategory(currentCategory);
+            var alvm = await GetAttributeListInCategory(currentCategory);
             ViewBag.AttributeValues = alvm.AttributeValues;
             ViewBag.Attributes = alvm.Attributes;
 
+            //category management
+            CategoryListViewModel clvm = new CategoryListViewModel()
+            {
+                Categories = new SelectList(await _navigationService.GetAllCategories(), "Id", "Name")
+            };
+            ViewBag.AllCategories = clvm;
             return View(productsToView);
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch, string searchText, /* redundant --> */int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        public async Task<IActionResult> LoadPage(string attributeName, bool isSearch,
+            string searchText, /* redundant --> */int pageCount, int? categoryId = null, int? parentCategoryId = null,
+            ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null,
+            int pageNumber = StartingPageNumber)
         {
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
@@ -244,9 +293,10 @@ namespace EShop.Controllers
             else ViewBag.PreviousPageNumber = null;
 
             Category category = null;
-            if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            //if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            category = await _navigationService.GetCategoryById(categoryId);
 
-            ICollection<Product> products = new List<Product>();
+            ICollection<Product> products;
             if (!isSearch)
             {
                 if (category == null)
@@ -261,7 +311,8 @@ namespace EShop.Controllers
                     ViewBag.CurrentCategoryName = category.Name;
                 }
 
-                products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage);
+                products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber,
+                    _productsPerPage);
             }
             else //If it's search state
             {
@@ -272,11 +323,13 @@ namespace EShop.Controllers
 
                 products = await _productService.GetAllProducts();
                 products = products.Where(p => p.Name.Contains(searchText)).ToList();
-                products = products.Skip(pageNumber * productsPerPage).Take(productsPerPage).ToList();
+                products = products.Skip(pageNumber * _productsPerPage).Take(_productsPerPage).ToList();
             }
+
             var listProducts = products.ToList();
 
-            String[] allPrimaryImageLinks = await _productService.GetProductsImagesLinks(products); //Retrieve all image links
+            var allPrimaryImageLinks =
+                await _productService.GetProductsImagesLinks(products); //Retrieve all image links
 
             ViewBag.AllPrimaryImageLinks = allPrimaryImageLinks;
             // -----------------------------------------
@@ -284,17 +337,23 @@ namespace EShop.Controllers
             ViewBag.ProductAds = productAds;
 
             //------- discountai ------------//
-            DiscountListViewModel dlvm = await GetDiscountList(listProducts);
+            var dlvm = await GetDiscountList(listProducts);
             ViewBag.HasDiscountList = dlvm.HasDiscountList;
             ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
             ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
 
             //------- atributai ------------//
-            AttributeListViewModel alvm = await GetAttributeListInCategory(category);
+            var alvm = await GetAttributeListInCategory(category);
             ViewBag.AttributeValues = alvm.AttributeValues;
             ViewBag.Attributes = alvm.Attributes;
             ViewBag.SelectedAttributeValueName = attributeName;
 
+            //category management
+            CategoryListViewModel clvm = new CategoryListViewModel()
+            {
+                Categories = new SelectList(await _navigationService.GetAllCategories(), "Id", "Name")
+            };
+            ViewBag.AllCategories = clvm;
             return View("Index", products);
         }
 
@@ -303,43 +362,38 @@ namespace EShop.Controllers
         public async Task<IActionResult> ProductPage(int id)
         {
             //Product temp = await _context.Product.FirstOrDefaultAsync(p => p.Id == id);
-            Product temp = await _productService.FindProductByIdAsync(id);
+            var temp = await _productService.FindProductByIdAsync(id);
             //List<Product> products = new List<Product>();
             //products.Add(temp);
             ViewBag.Product = temp;
 
-            IList<ProductImage> primaryImage = await _productService.GetProductImages(temp.Id);
+            var primaryImage = await _productService.GetProductImages(temp.Id);
 
-            ViewData["primary_image"] = primaryImage.Count == 0 ? "product-image-placeholder.jpg" : primaryImage[0].ImageUrl;
+            ViewData["primary_image"] =
+                primaryImage.Count == 0 ? "product-image-placeholder.jpg" : primaryImage[0].ImageUrl;
 
-            IList<ProductImage> secondaryImages = await _productService.GetProductImages(temp.Id, false);
+            var secondaryImages = await _productService.GetProductImages(temp.Id, false);
             //String[] secondaryImages = await _productService.GetProductsImagesLinks(products, false);
             ViewBag.SecondaryImages = secondaryImages;
 
-            ProductDiscount discount = await _productService.GetDiscountByProductId(id);
+            var discount = await _productService.GetDiscountByProductId(id);
             if (discount != null)
             {
                 if (discount.Ends > DateTime.Now)
-                {
                     ViewBag.Discount = discount;
-                }
                 else
-                {
                     await _productService.DeleteDiscount(discount);
-                }
             }
 
             ICollection<AttributeValue> attributes = await _attributeService.GetProductAttributeValues(id);
 
-            ICollection<Models.Attribute> attributeCategories = new List<Models.Attribute>();
-            foreach (AttributeValue attr in attributes)
+            ICollection<Attribute> attributeCategories = new List<Attribute>();
+            foreach (var attr in attributes)
             {
-                Models.Attribute attrCategory = _attributeService.FindAttributeById(attr.AttributeId);
-                if (!attributeCategories.Contains(attrCategory))
-                {
-                    attributeCategories.Add(attrCategory);
-                }
+                var attrCategory = _attributeService.FindAttributeById(attr.AttributeId);
+                if (!attributeCategories.Contains(attrCategory)) attributeCategories.Add(attrCategory);
             }
+
             ViewBag.Attributes = attributes;
             ViewBag.AttributeCategories = attributeCategories;
 
@@ -349,21 +403,18 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> EditMainCarousel()
         {
-            ProductAdViewModel productAdViewModel = new ProductAdViewModel();
+            var productAdViewModel = new ProductAdViewModel();
 
-            ICollection<Product> products = null;
-            ICollection<ProductAd> productAds = null;
+            var products = await _productService.GetAllProducts();
 
-            products = await _productService.GetAllProducts();
-
-            productAds = await _productService.GetProductAds();
+            ICollection<ProductAd> productAds = await _productService.GetProductAds();
 
 
             productAdViewModel.ProductSelectList = new SelectList(products, "Id", "Name");
             productAdViewModel.AdsToRemoveSelectList = new MultiSelectList(productAds, "Id", "Product.Name");
 
             ViewBag.ProductAds = productAds;
-            ViewBag.UploadMaxMbSize = uploadMaxByteSize / 1048576;
+            ViewBag.UploadMaxMbSize = _uploadMaxByteSize / 1048576;
 
             return View("EditMainCarousel", productAdViewModel);
         }
@@ -372,18 +423,15 @@ namespace EShop.Controllers
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> CreateAd(ProductAdViewModel productAdViewModel)
         {
-            IList<ProductAd> possibleAdImages = null;
-
-            possibleAdImages = await _productService.ListPossibleAdImages(productAdViewModel.SelectedProductId);
-
-            var img = productAdViewModel.ProductAdImage;
+            var possibleAdImages = await _productService.ListPossibleAdImages(productAdViewModel.SelectedProductId);
 
             if (productAdViewModel.ProductAdImage != null)
             {
-                var adImagePath = await _appEnvironment.UploadImageAsync(productAdViewModel.ProductAdImage, "main carousel", uploadMaxByteSize);
+                var adImagePath = await _appEnvironment.UploadImageAsync(productAdViewModel.ProductAdImage,
+                    "main carousel", _uploadMaxByteSize);
                 if (adImagePath != null)
                 {
-                    ProductAd productAd = new ProductAd
+                    var productAd = new ProductAd
                     {
                         AdImageUrl = adImagePath,
                         Product = await _productService.FindProductByIdAsync(productAdViewModel.SelectedProductId)
@@ -393,9 +441,11 @@ namespace EShop.Controllers
                         await _appEnvironment.DeleteImageAsync(possibleAdImages[0].AdImageUrl, "main carousel");
                         await _productService.DeleteProductAd(possibleAdImages[0]);
                     }
+
                     await _productService.CreateProductAd(productAd);
                 }
             }
+
             return await EditMainCarousel();
         }
 
@@ -404,25 +454,28 @@ namespace EShop.Controllers
         public async Task<IActionResult> DeleteAds(ProductAdViewModel productAdViewModel)
         {
             foreach (var adId in productAdViewModel.IdsOfSelectedAdsToRemove)
-            {
                 try
                 {
                     var adToRemove = await _productService.GetProductAdById(adId);
                     await _appEnvironment.DeleteImageAsync(adToRemove.AdImageUrl, "main carousel");
                     await _productService.DeleteProductAd(adToRemove);
                 }
-                catch(Exception)// kazkas jau anksciau removino ad'a
+                catch (Exception) // kazkas jau anksciau removino ad'a
                 {
-                    continue;
+                    // ignored
                 }
-            }
+
             return await EditMainCarousel();
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> FilterByAttributes(bool isSearch, string searchText, string attributeName, int pageCount, int? categoryId = null, int? parentCategoryId = null, ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null, int pageNumber = startingPageNumber)
+        public async Task<IActionResult> FilterByAttributes(bool isSearch, string searchText, string attributeName,
+            int pageCount, int? categoryId = null, int? parentCategoryId = null,
+            ICollection<Category> topLevelCategories = null, string absoluteNavigationPath = null,
+            int pageNumber = StartingPageNumber)
         {
+            if (pageCount <= 0) throw new ArgumentOutOfRangeException(nameof(pageCount));
             ViewBag.ParentCategoryId = parentCategoryId;
             ViewBag.AbsoluteNavigationPath = absoluteNavigationPath;
             ViewBag.CurrentCategoryId = categoryId;
@@ -432,9 +485,11 @@ namespace EShop.Controllers
             ViewBag.SearchText = searchText; //Used for search pagination
 
             Category category = null;
-            if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            //if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            category = await _navigationService.GetCategoryById(categoryId);
 
-            pageCount = await _navigationService.GetProductsInCategoryPageCount(category, productsPerPage, attributeName);
+            pageCount = await _navigationService.GetProductsInCategoryPageCount(category, _productsPerPage,
+                attributeName);
             ViewBag.PageCount = pageCount;
 
             if (pageNumber + 1 < pageCount) ViewBag.NextPageNumber = pageNumber + 1;
@@ -454,7 +509,9 @@ namespace EShop.Controllers
                 ViewBag.CurrentCategoryName = category.Name;
             }
 
-            ICollection<Product> products = await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, productsPerPage, attributeName);
+            var products =
+                await _navigationService.GetProductsInCategoryByPageAsync(category, pageNumber, _productsPerPage,
+                    attributeName);
             var listProducts = products.ToList();
 
             //--------- images --------------//
@@ -465,16 +522,23 @@ namespace EShop.Controllers
             ViewBag.ProductAds = productAds;
 
             //------- discountai ------------//
-            DiscountListViewModel dlvm = await GetDiscountList(listProducts);
+            var dlvm = await GetDiscountList(listProducts);
             ViewBag.HasDiscountList = dlvm.HasDiscountList;
             ViewBag.DiscountPriceList = dlvm.DiscountPriceList;
             ViewBag.DiscountEndDateList = dlvm.DiscountEndDateList;
 
             //------- atributai ------------//
-            AttributeListViewModel alvm = await GetAttributeListInCategory(category);
+            var alvm = await GetAttributeListInCategory(category);
             ViewBag.AttributeValues = alvm.AttributeValues;
             ViewBag.Attributes = alvm.Attributes;
             ViewBag.SelectedAttributeValueName = attributeName;
+
+            //category management
+            CategoryListViewModel clvm = new CategoryListViewModel()
+            {
+                Categories = new SelectList(await _navigationService.GetAllCategories(), "Id", "Name")
+            };
+            ViewBag.AllCategories = clvm;
 
             return View("Index", products);
         }
@@ -482,7 +546,7 @@ namespace EShop.Controllers
         // Private methods
         private async Task<AttributeListViewModel> GetAttributeListInCategory(Category category)
         {
-            AttributeListViewModel alvm = new AttributeListViewModel()
+            var alvm = new AttributeListViewModel
             {
                 Attributes = null,
                 AttributeValues = null
@@ -491,7 +555,7 @@ namespace EShop.Controllers
             if (category != null)
             {
                 IList<AttributeValue> attributeValues = null;
-                ICollection<Models.Attribute> attributes = new List<Models.Attribute>();
+                ICollection<Attribute> attributes = new List<Attribute>();
 
                 await Task.Run(async () =>
                 {
@@ -500,16 +564,14 @@ namespace EShop.Controllers
                     foreach (var attrVal in attributeValues)
                     {
                         var attr = _attributeService.FindAttributeById(attrVal.AttributeId);
-                        if (!attributes.Contains(attr))
-                        {
-                            attributes.Add(attr);
-                        }
+                        if (!attributes.Contains(attr)) attributes.Add(attr);
                     }
                 });
 
                 alvm.Attributes = attributes;
                 alvm.AttributeValues = attributeValues;
             }
+
             return alvm;
         }
 
@@ -518,17 +580,16 @@ namespace EShop.Controllers
             ICollection<ProductDiscount> discountList = await _productService.GetAllDiscounts();
 
             IList<bool> hasDiscountList = new List<bool>();
-            IList<Decimal?> discountPriceList = new List<Decimal?>();
+            IList<decimal?> discountPriceList = new List<decimal?>();
             IList<DateTime?> dicountEndDateList = new List<DateTime?>();
 
-            foreach (var product in products.Select((value, index) => new { Value = value, Index = index }))
+            foreach (var product in products.Select((value, index) => new {Value = value, Index = index}))
             {
                 hasDiscountList.Add(false);
                 discountPriceList.Add(null);
                 dicountEndDateList.Add(null);
 
                 foreach (var discount in discountList)
-                {
                     if (product.Value.Id == discount.ProductId)
                     {
                         if (discount.Ends > DateTime.Now)
@@ -541,12 +602,12 @@ namespace EShop.Controllers
                         {
                             await _productService.DeleteDiscount(discount);
                         }
+
                         break;
                     }
-                }
             }
 
-            return new DiscountListViewModel()
+            return new DiscountListViewModel
             {
                 HasDiscountList = hasDiscountList,
                 DiscountPriceList = discountPriceList,
@@ -579,7 +640,7 @@ namespace EShop.Controllers
         [HttpGet]
         public IActionResult Search(string searchInput)
         {
-            return RedirectToAction("Index", "Home", new { isSearch = true, searchText = searchInput });
+            return RedirectToAction("Index", "Home", new {isSearch = true, searchText = searchInput});
         }
     }
 }
