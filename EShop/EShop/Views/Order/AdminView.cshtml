@@ -30,10 +30,10 @@
         <p>Purchase Time</p>
     </th>
     <th>
-        <p>Confirm Order</p>
+        <p>Ship Order</p>
     </th>
     <th>
-        <p>Reject Order</p>
+        <p>Cancel Order</p>
     </th>
     <th>
         <p>Review</p>
@@ -98,7 +98,7 @@
         </td>
         <td>
             <div class="mobile-friendly-tag" style="display: none;">
-                <strong>Confirm order</strong>
+                <strong>Ship order</strong>
             </div>
 
             @switch (item.Value.StatusCode)
@@ -111,30 +111,30 @@
                     }
                     <form asp-controller="Order" asp-action="ConfirmOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
                         <button id="checkout-btn" type="submit" class="btn btn-success">
-                            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                            <span class="glyphicon glyphicon glyphicon-plane" aria-hidden="true"></span> Mark as Shipped
                         </button>
                     </form>
                     break;
                 case 2:
                     <p>
-                        <font style="color: green;">Order Confirmed</font>
+                        <font style="color: green;">Order Shipped</font>
                     </p>
                     break;
                 case 3:
                     <p>
-                        <font style="color: red;">Order Rejected</font>
+                        <font style="color: red;">Order Cancelled</font>
                     </p>
                     break;
                 case 4:
                     <p>
-                        <font style="color: green;">Order Confirmed</font>
+                        <font style="color: green;">Order Shipped</font>
                     </p>
                     break;
             }
         </td>
         <td>
             <div class="mobile-friendly-tag" style="display: none;">
-                <strong>Reject order</strong>
+                <strong>Cancel order</strong>
             </div>
 
             @switch (item.Value.StatusCode)
@@ -147,23 +147,23 @@
                     }
                     <form asp-controller="Order" asp-action="RejectOrder" asp-route-orderId="@item.Value.Id" asp-route-rowVersion="@rowVersion">
                         <button id="checkout-btn" type="submit" class="btn btn-danger">
-                            <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                            <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
                         </button>
                     </form>
                     break;
                 case 2:
                     <p>
-                        <font style="color: green;">Order Confirmed</font>
+                        <font style="color: green;">Order Shipped</font>
                     </p>
                     break;
                 case 3:
                     <p>
-                        <font style="color: red;">Order Rejected</font>
+                        <font style="color: red;">Order Cancelled</font>
                     </p>
                     break;
                 case 4:
                     <p>
-                        <font style="color: green;">Order Confirmed</font>
+                        <font style="color: green;">Order Shipped</font>
                     </p>
                     break;
             }
