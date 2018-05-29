@@ -214,8 +214,7 @@ namespace EShop.Data.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(100);
+                        .IsRequired();
 
                     b.Property<string>("Name")
                         .IsRequired()

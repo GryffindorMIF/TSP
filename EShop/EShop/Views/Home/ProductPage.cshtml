@@ -183,7 +183,7 @@
     </p>
     <div class="desktop-product-view">
         <div class="img_column">
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px;">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="170" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor" alt="Primary Image" style="float: left; margin-right: 10px;">
         </div>
         <div>
             @if (ViewBag.Discount == null)
@@ -230,7 +230,7 @@
     </div>
     <div class="mobile-product-view" style="display: none;">
         <div>
-            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="120" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor">
+            <img id="productImage" src="~/images/products/@ViewData["primary_image"]" height="170" width="170" onclick="openModal();currentSlide(1);" class="img_hover-shadow img_cursor">
         </div>
         <div>
             @if (ViewBag.Discount == null)

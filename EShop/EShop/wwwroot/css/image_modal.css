@@ -26,7 +26,7 @@
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 1;
+    z-index: 11;
     padding-left: 46px; /* kad neuzlistu uz sidenav */
 }
 
@@ -35,8 +35,8 @@
 .img_modal-content {
     background-color: #fefefe;
     margin: auto;
-    max-height: 600px;
-    max-width: 1000px;
+    max-height: 100%;
+    max-width: 100%;
     padding: 0;
     position: relative;
     vertical-align: central;
@@ -48,7 +48,7 @@
 .img_modal-style {
     display: block;
     margin: auto;
-    max-height: 60%;
+    max-height: 100%;
     max-width: 100%;
     /*margin-left: auto;
     margin-right: auto;

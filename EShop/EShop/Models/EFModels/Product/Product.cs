@@ -16,7 +16,6 @@ namespace EShop.Models.EFModels.Product
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Description is required field.")]
-        [MaxLength(100, ErrorMessage = "Max {0} length is {1}")]
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Price is required.")]
