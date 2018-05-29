@@ -106,7 +106,7 @@
                 </div>
                 <div class="form-group CVV">
                     <label asp-for="Cvv">Card CVV</label>
-                    <input asp-for="Cvv" class="form-control" placeholder="000" maxlength="3" type="number" />
+                    <input id="CVV-input" asp-for="Cvv" class="form-control"/>
                     <span asp-validation-for="Cvv" class="text-danger"></span>
                     <a href="#" onclick="$('#cvv-modal').fadeIn()"><font color="blue">What is CVV?</font></a>
                 </div>
@@ -140,6 +140,11 @@
     $('#card-number-input').inputmask(
         {
             mask: "9999999999999999"
+        }
+    );
+    $('#CVV-input').inputmask(
+        {
+            mask: "999"
         }
     );
 </script>
