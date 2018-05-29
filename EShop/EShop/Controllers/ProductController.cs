@@ -154,10 +154,19 @@ namespace EShop.Controllers
         {
             var model = new ProductCategoryViewModel();
 
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                return RedirectToAction("Index", "Home");
+            }
+
 
             var product = await _productService.FindProductByIdAsync((int) id);
-            if (product == null) return NotFound();
+            if (product == null)
+            {
+                TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                return RedirectToAction("Index", "Home");
+            }
 
             model = await FillUpProductEditData(model, product);
 
@@ -168,7 +177,11 @@ namespace EShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductCategoryViewModel model)
         {
-            if (id != model.Product.Id) return NotFound();
+            if (id != model.Product.Id)
+            {
+                TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                return RedirectToAction("Index", "Home");
+            }
 
             if (ModelState.IsValid)
             {
@@ -271,7 +284,10 @@ namespace EShop.Controllers
                 catch (DbUpdateConcurrencyException ex)
                 {
                     if ((await _productService.GetAllProducts()).Any(p => p.Id == model.Product.Id) == false)
-                        return NotFound();
+                    {
+                        TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                        return RedirectToAction("Index", "Home");
+                    }
 
                     var exceptionEntry = ex.Entries.Single();
                     var clientValues = (Product) exceptionEntry.Entity;
@@ -324,11 +340,19 @@ namespace EShop.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                return RedirectToAction("Index", "Home");
+            }
 
             var product = await _productService.FindProductByIdAsync((int) id);
 
-            if (product == null) return NotFound();
+            if (product == null)
+            {
+                TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+                return RedirectToAction("Index", "Home");
+            }
 
             return View(product);
         }
@@ -340,18 +364,23 @@ namespace EShop.Controllers
         {
             var product = await _productService.FindProductByIdAsync(id);
 
-            var images = await _productService.GetAllProductImages(product.Id);
+            if (product != null)
+            {
+                var images = await _productService.GetAllProductImages(product.Id);
 
-            //Remove images
-            if (images != null && images.Count > 0)
-                foreach (var image in images)
-                {
-                    await _appEnvironment.DeleteImageAsync(image.ImageUrl, "products");
-                    await _productService.DeleteProductImage(image);
-                }
+                //Remove images
+                if (images != null && images.Count > 0)
+                    foreach (var image in images)
+                    {
+                        await _appEnvironment.DeleteImageAsync(image.ImageUrl, "products");
+                        await _productService.DeleteProductImage(image);
+                    }
 
-            await _productService.DeleteProduct(product.Id);
-            return RedirectToAction(nameof(Index), new {showAlert = true});
+                await _productService.DeleteProduct(product.Id);
+                return RedirectToAction(nameof(Index), new {showAlert = true});
+            }
+            TempData["ErrorMsg"] = "Product has been deleted by another staff member";
+            return RedirectToAction("Index", "Home");
         }
 
         //Product properties management below
