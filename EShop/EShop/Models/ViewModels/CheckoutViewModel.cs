@@ -19,7 +19,7 @@ namespace EShop.Models.ViewModels
         [Display(Prompt = "16 digit card number")]
         public string CardNumber { get; set; }
 
-        [RegularExpression(@"^[0-9]{3}$")]
+        [RegularExpression(@"^[0-9]{3}$", ErrorMessage = "The CVV is a separate three-digit code of a credit card")]
         [Required]
         public string Cvv { get; set; }
 
