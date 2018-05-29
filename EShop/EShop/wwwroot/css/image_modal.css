@@ -27,7 +27,9 @@
     top: 0;
     width: 100%;
     z-index: 11;
-    padding-left: 46px; /* kad neuzlistu uz sidenav */
+    /*
+    padding-left: 46px; /* kad neuzlistu uz sidenav 
+    */
 }
 
 /* Modal Content BACKGROUND!!!! */
