@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EShop.Business.Interfaces;
@@ -128,10 +129,10 @@ namespace EShop.Controllers
                     ViewBag.CurrentCategoryId = currentCategory.Id;
                 }
             }
-            else // (POST) backward and forward navigation
+            else // forward navigation
             {
                 currentCategory = await _navigationService.GetCategoryById(categoryId);
-
+                /*
                 if (backToParentCategory) // Backward navigation
                 {
                     absoluteNavigationPath = await _navigationService.RemoveLastUriSegmentAsync(absoluteNavigationPath);
@@ -198,6 +199,7 @@ namespace EShop.Controllers
                 }
                 else // Forward navigation
                 {
+                */
                     var parentCategoryName = "";
 
                     if (absoluteNavigationPath != null)
@@ -224,7 +226,7 @@ namespace EShop.Controllers
                     productsToView =
                         await _navigationService.GetProductsInCategoryByPageAsync(currentCategory,
                             StartingPageNumber, _productsPerPage);
-                }
+                //}
             }
 
             int pageCount;
@@ -483,7 +485,8 @@ namespace EShop.Controllers
             ViewBag.SearchText = searchText; //Used for search pagination
 
             Category category = null;
-            if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            //if (parentCategoryId != null) category = await _navigationService.GetCategoryById(parentCategoryId);
+            category = await _navigationService.GetCategoryById(categoryId);
 
             pageCount = await _navigationService.GetProductsInCategoryPageCount(category, _productsPerPage,
                 attributeName);

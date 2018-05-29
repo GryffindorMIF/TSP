@@ -76,7 +76,8 @@ namespace EShop.Controllers
         {
             try
             {
-                if (postModel.ExistingCategoryId == null)
+                if (postModel.ExistingCategoryId == null && postModel.CategoryName != null &&
+                    postModel.CategoryDescription != null)
                 {
                     await _navigationService.AddCategory(postModel.ParentCategoryId, postModel.CategoryName, postModel.CategoryDescription);
                 }

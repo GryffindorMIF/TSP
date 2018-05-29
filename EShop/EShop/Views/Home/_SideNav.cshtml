@@ -33,9 +33,11 @@ else
             {
                 <text>Category</text>
 
+                <!--
                 <button class="btn btn-xs btn-primary" disabled>
                     <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
                 </button>
+                -->
 
                 if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {
@@ -53,11 +55,13 @@ else
             {
                 <text>@ViewBag.CurrentCategoryName</text>
 
-                <form style="display: inline-block" asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
-                    <button type="submit" class="btn btn-xs btn-primary" onclick="$('#loading-modal').fadeIn()">
-                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
-                    </button>
-                </form>
+                <!--
+        <form style="display: inline-block" asp-action="Index" asp-route-categoryId="@ViewBag.ParentCategoryId" asp-route-backToParentCategory="true" asp-route-absoluteNavigationPath="@ViewBag.AbsoluteNavigationPath">
+            <button type="submit" class="btn btn-xs btn-primary" onclick="$('#loading-modal').fadeIn()">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Back
+            </button>
+        </form>
+                -->
 
                 if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {

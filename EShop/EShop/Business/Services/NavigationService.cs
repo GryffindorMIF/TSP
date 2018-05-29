@@ -371,15 +371,16 @@ namespace EShop.Business.Services
             try
             {
                 var category = await GetCategoryById(categoryId);
-                await DeleteSubcategories(category, cascade); // recursive method
-
-                if(!refOnly) _context.Remove(category);
 
                 if (cascade)
                 {
+                    await DeleteSubcategories(category, true); // recursive method
+
                     ICollection<CategoryCategory> categoryCategories =
                         await _context.CategoryCategory.Where(cc => cc.CategoryId == category.Id).ToListAsync();
                     foreach (var cc in categoryCategories) _context.Remove(cc);
+
+                    _context.Remove(category);
                 }
                 else if (refOnly)
                 {
