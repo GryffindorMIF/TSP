@@ -100,6 +100,35 @@ namespace EShop.Data
             builder.Entity<Product>()
                 .HasOne(p => p.ProductDiscount)
                 .WithOne(pd => pd.Product);
+
+            //one-to-one mapping (unique)
+            builder.Entity<ProductAd>()
+                .HasOne(pa => pa.Product)
+                .WithOne(p => p.ProductAd)
+                .HasForeignKey<ProductAd>(pa => pa.ProductId);
+
+            // many-to-many mapping
+            builder.Entity<ProductImage>()
+                .HasOne(pi => pi.Product)
+                .WithMany(p => p.ProductImages)
+                .HasForeignKey(pi => pi.ProductId);
+
+            // many-to-many mapping
+            builder.Entity<ProductProperty>()
+                .HasOne(pp => pp.Product)
+                .WithMany(p => p.ProductProperies)
+                .HasForeignKey(pp => pp.ProductId);
+
+            //one-to-one mapping (unique)
+            builder.Entity<Category>()
+                .HasOne(c => c.CategoryCategory)
+                .WithOne(cc => cc.Category);
+
+            // many-to-many mapping
+            builder.Entity<ProductAttributeValue>()
+                .HasOne(pav => pav.Product)
+                .WithMany(p => p.ProductAttributeValues)
+                .HasForeignKey(pav => pav.ProductId);
         }
     }
 }

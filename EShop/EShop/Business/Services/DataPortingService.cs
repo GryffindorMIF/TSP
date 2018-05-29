@@ -44,7 +44,7 @@ namespace EShop.Business.Services
         public async Task WipeProductDataAsync()
         {
             await ProductDbPorter.WipeDbProductsAsync(_context);
-            ProductDbPorter.WipeImages(_productsImagePath, _attributeImagePath, _carouselImagePath);
+            //ProductDbPorter.WipeImages(_productsImagePath, _attributeImagePath, _carouselImagePath);
         }
     }
 }

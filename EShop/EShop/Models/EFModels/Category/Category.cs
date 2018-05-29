@@ -19,6 +19,8 @@ namespace EShop.Models.EFModels.Category
 
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
 
+        public virtual CategoryCategory CategoryCategory { get; set; }
+
         public bool Equals(Category other)
         {
             return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&

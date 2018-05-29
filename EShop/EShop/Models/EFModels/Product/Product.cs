@@ -26,11 +26,15 @@ namespace EShop.Models.EFModels.Product
 
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
         public virtual ProductDiscount ProductDiscount { get; set; }
+        public virtual ProductAd ProductAd { get; set; }
+        public virtual ICollection<ProductImage> ProductImages { get; set; }
+        public virtual ICollection<ProductProperty> ProductProperies { get; set; }
+        public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; }
 
         public bool Equals(Product other)
         {
-            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
-                   string.Equals(Description, other.Description, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Name.Trim(), other.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(Description.Trim(), other.Description.Trim(), StringComparison.OrdinalIgnoreCase);
         }
     }
 }

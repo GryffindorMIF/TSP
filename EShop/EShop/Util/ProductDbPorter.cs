@@ -5,6 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using EShop.Data;
@@ -26,6 +28,7 @@ namespace EShop.Util
         public static async Task<byte[]> ExportAsync(ApplicationDbContext context, string productImageFilePath,
             string attributeImageFilePath, string carouselImagePath)
         {
+            return await PrettyExportAsync(context, productImageFilePath, attributeImageFilePath, carouselImagePath);
             var productsInfo = new ProductsInfo();
             await productsInfo.LoadFromDbContextAsync(context);
 
@@ -50,6 +53,7 @@ namespace EShop.Util
         public static async Task<bool> ImportAsync(ApplicationDbContext context, IFormFile file,
             string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
+            return await PrettyImportAsync(context, file, productImageFilePath, attributeImageFilePath, carouselImagePath);
             ProductsInfo productsInfo;
             try
             {
@@ -475,6 +479,403 @@ namespace EShop.Util
                         prop.ShouldSerialize = obj => false;
                 return prop;
             }
+        }
+
+        public static async Task<byte[]> PrettyExportAsync(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        {
+            var productsInfo = new ProductsInfo();
+            await productsInfo.LoadFromDbContextAsync(context);
+            try
+            {
+                using (var package = new ExcelPackage())
+                {
+                    package.Workbook.Worksheets.Add("Sheet1");
+                    var sheet = package.Workbook.Worksheets["Sheet1"];
+                    List<string[]> table = new List<string[]>();
+                    table.Add(new string[] { "Product Name", "Description", "Price", "Discount Price", "Discount Ends", "Ad Banner", "Primary Image", "Secondary Images", "Properties", "Categories", "Attributes" });
+
+                    foreach (var product in productsInfo.Products)
+                    {
+                        List<string> row = new List<string>();
+                        row.Add(product.Name);
+                        row.Add(product.Description);
+                        row.Add(product.Price.ToString());
+                        row.Add(product.ProductDiscount == null ? "" : product.ProductDiscount.DiscountPrice.ToString());
+                        row.Add(product.ProductDiscount == null ? "" : product.ProductDiscount.Ends.ToString("G"));
+                        row.Add(product.ProductAd == null ? "" : product.ProductAd.AdImageUrl);
+
+                        bool primaryAdded = false;
+                        if (product.ProductImages != null)
+                        {
+                            foreach (var productImage in product.ProductImages)
+                            {
+                                if (productImage.IsPrimary)
+                                {
+                                    row.Add(productImage.ImageUrl);
+                                    primaryAdded = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!primaryAdded)
+                            row.Add("");
+
+                        StringBuilder sb = new StringBuilder();
+                        if (product.ProductImages != null)
+                        {
+                            foreach (var productImage in product.ProductImages)
+                                if (!productImage.IsPrimary)
+                                    sb.Append(productImage.ImageUrl).Append(", ");
+                            if (sb.Length > 0)
+                                sb.Length -= 2;
+                        }
+                        row.Add(sb.ToString());
+                        sb.Length = 0;
+
+                        if (product.ProductProperies != null)
+                        {
+                            foreach (var productProperty in product.ProductProperies)
+                                sb.Append('{').Append(productProperty.Name).Append(": ").Append(productProperty.Description).Append("}, ");
+                            if (sb.Length > 0)
+                                sb.Length -= 2;
+                        }
+                        row.Add(sb.ToString());
+                        sb.Length = 0;
+
+                        if (product.ProductCategories != null)
+                        {
+                            foreach (var productCategory in product.ProductCategories)
+                            {
+                                Category dbCategory = productCategory.Category;
+                                CategoryCategory dbCategoryCategory = productCategory.Category.CategoryCategory;
+                                string category = dbCategory.Name + "(" + dbCategory.Description + ")";
+                                while (dbCategoryCategory != null && dbCategoryCategory.ParentCategory != null)
+                                {
+                                    dbCategory = dbCategoryCategory.ParentCategory;
+                                    dbCategoryCategory = dbCategory.CategoryCategory;
+                                    category = dbCategory.Name + "(" + dbCategory.Description + ")" + "/" + category;
+                                }
+                                category += ", ";
+                                sb.Append(category);
+                            }
+                            if (sb.Length > 0)
+                                sb.Length -= 2;
+                        }
+                        row.Add(sb.ToString());
+                        sb.Length = 0;
+
+                        if (product.ProductAttributeValues != null)
+                        {
+                            foreach (var productAttributeValue in product.ProductAttributeValues)
+                            {
+                                sb.Append('{').Append(productAttributeValue.AttributeValue.Attribute.Name).Append("(" + productAttributeValue.AttributeValue.Attribute.IconUrl + ")").Append(": ").Append(productAttributeValue.AttributeValue.Name).Append("}, ");
+                            }
+                            if (sb.Length > 0)
+                                sb.Length -= 2;
+                        }
+                        row.Add(sb.ToString());
+
+                        table.Add(row.ToArray());
+                    }
+
+                    sheet.Cells["A1"].LoadFromArrays(table);
+                    sheet.Row(1).Style.Font.Bold = true;
+                    for (int i = 1; i <= table[0].Length; i++)
+                    {
+                        sheet.Column(i).AutoFit(8.43, 84.3);
+                        sheet.Column(i).Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        sheet.Column(i).Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        sheet.Column(i).Style.WrapText = true;
+                    }
+                    return package.GetAsByteArray();
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static async Task<bool> PrettyImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        {
+            try
+            {
+                using (var package = new ExcelPackage())
+                {
+                    using (var stream = file.OpenReadStream())
+                    {
+                        package.Load(stream);
+                    }
+                    var sheet = package.Workbook.Worksheets["Sheet1"];
+                    var currentDbState = new ProductsInfo();
+                    await currentDbState.LoadFromDbContextAsync(context);
+                    for (int i = 2; i <= sheet.Dimension.End.Row; i++)
+                    {
+                        if (sheet.Cells[i, 1].Value == null)
+                            continue;
+                        Product product = new Product()
+                        {
+                            Name = sheet.Cells[i, 1].Value.ToString().Trim(),
+                            Description = sheet.Cells[i, 2].Value.ToString().Trim(),
+                            Price = decimal.Parse(sheet.Cells[i, 3].Value.ToString().Trim())
+                        };
+                        var dbProduct = currentDbState.Products.FirstOrDefault(p =>
+                        {
+                            return p.Equals(product);
+                        });
+                        if (dbProduct == null)
+                        {
+                            context.Product.Add(product);
+                            currentDbState.Products.Add(product);
+                            dbProduct = product;
+                            await context.SaveChangesAsync();
+                        }
+
+                        if (sheet.Cells[i, 4].Value != null && sheet.Cells[i, 5].Value != null)
+                        {
+                            Console.WriteLine(DateTime.Parse(sheet.Cells[i, 5].Value.ToString().Trim()));
+                            ProductDiscount discount = new ProductDiscount()
+                            {
+                                DiscountPrice = decimal.Parse(sheet.Cells[i, 4].Value.ToString().Trim()),
+                                Ends = DateTime.Parse(sheet.Cells[i, 5].Value.ToString().Trim()),
+                                ProductId = dbProduct.Id
+                            };
+                            var dbDiscount = currentDbState.ProductDiscounts.FirstOrDefault(pd =>
+                            {
+                                return pd.Equals(discount);
+                            });
+                            if (dbDiscount == null)
+                            {
+                                context.ProductDiscount.Add(discount);
+                                currentDbState.ProductDiscounts.Add(discount);
+                                dbDiscount = discount;
+                            }
+                        }
+
+                        if (sheet.Cells[i, 6].Value != null)
+                        {
+                            ProductAd ad = new ProductAd()
+                            {
+                                AdImageUrl = sheet.Cells[i, 6].Value.ToString().Trim(),
+                                ProductId = dbProduct.Id
+                            };
+                            var dbAd = currentDbState.ProductAds.FirstOrDefault(pa =>
+                            {
+                                return pa.Equals(ad);
+                            });
+                            if (dbAd == null)
+                            {
+                                context.ProductAd.Add(ad);
+                                currentDbState.ProductAds.Add(ad);
+                                dbAd = ad;
+                            }
+                        }
+
+                        if (sheet.Cells[i, 7].Value != null)
+                        {
+                            ProductImage image = new ProductImage()
+                            {
+                                IsPrimary = true,
+                                ImageUrl = sheet.Cells[i, 7].Value.ToString().Trim(),
+                                ProductId = dbProduct.Id
+                            };
+                            var dbImage = currentDbState.ProductImages.FirstOrDefault(pi =>
+                            {
+                                return pi.Equals(image);
+                            });
+                            if (dbImage == null)
+                            {
+                                context.ProductImage.Add(image);
+                                currentDbState.ProductImages.Add(image);
+                                dbImage = image;
+                            }
+                        }
+
+                        if (sheet.Cells[i, 8].Value != null)
+                        {
+                            foreach (var imageUrl in sheet.Cells[i, 8].Value.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                ProductImage image = new ProductImage()
+                                {
+                                    IsPrimary = false,
+                                    ImageUrl = imageUrl.Trim(),
+                                    ProductId = dbProduct.Id
+                                };
+                                var dbImage = currentDbState.ProductImages.FirstOrDefault(pi =>
+                                {
+                                    return pi.Equals(image);
+                                });
+                                if (dbImage == null)
+                                {
+                                    context.ProductImage.Add(image);
+                                    currentDbState.ProductImages.Add(image);
+                                    dbImage = image;
+                                }
+                            }
+                        }
+
+                        if (sheet.Cells[i, 9].Value != null)
+                        {
+                            foreach (Match propertyMatch in Regex.Matches(sheet.Cells[i, 9].Value.ToString(), @"{.+?}"))
+                            {
+                                string propertyValue = propertyMatch.Value;
+                                ProductProperty property = new ProductProperty()
+                                {
+                                    Name = propertyValue.Substring(1, propertyValue.IndexOf(':') - 1).Trim(),
+                                    Description = propertyValue.Substring(propertyValue.IndexOf(':') + 1, propertyValue.Length - propertyValue.IndexOf(':') - 2).Trim(),
+                                    ProductId = dbProduct.Id
+                                };
+                                var dbProperty = currentDbState.ProductProperties.FirstOrDefault(pp =>
+                                {
+                                    return pp.Equals(property);
+                                });
+                                if (dbProperty == null)
+                                {
+                                    context.ProductProperty.Add(property);
+                                    currentDbState.ProductProperties.Add(property);
+                                    dbProperty = property;
+                                }
+                            }
+                        }
+
+                        if (sheet.Cells[i, 10].Value != null)
+                        {
+                            foreach (var categoriesStr in sheet.Cells[i, 10].Value.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                Category lastDbCategory = null;
+                                foreach (var categoryStr in categoriesStr.Split('/'))
+                                {
+                                    string name = categoryStr.Substring(0, categoryStr.IndexOf('('));
+                                    string desc = categoryStr.Substring(categoryStr.IndexOf('(') + 1, categoryStr.IndexOf(')') - categoryStr.IndexOf('(') - 1);
+                                    Category category = new Category()
+                                    {
+                                        Name = name.Trim(),
+                                        Description = desc.Trim(),
+                                    };
+                                    var dbCategory = currentDbState.Categories.FirstOrDefault(c =>
+                                    {
+                                        return c.Equals(category);
+                                    });
+                                    if (dbCategory == null)
+                                    {
+                                        context.Category.Add(category);
+                                        currentDbState.Categories.Add(category);
+                                        dbCategory = category;
+                                        await context.SaveChangesAsync();
+                                    }
+                                    
+                                    if (lastDbCategory != null)
+                                    {
+                                        CategoryCategory categoryCategory = new CategoryCategory()
+                                        {
+                                            CategoryId = dbCategory.Id,
+                                            ParentCategoryId = lastDbCategory.Id
+                                        };
+                                        var dbCategoryCategory = currentDbState.CategoryCategories.FirstOrDefault(cc =>
+                                        {
+                                            return cc.Equals(categoryCategory);
+                                        });
+                                        if (dbCategoryCategory == null)
+                                        {
+                                            context.CategoryCategory.Add(categoryCategory);
+                                            currentDbState.CategoryCategories.Add(categoryCategory);
+                                            dbCategoryCategory = categoryCategory;
+                                        }
+                                    }
+                                    lastDbCategory = dbCategory;
+                                }
+                                if (lastDbCategory != null)
+                                {
+                                    ProductCategory productCategory = new ProductCategory()
+                                    {
+                                        ProductId = dbProduct.Id,
+                                        CategoryId = lastDbCategory.Id
+                                    };
+                                    var dbProductCategory = currentDbState.ProductCategories.FirstOrDefault(pc =>
+                                    {
+                                        return pc.Equals(productCategory);
+                                    });
+                                    if (dbProductCategory == null)
+                                    {
+                                        context.ProductCategory.Add(productCategory);
+                                        currentDbState.ProductCategories.Add(productCategory);
+                                        dbProductCategory = productCategory;
+                                        await context.SaveChangesAsync();
+                                    }
+                                }
+                            }
+                        }
+
+                        if (sheet.Cells[i, 11].Value != null)
+                        {
+                            foreach (Match attributeMatch in Regex.Matches(sheet.Cells[i, 11].Value.ToString(), @"{.+?}"))
+                            {
+                                string attributeStr = attributeMatch.Value;
+                                attributeStr = attributeStr.Substring(1, attributeStr.Length - 2);
+                                string attributeName = attributeStr.Substring(0, attributeStr.IndexOf('('));
+                                string attributeIconUrl = attributeStr.Substring(attributeStr.IndexOf('(') + 1, attributeStr.IndexOf(')', attributeStr.IndexOf('(')) - attributeStr.IndexOf('(') - 1);
+                                string attributeValueName = attributeStr.Substring(attributeStr.IndexOf(':') + 1);
+
+                                Attribute attribute = new Attribute()
+                                {
+                                    Name = attributeName,
+                                    IconUrl = attributeIconUrl
+                                };
+                                var dbAttribute = currentDbState.Attributes.FirstOrDefault(a =>
+                                {
+                                    return a.Equals(attribute);
+                                });
+                                if (dbAttribute == null)
+                                {
+                                    context.Attribute.Add(attribute);
+                                    currentDbState.Attributes.Add(attribute);
+                                    dbAttribute = attribute;
+                                    await context.SaveChangesAsync();
+                                }
+
+                                AttributeValue attributeValue = new AttributeValue()
+                                {
+                                    Name = attributeValueName,
+                                    AttributeId = dbAttribute.Id
+                                };
+                                var dbAttributeValue = currentDbState.AttributeValues.FirstOrDefault(av =>
+                                {
+                                    return av.Equals(attributeValue);
+                                });
+                                if (dbAttributeValue == null)
+                                {
+                                    context.AttributeValue.Add(attributeValue);
+                                    currentDbState.AttributeValues.Add(attributeValue);
+                                    dbAttributeValue = attributeValue;
+                                    await context.SaveChangesAsync();
+                                }
+
+                                ProductAttributeValue productAttributeValue = new ProductAttributeValue()
+                                {
+                                    AttributeValueId = dbAttributeValue.Id,
+                                    ProductId = dbProduct.Id
+                                };
+                                var dbProductAttributeValue = currentDbState.ProductAttributeValues.FirstOrDefault(pav =>
+                                {
+                                    return pav.Equals(productAttributeValue);
+                                });
+                                if (dbProductAttributeValue == null)
+                                {
+                                    context.ProductAttributeValue.Add(productAttributeValue);
+                                    currentDbState.ProductAttributeValues.Add(productAttributeValue);
+                                    dbProductAttributeValue = productAttributeValue;
+                                }
+                            }
+                        }
+                    }
+                }
+                await context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
         #region Export methods

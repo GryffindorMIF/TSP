@@ -19,6 +19,7 @@ namespace EShop.Models.EFModels.Product
         public string Description { get; set; }
 
         [Required] [ForeignKey("Product")] public int ProductId { get; set; }
+        public virtual Product Product { get; set; }
 
         public bool Equals(ProductProperty other)
         {
