@@ -129,7 +129,7 @@ else
                                          <h4>
                                              @if (attribute != null)
                                              {
-                                                 if (attribute.IconUrl != null)
+                                                 if (!String.IsNullOrWhiteSpace(attribute.IconUrl))
                                                  {
                                                      <img src="~/images/attribute-icons/@attribute.IconUrl" width="20" height="20"/>
                                                      <text> </text>

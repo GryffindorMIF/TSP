@@ -36,12 +36,19 @@ namespace EShop.Util
         public static async Task DeleteImageAsync(this IHostingEnvironment appEnvironment, string fileName,
             string dirName = null)
         {
-            string uploads;
-            if (dirName == null) uploads = Path.Combine(appEnvironment.WebRootPath, "images");
-            else uploads = Path.Combine(appEnvironment.WebRootPath, "images\\" + dirName);
+            try
+            {
+                string uploads;
+                if (dirName == null) uploads = Path.Combine(appEnvironment.WebRootPath, "images");
+                else uploads = Path.Combine(appEnvironment.WebRootPath, "images\\" + dirName);
 
-            var filePath = Path.Combine(uploads, fileName);
-            await Task.Run(() => { File.Delete(filePath); });
+                var filePath = Path.Combine(uploads, fileName);
+                await Task.Run(() => { File.Delete(filePath); });
+            }
+            catch(Exception)
+            {
+                //Ignored
+            }
         }
     }
 }
