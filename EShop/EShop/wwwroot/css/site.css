@@ -92,6 +92,13 @@ body {
 .main {
     margin-left: 46px;
     padding: 0 10px;
+    position: relative;
+    padding-bottom: 50px;
+}
+
+.custom-footer{
+    position:absolute;
+    bottom: 0;
 }
 
 ul {
