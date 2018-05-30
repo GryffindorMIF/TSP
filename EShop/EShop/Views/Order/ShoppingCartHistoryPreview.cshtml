@@ -7,9 +7,11 @@
 }
 
 <h2>Shopping cart history</h2>
+<!--
 <a asp-area="" asp-controller="Order" asp-action="Index">
     <img src="~/images/backButton.png" style="height: 32px; width: 32px;">
 </a>
+-->
 @{
     decimal totalCost = 0;
     <table class="table">
@@ -48,11 +50,11 @@
                                     @Html.DisplayFor(modelItem => item.Value.ProductName)<br/>
                                     @if (item.Value.ProductPrimaryImageUrl != null)
                                     {
-                                        <img src="~/images/products/@item.Value.ProductPrimaryImageUrl" height="120" width="85">
+                                        <img src="~/images/products/@item.Value.ProductPrimaryImageUrl" height="100" width="100">
                                     }
                                     else
                                     {
-                                        <img src="~/images/products/product-image-placeholder.jpg" height="120" width="85">
+                                        <img src="~/images/products/product-image-placeholder.jpg" height="100" width="100">
                                     }
                                 </a>
                             </text>
