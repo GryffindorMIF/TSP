@@ -4,7 +4,6 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -15,8 +14,6 @@ using EShop.Models.EFModels.Category;
 using EShop.Models.EFModels.Product;
 using FastMember;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using OfficeOpenXml;
 using OfficeOpenXml.Drawing;
 using Attribute = EShop.Models.EFModels.Attribute.Attribute;
@@ -25,10 +22,13 @@ namespace EShop.Util
 {
     public static class ProductDbPorter
     {
-        public static async Task<byte[]> ExportAsync(ApplicationDbContext context, string productImageFilePath,
-            string attributeImageFilePath, string carouselImagePath)
+        public static bool prettyXls = true;
+
+        public static async Task<byte[]> ExportAsync(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
-            return await PrettyExportAsync(context, productImageFilePath, attributeImageFilePath, carouselImagePath);
+            if (prettyXls)
+                return await PrettyExportAsync(context, productImageFilePath, attributeImageFilePath, carouselImagePath);
+
             var productsInfo = new ProductsInfo();
             await productsInfo.LoadFromDbContextAsync(context);
 
@@ -50,10 +50,11 @@ namespace EShop.Util
             }
         }
 
-        public static async Task<bool> ImportAsync(ApplicationDbContext context, IFormFile file,
-            string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        public static async Task<int> ImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
-            return await PrettyImportAsync(context, file, productImageFilePath, attributeImageFilePath, carouselImagePath);
+            if (prettyXls)
+                return await PrettyImportAsync(context, file, productImageFilePath, attributeImageFilePath, carouselImagePath);
+
             ProductsInfo productsInfo;
             try
             {
@@ -75,10 +76,9 @@ namespace EShop.Util
             }
             catch (Exception)
             {
-                return false;
+                return -1;
             }
-
-            return true;
+            return 0;
         }
 
         public static async Task WipeDbProductsAsync(ApplicationDbContext context)
@@ -100,8 +100,7 @@ namespace EShop.Util
             });
         }
 
-        public static void WipeImages(string productImageFilePath, string attributeImageFilePath,
-            string carouselImagePath)
+        public static void WipeImages(string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
             var productPath = new DirectoryInfo(productImageFilePath);
             var attributePath = new DirectoryInfo(attributeImageFilePath);
@@ -468,19 +467,6 @@ namespace EShop.Util
             }
         }
 
-        private class CustomResolver : DefaultContractResolver
-        {
-            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-            {
-                var prop = base.CreateProperty(member, memberSerialization);
-                var propInfo = member as PropertyInfo;
-                if (propInfo != null)
-                    if (propInfo.GetMethod.IsVirtual && !propInfo.GetMethod.IsFinal)
-                        prop.ShouldSerialize = obj => false;
-                return prop;
-            }
-        }
-
         public static async Task<byte[]> PrettyExportAsync(ApplicationDbContext context, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
             var productsInfo = new ProductsInfo();
@@ -579,7 +565,11 @@ namespace EShop.Util
                     }
 
                     sheet.Cells["A1"].LoadFromArrays(table);
-                    sheet.Row(1).Style.Font.Bold = true;
+                    var cells = sheet.Cells[sheet.Dimension.Start.Row, sheet.Dimension.Start.Column, sheet.Dimension.End.Row, sheet.Dimension.End.Column];
+                    cells.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    cells.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    cells.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    cells.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     for (int i = 1; i <= table[0].Length; i++)
                     {
                         sheet.Column(i).AutoFit(8.43, 84.3);
@@ -596,8 +586,9 @@ namespace EShop.Util
             }
         }
 
-        public static async Task<bool> PrettyImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
+        public static async Task<int> PrettyImportAsync(ApplicationDbContext context, IFormFile file, string productImageFilePath, string attributeImageFilePath, string carouselImagePath)
         {
+            int i = -1;
             try
             {
                 using (var package = new ExcelPackage())
@@ -609,10 +600,11 @@ namespace EShop.Util
                     var sheet = package.Workbook.Worksheets["Sheet1"];
                     var currentDbState = new ProductsInfo();
                     await currentDbState.LoadFromDbContextAsync(context);
-                    for (int i = 2; i <= sheet.Dimension.End.Row; i++)
+                    i = sheet.Dimension.Start.Row + 1;
+                    for (; i <= sheet.Dimension.End.Row; i++)
                     {
-                        if (sheet.Cells[i, 1].Value == null)
-                            continue;
+                        //if (sheet.Cells[i, 1].Value == null)
+                        //    continue;
                         Product product = new Product()
                         {
                             Name = sheet.Cells[i, 1].Value.ToString().Trim(),
@@ -873,9 +865,9 @@ namespace EShop.Util
             }
             catch (Exception)
             {
-                return false;
+                return i;
             }
-            return true;
+            return 0;
         }
 
         #region Export methods

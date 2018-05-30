@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using EShop.Business.Interfaces;
 using EShop.Data;
@@ -31,14 +32,15 @@ namespace EShop.Business.Services
             return exportData;
         }
 
-        public async Task<ImportResult> ImportProductData(IFormFile file)
+        public async Task<Tuple<ImportResult, int>> ImportProductData(IFormFile file)
         {
-            if (_portingTracker.IsImportRunning()) return ImportResult.AlreadyRunning;
+            if (_portingTracker.IsImportRunning())
+                return new Tuple<ImportResult, int>(ImportResult.AlreadyRunning, 0);
             _portingTracker.SetImportRunningStatus(true);
-            var importSuccessful = await ProductDbPorter.ImportAsync(_context, file, _productsImagePath,
+            var importResult = await ProductDbPorter.ImportAsync(_context, file, _productsImagePath,
                 _attributeImagePath, _carouselImagePath);
             _portingTracker.SetImportRunningStatus(false);
-            return importSuccessful ? ImportResult.Successful : ImportResult.Unsuccesful;
+            return new Tuple<ImportResult, int>(importResult == 0 ? ImportResult.Successful : ImportResult.Unsuccesful, importResult);
         }
 
         public async Task WipeProductDataAsync()

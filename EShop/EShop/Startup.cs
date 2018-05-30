@@ -126,6 +126,10 @@ namespace EShop
                 });
             }
 
+            bool legacyImpExp;
+            if (bool.TryParse(configuration["XlsExportImportConfig:Legacy"], out legacyImpExp) && legacyImpExp)
+                ProductDbPorter.prettyXls = false;
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

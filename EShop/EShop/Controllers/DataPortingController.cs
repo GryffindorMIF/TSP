@@ -44,11 +44,11 @@ namespace EShop.Controllers
             var importResult = await _dataPortingService.ImportProductData(model.ImportFile);
 
 
-            if (importResult == ImportResult.Successful)
+            if (importResult.Item1 == ImportResult.Successful)
             {
                 TempData["Success"] = "Successfully imported product data from file.";
             }
-            else if (importResult == ImportResult.AlreadyRunning)
+            else if (importResult.Item1 == ImportResult.AlreadyRunning)
             {
                 ViewBag.AlreadyRunning =
                     "An import operation is already running. Please wait until it finishes and try again.";
@@ -56,8 +56,10 @@ namespace EShop.Controllers
             }
             else
             {
-                TempData["Error"] =
-                    "An error occured while trying to import product data. Make sure the file is a valid product data Excel file and try again.";
+                if (importResult.Item2 < 0)
+                    ViewBag.AlreadyRunning = "An error occured while trying to import product data. Make sure the file is a valid product data Excel file and try again.";
+                else ViewBag.AlreadyRunning = "An error occured while parsing the Excel file on line " + importResult.Item2 + ". Make sure the file is a valid product data Excel file and try again.";
+                return View("Index");
             }
 
             return RedirectToAction("Index", "DataPorting");

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace EShop.Business.Interfaces
@@ -13,7 +14,7 @@ namespace EShop.Business.Interfaces
     public interface IDataPortingService
     {
         Task WipeProductDataAsync();
-        Task<ImportResult> ImportProductData(IFormFile file);
+        Task<Tuple<ImportResult, int>> ImportProductData(IFormFile file);
         Task<byte[]> ExportProductData();
     }
 }
