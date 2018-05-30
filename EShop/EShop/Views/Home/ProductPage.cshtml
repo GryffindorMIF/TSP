@@ -114,7 +114,7 @@
                     {
                         <div class="panel-heading">
                             <text>
-                                @if (attrCategory.IconUrl != null)
+                                @if (!String.IsNullOrWhiteSpace(attrCategory.IconUrl))
                                 {
                                     <li>
                                         <h4>
