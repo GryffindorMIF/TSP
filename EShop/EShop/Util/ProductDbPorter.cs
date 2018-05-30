@@ -604,8 +604,8 @@ namespace EShop.Util
                     i = sheet.Dimension.Start.Row + 1;
                     for (; i <= sheet.Dimension.End.Row; i++)
                     {
-                        //if (sheet.Cells[i, 1].Value == null)
-                        //    continue;
+                        if (sheet.Cells[i, 1, i, 11].All(cell => { return cell.Value == null; }))
+                            continue;
                         Product product = new Product()
                         {
                             Name = sheet.Cells[i, 1].Value.ToString().Trim(),
