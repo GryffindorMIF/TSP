@@ -565,6 +565,7 @@ namespace EShop.Util
                     }
 
                     sheet.Cells["A1"].LoadFromArrays(table);
+                    sheet.Row(1).Style.Font.Bold = true;
                     var cells = sheet.Cells[sheet.Dimension.Start.Row, sheet.Dimension.Start.Column, sheet.Dimension.End.Row, sheet.Dimension.End.Column];
                     cells.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     cells.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
