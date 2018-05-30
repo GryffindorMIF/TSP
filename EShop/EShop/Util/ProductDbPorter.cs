@@ -756,25 +756,34 @@ namespace EShop.Util
                                         dbCategory = category;
                                         await context.SaveChangesAsync();
                                     }
-                                    
+
+                                    CategoryCategory categoryCategory;
                                     if (lastDbCategory != null)
                                     {
-                                        CategoryCategory categoryCategory = new CategoryCategory()
+                                        categoryCategory = new CategoryCategory()
                                         {
                                             CategoryId = dbCategory.Id,
                                             ParentCategoryId = lastDbCategory.Id
                                         };
-                                        var dbCategoryCategory = currentDbState.CategoryCategories.FirstOrDefault(cc =>
-                                        {
-                                            return cc.Equals(categoryCategory);
-                                        });
-                                        if (dbCategoryCategory == null)
-                                        {
-                                            context.CategoryCategory.Add(categoryCategory);
-                                            currentDbState.CategoryCategories.Add(categoryCategory);
-                                            dbCategoryCategory = categoryCategory;
-                                        }
                                     }
+                                    else
+                                    {
+                                        categoryCategory = new CategoryCategory()
+                                        {
+                                            CategoryId = dbCategory.Id,
+                                        };
+                                    }
+                                    var dbCategoryCategory = currentDbState.CategoryCategories.FirstOrDefault(cc =>
+                                    {
+                                        return cc.Equals(categoryCategory);
+                                    });
+                                    if (dbCategoryCategory == null)
+                                    {
+                                        context.CategoryCategory.Add(categoryCategory);
+                                        currentDbState.CategoryCategories.Add(categoryCategory);
+                                        dbCategoryCategory = categoryCategory;
+                                    }
+                                    
                                     lastDbCategory = dbCategory;
                                 }
                                 if (lastDbCategory != null)
